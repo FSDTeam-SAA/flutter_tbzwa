@@ -31,10 +31,10 @@ class PrimaryButton extends StatelessWidget {
     this.iconLeft,
     this.iconRight,
     this.width,
-    this.height = 50,
-    this.backgroundColor = AppColors.primaryBlue,
+    this.height = 48,
+    this.backgroundColor = const Color(0xFF5151EF),
     this.textColor = AppColors.primaryWhite,
-    this.borderRadius = 25.0,
+    this.borderRadius = 16.0,
   });
 
   String get _uniqueTag => tag ?? text;
@@ -76,7 +76,8 @@ class PrimaryButton extends StatelessWidget {
             opacity: isLoading.value ? 0.6 : 1.0,
             child: Container(
               width: width ?? double.infinity,
-              height: height ?? 50,
+              height: height ?? 48,
+              padding: const EdgeInsets.all(10),
               alignment: Alignment.center,
               decoration: BoxDecoration(
                 color: backgroundColor,
@@ -103,7 +104,7 @@ class PrimaryButton extends StatelessWidget {
                           style:
                               textStyle ??
                               TextStyle(
-                                fontWeight: FontWeight.w500,
+                                fontWeight: FontWeight.w700,
                                 fontSize: 16,
                                 color: textColor,
                               ),
