@@ -1,6 +1,6 @@
 class AssetsConstants {
   static Images get images => Images();
-  static Icons get icons => Icons();
+  static NabIcon get icons => NabIcon();
 }
 
 class Images {
@@ -15,19 +15,21 @@ class Images {
 
   // Event image
   final String eventImage = '$_base/events_bg.jpg';
+
+
 }
 
-class Icons {
+class NabIcon {
   static const String _base = 'assets/icons';
 
   /// bottom navigation icons [Start]
-  final String home = '$_base/home.svg';
-  final String userCircle = '$_base/user-circle.svg';
-  final String playSquare = '$_base/play-square.svg';
-  final String bell = '$_base/bell.svg';
-  final String message = '$_base/message.svg';
-  final String menu = '$_base/menu.svg';
-  final String building = '$_base/building.svg';
+  static const String home = '$_base/home.svg';
+  static const String learn = '$_base/learn.svg';
+  static const String community = '$_base/community.svg';
+  static const String voiceRoom = '$_base/voice_room.svg';
+  static const String profile = '$_base/profile.svg';
+  static const String menu = '$_base/menu.svg';
+  static const String building = '$_base/building.svg';
 
   /// bottom navigation icons [End]
 
@@ -96,8 +98,6 @@ class Icons {
   /// Conversation Info Screen Icons [Start]
   final String phoneCall = '$_base/phone-call.svg';
   final String videoCall = '$_base/video-call.svg';
-  String get profile => userCircle;
-  String get mute => bell;
 
   final String themeIcon = '$_base/theme-icon.svg';
   final String nicknameIcon = '$_base/nickname-icon.svg';
@@ -105,7 +105,6 @@ class Icons {
   String get groupIcon => groups;
   final String mediaIcon = '$_base/media-icon.svg';
   String get searchIcon => searchSm;
-  String get notification => bell;
   final String blockIcon = '$_base/block-icon.svg';
   final String report = '$_base/report-icon.svg';
   String get deleteIcon => delete;
