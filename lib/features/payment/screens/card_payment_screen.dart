@@ -14,14 +14,18 @@ class CardPaymentScreen extends StatefulWidget {
 
 class _CardPaymentScreenState extends State<CardPaymentScreen> {
   // Input Controllers initialized with values from the design image
-  final TextEditingController _cardNumberController =
-      TextEditingController(text: "4242  4242  4242  4242");
-  final TextEditingController _expiryDateController =
-      TextEditingController(text: "12/28");
-  final TextEditingController _cvvController =
-      TextEditingController(text: "123");
-  final TextEditingController _cardholderController =
-      TextEditingController(text: "Kathy Onana");
+  final TextEditingController _cardNumberController = TextEditingController(
+    text: "4242  4242  4242  4242",
+  );
+  final TextEditingController _expiryDateController = TextEditingController(
+    text: "12/28",
+  );
+  final TextEditingController _cvvController = TextEditingController(
+    text: "123",
+  );
+  final TextEditingController _cardholderController = TextEditingController(
+    text: "Kathy Onana",
+  );
 
   // Currency Selection State
   String _selectedCurrency = 'USD';
@@ -68,7 +72,7 @@ class _CardPaymentScreenState extends State<CardPaymentScreen> {
         leading: IconButton(
           icon: const Icon(
             Icons.arrow_back_ios_new_rounded,
-            color: Color(0xFF0F172A),
+            color: Color(0xFF263451),
             size: 20,
           ),
           onPressed: () => Get.back(),
@@ -77,7 +81,7 @@ class _CardPaymentScreenState extends State<CardPaymentScreen> {
         title: const Text(
           "Card Payment",
           style: TextStyle(
-            color: Color(0xFF0F172A),
+            color: Color(0xFF374151),
             fontSize: 20,
             fontWeight: FontWeight.w700,
           ),
@@ -96,21 +100,23 @@ class _CardPaymentScreenState extends State<CardPaymentScreen> {
                   const Text(
                     "Enter Amount",
                     style: TextStyle(
-                      color: Color(0xFF0F172A),
+                      color: Color(0xFF1A1A2E),
                       fontSize: 16,
-                      fontWeight: FontWeight.w700,
+                      fontWeight: FontWeight.w500,
                     ),
                   ),
-                  const SizedBox(height: 16),
+                  const SizedBox(height: 20),
 
                   // Amount Card
                   Container(
                     width: double.infinity,
-                    padding: const EdgeInsets.symmetric(vertical: 24),
+                    padding: const EdgeInsets.all(16),
                     decoration: BoxDecoration(
                       color: Colors.white,
-                      borderRadius: BorderRadius.circular(18),
-                      border: Border.all(color: const Color(0xFFF1F5F9)),
+                      borderRadius: BorderRadius.circular(16),
+                      border: Border.all(
+                        color: const Color(0xFF94A3B8).withOpacity(0.20),
+                      ),
                       boxShadow: [
                         BoxShadow(
                           color: Colors.black.withAlpha(6),
@@ -126,19 +132,24 @@ class _CardPaymentScreenState extends State<CardPaymentScreen> {
                         Text(
                           _getFormattedAmount(),
                           style: const TextStyle(
-                            color: Color(0xFF0F172A),
-                            fontSize: 28,
-                            fontWeight: FontWeight.w800,
+                            color: Color(0xFF1A1A2E),
+                            fontSize: 16,
+                            fontWeight: FontWeight.w500,
                           ),
                         ),
                         const SizedBox(height: 16),
 
                         // Currency Selector Pill
                         Container(
-                          padding: const EdgeInsets.all(4),
+                          padding: const EdgeInsets.only(
+                            left: 24,
+                            right: 24,
+                            top: 12,
+                            bottom: 12,
+                          ),
                           decoration: BoxDecoration(
-                            color: const Color(0xFFCECEDF),
-                            borderRadius: BorderRadius.circular(12),
+                            color: const Color(0xFF000055).withOpacity(0.20),
+                            borderRadius: BorderRadius.circular(8),
                           ),
                           child: Row(
                             mainAxisSize: MainAxisSize.min,
@@ -150,17 +161,17 @@ class _CardPaymentScreenState extends State<CardPaymentScreen> {
                                     _selectedCurrency = currency;
                                   });
                                 },
-                                child: AnimatedContainer(
-                                  duration: const Duration(milliseconds: 200),
+                                child: Container(
+                                  // duration: const Duration(milliseconds: 100),
                                   padding: const EdgeInsets.symmetric(
                                     horizontal: 16,
                                     vertical: 6,
                                   ),
                                   decoration: BoxDecoration(
                                     color: isSelected
-                                        ? Colors.white
+                                        ? Color(0xFFFFFFFF)
                                         : Colors.transparent,
-                                    borderRadius: BorderRadius.circular(8),
+                                    borderRadius: BorderRadius.circular(4),
                                     boxShadow: isSelected
                                         ? [
                                             BoxShadow(
@@ -175,10 +186,10 @@ class _CardPaymentScreenState extends State<CardPaymentScreen> {
                                     currency,
                                     style: TextStyle(
                                       color: isSelected
-                                          ? const Color(0xFF0F172A)
-                                          : Colors.white.withAlpha(220),
-                                      fontSize: 13,
-                                      fontWeight: FontWeight.w700,
+                                          ? const Color(0xFF1A1A2E)
+                                          : Color(0xFFFFFFFF),
+                                      fontSize: 12,
+                                      fontWeight: FontWeight.w600,
                                     ),
                                   ),
                                 ),
@@ -189,7 +200,7 @@ class _CardPaymentScreenState extends State<CardPaymentScreen> {
                       ],
                     ),
                   ),
-                  const SizedBox(height: 24),
+                  const SizedBox(height: 20),
 
                   // Card Information Group Container
                   Container(
@@ -200,8 +211,10 @@ class _CardPaymentScreenState extends State<CardPaymentScreen> {
                     ),
                     decoration: BoxDecoration(
                       color: const Color(0xFFF5F7FB),
-                      borderRadius: BorderRadius.circular(24),
-                      border: Border.all(color: const Color(0xFFE2E8F0)),
+                      borderRadius: BorderRadius.circular(20),
+                      border: Border.all(
+                        color: const Color(0xFF94A3B8).withOpacity(0.20),
+                      ),
                     ),
                     child: Column(
                       crossAxisAlignment: CrossAxisAlignment.start,
@@ -209,12 +222,12 @@ class _CardPaymentScreenState extends State<CardPaymentScreen> {
                         const Text(
                           "Card Information",
                           style: TextStyle(
-                            color: Color(0xFF0F172A),
-                            fontSize: 15,
+                            color: Color(0xFF1A1A2E),
+                            fontSize: 16,
                             fontWeight: FontWeight.w700,
                           ),
                         ),
-                        const SizedBox(height: 18),
+                        const SizedBox(height: 16),
 
                         // Card Number Field
                         _buildCardField(
@@ -279,9 +292,11 @@ class _CardPaymentScreenState extends State<CardPaymentScreen> {
                     height: 56,
                     child: ElevatedButton(
                       onPressed: () {
-                        Get.to(() => PaymentSuccessScreen(
-                              amount: _getFormattedAmount(),
-                            ));
+                        Get.to(
+                          () => PaymentSuccessScreen(
+                            amount: _getFormattedAmount(),
+                          ),
+                        );
                       },
                       style: ElevatedButton.styleFrom(
                         backgroundColor: const Color(0xFF5151EF),
@@ -295,7 +310,7 @@ class _CardPaymentScreenState extends State<CardPaymentScreen> {
                         _getButtonText(),
                         style: const TextStyle(
                           fontSize: 16,
-                          fontWeight: FontWeight.w700,
+                          fontWeight: FontWeight.w400,
                         ),
                       ),
                     ),
@@ -322,7 +337,7 @@ class _CardPaymentScreenState extends State<CardPaymentScreen> {
       decoration: BoxDecoration(
         color: Colors.white,
         borderRadius: BorderRadius.circular(16),
-        border: Border.all(color: const Color(0xFFF1F5F9)),
+        border: Border.all(color: const Color(0xFF94A3B8).withOpacity(0.20)),
         boxShadow: [
           BoxShadow(
             color: Colors.black.withAlpha(4),
@@ -335,11 +350,7 @@ class _CardPaymentScreenState extends State<CardPaymentScreen> {
       child: Row(
         children: [
           // Icon Container
-          Container(
-            width: 36,
-            alignment: Alignment.centerLeft,
-            child: icon,
-          ),
+          Container(width: 36, alignment: Alignment.centerLeft, child: icon),
           const SizedBox(width: 8),
 
           // Label and Interactive TextFormField
@@ -351,9 +362,9 @@ class _CardPaymentScreenState extends State<CardPaymentScreen> {
                 Text(
                   label,
                   style: const TextStyle(
-                    color: Color(0xFF0F172A),
-                    fontSize: 13,
-                    fontWeight: FontWeight.w700,
+                    color: Color(0xFF1A1A2E),
+                    fontSize: 16,
+                    fontWeight: FontWeight.w500,
                   ),
                 ),
                 const SizedBox(height: 3),
@@ -362,10 +373,10 @@ class _CardPaymentScreenState extends State<CardPaymentScreen> {
                   keyboardType: keyboardType,
                   inputFormatters: inputFormatters,
                   style: const TextStyle(
-                    color: Color(0xFF0F172A),
-                    fontSize: 14,
-                    fontWeight: FontWeight.w500,
-                    height: 1.2,
+                    color: Color(0xFF1A1A2E),
+                    fontSize: 12,
+                    fontWeight: FontWeight.w400,
+                    height: 1.0,
                   ),
                   decoration: const InputDecoration(
                     border: InputBorder.none,
@@ -381,179 +392,43 @@ class _CardPaymentScreenState extends State<CardPaymentScreen> {
     );
   }
 
-  // Vector-like custom credit card outline icon
+  Widget _buildAssetIcon(
+    String assetPath, {
+    double width = 28,
+    double height = 18,
+  }) {
+    return Image.asset(
+      assetPath,
+      width: width,
+      height: height,
+      fit: BoxFit.contain,
+      errorBuilder: (context, error, stackTrace) {
+        return Container(
+          width: width,
+          height: height,
+          decoration: BoxDecoration(
+            border: Border.all(color: const Color(0xFF0F172A), width: 1.5),
+            borderRadius: BorderRadius.circular(3),
+          ),
+        );
+      },
+    );
+  }
+
   Widget _buildCardIcon() {
-    return Container(
-      width: 28,
-      height: 18,
-      decoration: BoxDecoration(
-        border: Border.all(color: const Color(0xFF0F172A), width: 1.5),
-        borderRadius: BorderRadius.circular(3),
-      ),
-      child: Stack(
-        children: [
-          Positioned(
-            left: 3,
-            bottom: 3,
-            child: Container(
-              width: 5,
-              height: 4,
-              decoration: BoxDecoration(
-                color: const Color(0xFF0F172A),
-                borderRadius: BorderRadius.circular(1),
-              ),
-            ),
-          ),
-        ],
-      ),
-    );
+    return _buildAssetIcon('assets/images/cardIcon.png', width: 40, height: 40);
   }
 
-  // Vector-like custom calendar outline icon
   Widget _buildCalendarIcon() {
-    return SizedBox(
-      width: 28,
-      height: 20,
-      child: Stack(
-        children: [
-          // Main Body
-          Positioned(
-            top: 4,
-            left: 0,
-            right: 0,
-            bottom: 0,
-            child: Container(
-              decoration: BoxDecoration(
-                border: Border.all(color: const Color(0xFF0F172A), width: 1.5),
-                borderRadius: BorderRadius.circular(3),
-              ),
-              child: Column(
-                children: [
-                  Container(
-                    height: 3,
-                    color: const Color(0xFF0F172A),
-                  ),
-                  const SizedBox(height: 2),
-                  Row(
-                    mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-                    children: [
-                      _buildDot(),
-                      _buildDot(),
-                      _buildDot(),
-                    ],
-                  ),
-                  const SizedBox(height: 2),
-                  Row(
-                    mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-                    children: [
-                      _buildDot(),
-                      _buildDot(),
-                      _buildDot(),
-                    ],
-                  ),
-                ],
-              ),
-            ),
-          ),
-          // Ring loops on top
-          Positioned(
-            top: 0,
-            left: 6,
-            child: Container(
-              width: 1.5,
-              height: 5,
-              color: const Color(0xFF0F172A),
-            ),
-          ),
-          Positioned(
-            top: 0,
-            right: 6,
-            child: Container(
-              width: 1.5,
-              height: 5,
-              color: const Color(0xFF0F172A),
-            ),
-          ),
-        ],
-      ),
-    );
+    return _buildAssetIcon('assets/images/expiry.png', width: 40, height: 40);
   }
 
-  Widget _buildDot() {
-    return Container(
-      width: 1.5,
-      height: 1.5,
-      decoration: const BoxDecoration(
-        color: Color(0xFF0F172A),
-        shape: BoxShape.circle,
-      ),
-    );
-  }
-
-  // Vector-like custom CVV outline card icon
   Widget _buildCVVIcon() {
-    return Container(
-      width: 28,
-      height: 18,
-      decoration: BoxDecoration(
-        border: Border.all(color: const Color(0xFF0F172A), width: 1.5),
-        borderRadius: BorderRadius.circular(3),
-      ),
-      alignment: Alignment.center,
-      child: Container(
-        padding: const EdgeInsets.symmetric(horizontal: 1.5, vertical: 0.5),
-        decoration: BoxDecoration(
-          color: const Color(0xFF0F172A),
-          borderRadius: BorderRadius.circular(1),
-        ),
-        child: const Text(
-          "CVV",
-          style: TextStyle(
-            color: Colors.white,
-            fontSize: 7,
-            fontWeight: FontWeight.w900,
-            letterSpacing: 0.1,
-          ),
-        ),
-      ),
-    );
+    return _buildAssetIcon('assets/images/cvv.png', width: 40, height: 40);
   }
 
-  // Vector-like custom cardholder pocket/badge icon
   Widget _buildCardholderIcon() {
-    return Container(
-      width: 28,
-      height: 18,
-      decoration: BoxDecoration(
-        border: Border.all(color: const Color(0xFF0F172A), width: 1.5),
-        borderRadius: BorderRadius.circular(3),
-      ),
-      child: Stack(
-        children: [
-          Positioned(
-            top: 3,
-            left: 0,
-            right: 0,
-            child: Container(
-              height: 1.5,
-              color: const Color(0xFF0F172A),
-            ),
-          ),
-          Positioned(
-            top: 7,
-            left: 5,
-            right: 5,
-            bottom: 3,
-            child: Container(
-              decoration: BoxDecoration(
-                border: Border.all(color: const Color(0xFF0F172A), width: 1),
-                borderRadius: BorderRadius.circular(1),
-              ),
-            ),
-          ),
-        ],
-      ),
-    );
+    return _buildAssetIcon('assets/images/cardholder.png', width: 40, height: 40);
   }
 }
 

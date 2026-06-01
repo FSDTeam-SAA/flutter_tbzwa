@@ -59,7 +59,7 @@ class PaymentSuccessScreen extends StatelessWidget {
         leading: IconButton(
           icon: const Icon(
             Icons.arrow_back_ios_new_rounded,
-            color: Color(0xFF0F172A),
+            color: Color(0xFF263451),
             size: 20,
           ),
           onPressed: () => Get.back(),
@@ -68,7 +68,7 @@ class PaymentSuccessScreen extends StatelessWidget {
         title: const Text(
           "Payment Successful",
           style: TextStyle(
-            color: Color(0xFF0F172A),
+           color: Color(0xFF374151),
             fontSize: 20,
             fontWeight: FontWeight.w700,
           ),
@@ -84,57 +84,55 @@ class PaymentSuccessScreen extends StatelessWidget {
               // Success Top Card
               Container(
                 width: double.infinity,
-                padding: const EdgeInsets.symmetric(vertical: 36),
+                padding: const EdgeInsets.all(16),
                 decoration: BoxDecoration(
-                  color: Colors.white,
-                  borderRadius: BorderRadius.circular(18),
-                  border: Border.all(color: const Color(0xFFF1F5F9)),
-                  boxShadow: [
-                    BoxShadow(
-                      color: Colors.black.withAlpha(6),
-                      blurRadius: 12,
-                      offset: const Offset(0, 4),
-                    ),
-                  ],
+                  color: Color(0xFFFFFFFF),
+                  borderRadius: BorderRadius.circular(16),
+                  border: Border.all(color: const Color(0xFF94A3B8).withOpacity(0.20)),
+                  // boxShadow: [
+                  //   BoxShadow(
+                  //     color: Colors.black.withAlpha(6),
+                  //     blurRadius: 12,
+                  //     offset: const Offset(0, 4),
+                  //   ),
+                  // ],
                 ),
                 child: Column(
                   children: [
                     // Green circular check icon widget
                     _buildGreenCheckIcon(),
-                    const SizedBox(height: 24),
+                    const SizedBox(height: 22),
 
                     // Success Pill/Badge
                     Container(
-                      padding: const EdgeInsets.symmetric(
-                        horizontal: 36,
-                        vertical: 12,
+                      padding: const EdgeInsets.only(top: 14, right: 24, bottom: 12, left: 24
                       ),
                       decoration: BoxDecoration(
                         color: const Color(0xFF5151EF),
-                        borderRadius: BorderRadius.circular(10),
+                        borderRadius: BorderRadius.circular(8),
                       ),
                       child: const Text(
                         "SUCCESS",
                         style: TextStyle(
-                          color: Colors.white,
-                          fontSize: 14,
-                          fontWeight: FontWeight.w800,
-                          letterSpacing: 0.5,
+                          color: Color(0xFFFFFFFF),
+                          fontSize: 16,
+                          fontWeight: FontWeight.w600,
+                          // letterSpacing: 0.5,
                         ),
                       ),
                     ),
                   ],
                 ),
               ),
-              const SizedBox(height: 24),
+              const SizedBox(height: 20),
 
               // Payment Information Header
               const Text(
                 "Payment Information",
                 style: TextStyle(
-                  color: Color(0xFF0F172A),
+                  color: Color(0xFF1A1A2E),
                   fontSize: 16,
-                  fontWeight: FontWeight.w700,
+                  fontWeight: FontWeight.w500,
                 ),
               ),
               const SizedBox(height: 16),
@@ -142,11 +140,11 @@ class PaymentSuccessScreen extends StatelessWidget {
               // Payment Information Details Card
               Container(
                 width: double.infinity,
-                padding: const EdgeInsets.all(20),
+                padding: const EdgeInsets.all(16),
                 decoration: BoxDecoration(
-                  color: const Color(0xFFF5F7FB),
-                  borderRadius: BorderRadius.circular(20),
-                  border: Border.all(color: const Color(0xFFE2E8F0)),
+                  color: const Color(0xFFFFFFFF),
+                  borderRadius: BorderRadius.circular(16),
+                  border: Border.all(color: const Color(0xFF94A3B8).withOpacity(0.20)),
                 ),
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
@@ -193,18 +191,18 @@ class PaymentSuccessScreen extends StatelessWidget {
                           const Text(
                             "Transaction ID : TXN-123456789",
                             style: TextStyle(
-                              color: Color(0xFF0F172A),
-                              fontSize: 14,
-                              fontWeight: FontWeight.w700,
+                              color: Color(0xFF1A1A2E),
+                              fontSize: 16,
+                              fontWeight: FontWeight.w500,
                             ),
                           ),
                           const SizedBox(height: 4),
                           Text(
                             "Date : ${_getFormattedDate()}",
                             style: const TextStyle(
-                              color: Color(0xFF64748B),
+                              color: Color(0xFF1A1A2E),
                               fontSize: 12,
-                              fontWeight: FontWeight.w500,
+                              fontWeight: FontWeight.w400,
                             ),
                           ),
                         ],
@@ -213,7 +211,7 @@ class PaymentSuccessScreen extends StatelessWidget {
                   ],
                 ),
               ),
-              const SizedBox(height: 40),
+              const SizedBox(height: 135),
 
               // Action Buttons
               Column(
@@ -221,7 +219,7 @@ class PaymentSuccessScreen extends StatelessWidget {
                   // Welcome Button
                   SizedBox(
                     width: double.infinity,
-                    height: 56,
+                    height: 48,
                     child: ElevatedButton(
                       onPressed: () {
                         Get.to(() => const WelcomeSuccessScreen());
@@ -237,8 +235,9 @@ class PaymentSuccessScreen extends StatelessWidget {
                       child: const Text(
                         "Welcome",
                         style: TextStyle(
+                          color: Color(0xFFFFFFFF),
                           fontSize: 16,
-                          fontWeight: FontWeight.w700,
+                          fontWeight: FontWeight.w400,
                         ),
                       ),
                     ),
@@ -248,7 +247,7 @@ class PaymentSuccessScreen extends StatelessWidget {
                   // Request for Refund Button
                   SizedBox(
                     width: double.infinity,
-                    height: 56,
+                    height: 48,
                     child: OutlinedButton(
                       onPressed: () {
                         // Request manual refund alert
@@ -263,7 +262,7 @@ class PaymentSuccessScreen extends StatelessWidget {
                         );
                       },
                       style: OutlinedButton.styleFrom(
-                        side: const BorderSide(color: Color(0xFFE2E8F0)),
+                        side:  BorderSide(color: Color(0xFF888888).withOpacity(0.20), width: 1),
                         shape: RoundedRectangleBorder(
                           borderRadius: BorderRadius.circular(16),
                         ),
@@ -271,16 +270,16 @@ class PaymentSuccessScreen extends StatelessWidget {
                       child: const Text(
                         "Request for Refund",
                         style: TextStyle(
-                          color: Color(0xFF64748B),
+                          color: Color(0xFF888888),
                           fontSize: 16,
-                          fontWeight: FontWeight.w600,
+                          fontWeight: FontWeight.w400,
                         ),
                       ),
                     ),
                   ),
                 ],
               ),
-              const SizedBox(height: 24),
+              const SizedBox(height: 96),
             ],
           ),
         ),
@@ -293,17 +292,18 @@ class PaymentSuccessScreen extends StatelessWidget {
     return RichText(
       text: TextSpan(
         style: const TextStyle(
-          color: Color(0xFF475569),
-          fontSize: 14,
-          fontWeight: FontWeight.w600,
+          color: Color(0xFF1A1A2E),
+          fontSize: 16,
+          fontWeight: FontWeight.w500,
         ),
         children: [
           TextSpan(text: prefix),
           TextSpan(
             text: suffix,
             style: const TextStyle(
-              color: Color(0xFF0F172A),
-              fontWeight: FontWeight.w700,
+              color: Color(0xFF1A1A2E),
+              fontSize: 16,
+              fontWeight: FontWeight.w500,
             ),
           ),
         ],
@@ -335,13 +335,13 @@ class PaymentSuccessScreen extends StatelessWidget {
       width: 40,
       height: 40,
       decoration: BoxDecoration(
-        color: const Color(0xFFFFF1F2),
+        color: const Color(0xFFFFA3C8).withOpacity(0.20),
         borderRadius: BorderRadius.circular(10),
       ),
       alignment: Alignment.center,
       child: const Icon(
         Icons.north_east_rounded,
-        color: Color(0xFFF43F5E),
+        color: Color(0xFFFFA3C8),
         size: 20,
       ),
     );

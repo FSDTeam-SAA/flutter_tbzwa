@@ -80,8 +80,8 @@ class WelcomeSuccessScreen extends StatelessWidget {
                         // Logo Section
                         Center(
                           child: Image.asset(
-                            'assets/images/logo.png',
-                            height: 130,
+                            'assets/images/mainLogo.png',
+                            height: 72,
                             fit: BoxFit.contain,
                             errorBuilder: (context, error, stackTrace) {
                               // Elegant backup vector drawing if asset fails
@@ -108,8 +108,9 @@ class WelcomeSuccessScreen extends StatelessWidget {
                                             begin: Alignment.topCenter,
                                             end: Alignment.bottomCenter,
                                           ),
-                                          borderRadius:
-                                              BorderRadius.circular(4),
+                                          borderRadius: BorderRadius.circular(
+                                            4,
+                                          ),
                                         ),
                                       );
                                     }),
@@ -136,41 +137,43 @@ class WelcomeSuccessScreen extends StatelessWidget {
                             },
                           ),
                         ),
-                        const SizedBox(height: 56),
+                        const SizedBox(height: 106),
 
                         // Title Text
                         const Text(
                           "Welcome to Talk /'BZ/!",
                           textAlign: TextAlign.center,
                           style: TextStyle(
-                            color: Color(0xFF0F172A),
-                            fontSize: 24,
-                            fontWeight: FontWeight.w800,
-                            letterSpacing: -0.5,
+                            color: Color(0xFF191C1F),
+                            fontSize: 20,
+                            fontWeight: FontWeight.w600,
+                            // letterSpacing: -0.5,
                           ),
                         ),
-                        const SizedBox(height: 16),
+                        const SizedBox(height: 21),
 
                         // Subtitle text
                         const Text(
                           "We're excited to have you on board.\nLet's get ready for success!",
                           textAlign: TextAlign.center,
                           style: TextStyle(
-                            color: Color(0xFF64748B),
-                            fontSize: 15,
-                            fontWeight: FontWeight.w500,
-                            height: 1.4,
+                            color: Color(0xFF191C1F),
+                            fontSize: 12,
+                            fontWeight: FontWeight.w400,
+                            height: 1.3,
                           ),
                         ),
                       ],
                     ),
 
+                    const SizedBox(height: 86),
+
                     // Next Button at bottom
                     Padding(
-                      padding: const EdgeInsets.only(bottom: 24.0, top: 40.0),
+                      padding: const EdgeInsets.only(bottom: 12, top: 12, right: 24, left: 24),
                       child: SizedBox(
                         width: double.infinity,
-                        height: 56,
+                        height: 48,
                         child: ElevatedButton(
                           onPressed: () {
                             Get.to(() => const KeysToSuccessScreen());
@@ -186,8 +189,9 @@ class WelcomeSuccessScreen extends StatelessWidget {
                           child: const Text(
                             "Next",
                             style: TextStyle(
+                              color: Color(0xFFFFFFFF),
                               fontSize: 16,
-                              fontWeight: FontWeight.w700,
+                              fontWeight: FontWeight.w400,
                             ),
                           ),
                         ),

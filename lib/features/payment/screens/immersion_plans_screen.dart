@@ -32,7 +32,7 @@ class _ImmersionPlansScreenState extends State<ImmersionPlansScreen> {
         leading: IconButton(
           icon: const Icon(
             Icons.arrow_back_ios_new_rounded,
-            color: Color(0xFF0F172A),
+            color: Color(0xFF263451),
             size: 20,
           ),
           onPressed: () => Get.back(),
@@ -41,8 +41,8 @@ class _ImmersionPlansScreenState extends State<ImmersionPlansScreen> {
         title: const Text(
           "IMMERSION++ Plans",
           style: TextStyle(
-            color: Color(0xFF0F172A),
-            fontSize: 18,
+            color: Color(0xFF374151),
+            fontSize: 20,
             fontWeight: FontWeight.w700,
           ),
         ),
@@ -56,11 +56,11 @@ class _ImmersionPlansScreenState extends State<ImmersionPlansScreen> {
             children: [
               /// What's Included Card
               Container(
-                padding: const EdgeInsets.all(20),
+                padding: const EdgeInsets.all(16),
                 decoration: BoxDecoration(
                   color: const Color(0xFFF8FAFC),
                   borderRadius: BorderRadius.circular(16),
-                  border: Border.all(color: const Color(0xFFE2E8F0)),
+                  border: Border.all(color: const Color(0xFF94A3B8).withOpacity(0.20)),
                 ),
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
@@ -68,9 +68,9 @@ class _ImmersionPlansScreenState extends State<ImmersionPlansScreen> {
                     const Text(
                       "What’s included",
                       style: TextStyle(
-                        color: Color(0xFF0F172A),
-                        fontSize: 18,
-                        fontWeight: FontWeight.w700,
+                        color: Color(0xFF374151),
+                        fontSize: 24,
+                        fontWeight: FontWeight.w600,
                       ),
                     ),
                     const SizedBox(height: 16),
@@ -88,18 +88,18 @@ class _ImmersionPlansScreenState extends State<ImmersionPlansScreen> {
                   ],
                 ),
               ),
-              const SizedBox(height: 24),
+              const SizedBox(height: 20),
 
               /// Subtitle
               const Text(
                 "Choose Your Subscription Duration",
                 style: TextStyle(
-                  color: Color(0xFF0F172A),
-                  fontSize: 15,
-                  fontWeight: FontWeight.w700,
+                  color: Color(0xFF374151),
+                  fontSize: 20,
+                  fontWeight: FontWeight.w600,
                 ),
               ),
-              const SizedBox(height: 16),
+              const SizedBox(height: 20),
 
               /// Duration Packages Grid (2x2)
               Row(
@@ -121,7 +121,7 @@ class _ImmersionPlansScreenState extends State<ImmersionPlansScreen> {
 
               /// Lifetime Access Card
               _buildLifetimeCard(4),
-              const SizedBox(height: 24),
+              const SizedBox(height: 20),
 
               /// Refund Policy Card
               Container(
@@ -129,7 +129,7 @@ class _ImmersionPlansScreenState extends State<ImmersionPlansScreen> {
                 decoration: BoxDecoration(
                   color: const Color(0xFFF8FAFC),
                   borderRadius: BorderRadius.circular(16),
-                  border: Border.all(color: const Color(0xFFE2E8F0)),
+                  border: Border.all(color: const Color(0xFF94A3B8).withOpacity(0.20)),
                 ),
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
@@ -137,18 +137,19 @@ class _ImmersionPlansScreenState extends State<ImmersionPlansScreen> {
                     const Text(
                       "7 Day Refund Policy",
                       style: TextStyle(
-                        color: Color(0xFF0F172A),
-                        fontSize: 14,
-                        fontWeight: FontWeight.w700,
+                        color: Color(0xFF374151),
+                        fontSize: 20,
+                        fontWeight: FontWeight.w600,
                       ),
                     ),
                     const SizedBox(height: 8),
                     const Text(
                       "Not satisfied? Request a refund within 7 days of subscribing. Admin reviews manually.",
                       style: TextStyle(
-                        color: Color(0xFF64748B),
-                        fontSize: 13,
-                        height: 1.4,
+                        color: Color(0xFF94A3B8),
+                        fontWeight: FontWeight.w400,
+                        fontSize: 20,
+                        height: 1.20,
                       ),
                     ),
                   ],
@@ -173,8 +174,9 @@ class _ImmersionPlansScreenState extends State<ImmersionPlansScreen> {
                 child: const Text(
                   "Continue Payment",
                   style: TextStyle(
-                    fontSize: 15,
-                    fontWeight: FontWeight.w700,
+                    color: Color(0xFFFFFFFF),
+                    fontSize: 16,
+                    fontWeight: FontWeight.w500,
                   ),
                 ),
               ),
@@ -194,18 +196,18 @@ class _ImmersionPlansScreenState extends State<ImmersionPlansScreen> {
           const Text(
             "• ",
             style: TextStyle(
-              color: Color(0xFF64748B),
-              fontSize: 14,
-              fontWeight: FontWeight.bold,
+              color: Color(0xFF374151),
+              fontSize: 20,
+              fontWeight: FontWeight.w400,
             ),
           ),
           Expanded(
             child: Text(
               text,
               style: const TextStyle(
-                color: Color(0xFF475569),
-                fontSize: 14,
-                fontWeight: FontWeight.w500,
+                color: Color(0xFF374151),
+                fontSize: 20,
+                fontWeight: FontWeight.w400,
               ),
             ),
           ),
@@ -236,7 +238,7 @@ class _ImmersionPlansScreenState extends State<ImmersionPlansScreen> {
               color: isSelected ? const Color(0xFFF5F4FF) : const Color(0xFFF8FAFC),
               borderRadius: BorderRadius.circular(16),
               border: Border.all(
-                color: isSelected ? const Color(0xFF5151EF) : const Color(0xFFE2E8F0),
+                color: isSelected ? const Color(0xFF5151EF) : const Color(0xFF94A3B8).withOpacity(0.20),
                 width: isSelected ? 1.8 : 1.0,
               ),
             ),
@@ -246,18 +248,18 @@ class _ImmersionPlansScreenState extends State<ImmersionPlansScreen> {
                 Text(
                   item["duration"],
                   style: TextStyle(
-                    color: isSelected ? const Color(0xFF5151EF) : const Color(0xFF0F172A),
-                    fontSize: 15,
-                    fontWeight: FontWeight.w700,
+                    color: isSelected ? const Color(0xFF5151EF) : const Color(0xFF374151),
+                    fontSize: 24,
+                    fontWeight: FontWeight.w600,
                   ),
                 ),
                 const SizedBox(height: 6),
                 Text(
                   item["price"],
                   style: TextStyle(
-                    color: isSelected ? const Color(0xFF5151EF).withAlpha(180) : const Color(0xFF64748B),
-                    fontSize: 13,
-                    fontWeight: FontWeight.w500,
+                    color: isSelected ? const Color(0xFF5151EF).withAlpha(180) : const Color(0xFF94A3B8),
+                    fontSize: 20,
+                    fontWeight: FontWeight.w400,
                   ),
                 ),
               ],
@@ -269,18 +271,18 @@ class _ImmersionPlansScreenState extends State<ImmersionPlansScreen> {
             top: 0,
             left: 12,
             child: Container(
-              padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+              padding: const EdgeInsets.all(10),
               decoration: BoxDecoration(
                 color: const Color(0xFF5151EF),
-                borderRadius: BorderRadius.circular(6),
+                borderRadius: BorderRadius.circular(999),
               ),
               child: Text(
                 badgeText,
                 style: const TextStyle(
-                  color: Colors.white,
-                  fontSize: 9,
-                  fontWeight: FontWeight.w800,
-                  letterSpacing: 0.5,
+                  color: Color(0xFFFFFFFF),
+                  fontSize: 10,
+                  fontWeight: FontWeight.w600,
+                  // letterSpacing: 0.5,
                 ),
               ),
             ),
@@ -319,18 +321,18 @@ class _ImmersionPlansScreenState extends State<ImmersionPlansScreen> {
                 Text(
                   "Lifetime Access",
                   style: TextStyle(
-                    color: isSelected ? const Color(0xFF5151EF) : const Color(0xFF0F172A),
-                    fontSize: 16,
-                    fontWeight: FontWeight.w700,
+                    color: isSelected ? const Color(0xFF5151EF) : const Color(0xFF374151),
+                    fontSize: 24,
+                    fontWeight: FontWeight.w600,
                   ),
                 ),
-                const SizedBox(height: 6),
+                const SizedBox(height: 20),
                 Text(
                   "€30",
                   style: TextStyle(
-                    color: isSelected ? const Color(0xFF5151EF).withAlpha(180) : const Color(0xFF64748B),
-                    fontSize: 14,
-                    fontWeight: FontWeight.w500,
+                    color: isSelected ? const Color(0xFF5151EF).withAlpha(180) : const Color(0xFF94A3B8),
+                    fontSize: 20,
+                    fontWeight: FontWeight.w400,
                   ),
                 ),
               ],
@@ -344,15 +346,15 @@ class _ImmersionPlansScreenState extends State<ImmersionPlansScreen> {
             padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
             decoration: BoxDecoration(
               color: const Color(0xFF5151EF),
-              borderRadius: BorderRadius.circular(6),
+              borderRadius: BorderRadius.circular(999),
             ),
             child: const Text(
               "BEST DEAL",
               style: TextStyle(
                 color: Colors.white,
-                fontSize: 9,
-                fontWeight: FontWeight.w800,
-                letterSpacing: 0.5,
+                fontSize: 10,
+                fontWeight: FontWeight.w600,
+                // letterSpacing: 0.5,
               ),
             ),
           ),

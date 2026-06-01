@@ -21,7 +21,7 @@ class BuyPlanScreen extends StatelessWidget {
         leading: IconButton(
           icon: const Icon(
             Icons.arrow_back_ios_new_rounded,
-            color: Color(0xFF0F172A),
+            color: Color(0xFF94A3B8),
             size: 20,
           ),
           onPressed: () => Get.back(),
@@ -30,8 +30,8 @@ class BuyPlanScreen extends StatelessWidget {
         title: const Text(
           "Buy Plan",
           style: TextStyle(
-            color: Color(0xFF0F172A),
-            fontSize: 18,
+            color: Color(0xFF374151),
+            fontSize: 20,
             fontWeight: FontWeight.w700,
           ),
         ),
@@ -91,13 +91,13 @@ class BuyPlanScreen extends StatelessWidget {
         curve: Curves.easeInOut,
         padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 18),
         decoration: BoxDecoration(
-          color: isSelected ? const Color(0xFFF5F4FF) : Colors.white,
+          color: isSelected ? const Color(0xFFFFFFFF) : Colors.white,
           borderRadius: BorderRadius.circular(16),
           border: Border.all(
             color: isSelected
                 ? const Color(0xFF5151EF)
-                : const Color(0xFFE5E7EB),
-            width: isSelected ? 1.5 : 1.0,
+                : const Color(0xFF94A3B8).withOpacity(0.20),
+            width: isSelected ? 2.0 : 1.0,
           ),
         ),
         child: Row(
@@ -109,13 +109,13 @@ class BuyPlanScreen extends StatelessWidget {
               alignment: Alignment.center,
               decoration: BoxDecoration(
                 color: isSelected
-                    ? const Color(0xFFEEEDFF)
-                    : const Color(0xFFF3F4F6),
+                    ? const Color(0xFFEEEEFD)
+                    : const Color(0xFFEEEEFD),
                 borderRadius: BorderRadius.circular(8),
                 border: Border.all(
                   color: isSelected
-                      ? const Color(0xFF5151EF)
-                      : const Color(0xFFE5E7EB),
+                      ? const Color(0xFFEEEEFD)
+                      : const Color(0xFFEEEEFD),
                   width: 1,
                 ),
               ),
@@ -123,10 +123,10 @@ class BuyPlanScreen extends StatelessWidget {
                 "$number",
                 style: TextStyle(
                   color: isSelected
-                      ? const Color(0xFF5151EF)
-                      : const Color(0xFF6B7280),
-                  fontSize: 14,
-                  fontWeight: FontWeight.w700,
+                      ? const Color(0xFF000000)
+                      : const Color(0xFF000000),
+                  fontSize: 16,
+                  fontWeight: FontWeight.w500,
                 ),
               ),
             ),
@@ -141,11 +141,11 @@ class BuyPlanScreen extends StatelessWidget {
                     title,
                     style: TextStyle(
                       color: isSelected
-                          ? const Color(0xFF1E1B4B)
-                          : const Color(0xFF1F2937),
-                      fontSize: 15,
+                          ? const Color(0xFF374151)
+                          : const Color(0xFF374151),
+                      fontSize: 16,
                       fontWeight: isSelected
-                          ? FontWeight.w700
+                          ? FontWeight.w500
                           : FontWeight.w500,
                     ),
                   ),
@@ -155,10 +155,10 @@ class BuyPlanScreen extends StatelessWidget {
                       subtitle,
                       style: TextStyle(
                         color: isSelected
-                            ? const Color(0xFF5151EF)
-                            : const Color(0xFF9CA3AF),
-                        fontSize: 13,
-                        fontWeight: FontWeight.w400,
+                            ? const Color(0xFF374151)
+                            : const Color(0xFF374151),
+                        fontSize: 16,
+                        fontWeight: FontWeight.w500,
                       ),
                     ),
                   ],

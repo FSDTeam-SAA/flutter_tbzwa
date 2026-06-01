@@ -70,44 +70,44 @@ class AllSetScreen extends StatelessWidget {
                     // Custom Green circular check icon widget
                     Center(
                       child: Container(
-                        width: 72,
-                        height: 72,
+                        width: 60,
+                        height: 60,
                         decoration: BoxDecoration(
                           shape: BoxShape.circle,
-                          border: Border.all(color: const Color(0xFF0F766E), width: 3),
+                          border: Border.all(color: const Color(0xFF006B5B), width: 4),
                         ),
                         alignment: Alignment.center,
                         child: const Icon(
                           Icons.check_rounded,
-                          color: Color(0xFF0F766E),
+                          color: Color(0xFF006B5B),
                           size: 44,
                         ),
                       ),
                     ),
-                    const SizedBox(height: 48),
+                    const SizedBox(height: 97),
 
                     // Title Text
                     const Text(
                       "You’re All Set!",
                       textAlign: TextAlign.center,
                       style: TextStyle(
-                        color: Color(0xFF0F172A),
-                        fontSize: 24,
-                        fontWeight: FontWeight.w800,
-                        letterSpacing: -0.5,
+                        color: Color(0xFF191C1F),
+                        fontSize: 20,
+                        fontWeight: FontWeight.w600,
+                        // letterSpacing: -0.5,
                       ),
                     ),
-                    const SizedBox(height: 16),
+                    const SizedBox(height: 12),
 
                     // Subtitle text
                     const Text(
                       "You’re ready to succeed with the 7 keys",
                       textAlign: TextAlign.center,
                       style: TextStyle(
-                        color: Color(0xFF64748B),
-                        fontSize: 15,
-                        fontWeight: FontWeight.w500,
-                        height: 1.4,
+                        color: Color(0xFF191C1F),
+                        fontSize: 12,
+                        fontWeight: FontWeight.w400,
+                        height: 1.3,
                       ),
                     ),
                   ],
@@ -115,10 +115,10 @@ class AllSetScreen extends StatelessWidget {
 
                 // Start Learning Button at bottom
                 Padding(
-                  padding: const EdgeInsets.only(bottom: 24.0),
+                  padding: const EdgeInsets.only(bottom: 12, top: 12, left: 24,right: 24),
                   child: SizedBox(
                     width: double.infinity,
-                    height: 56,
+                    height: 48,
                     child: ElevatedButton(
                       onPressed: () {
                         // Return to root / dashboard
@@ -135,8 +135,9 @@ class AllSetScreen extends StatelessWidget {
                       child: const Text(
                         "Start Learning",
                         style: TextStyle(
+                          color: Color(0xFFFFFFFF),
                           fontSize: 16,
-                          fontWeight: FontWeight.w700,
+                          fontWeight: FontWeight.w400,
                         ),
                       ),
                     ),

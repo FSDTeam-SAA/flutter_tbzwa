@@ -13,38 +13,52 @@ class KeysToSuccessScreen extends StatelessWidget {
     final List<Map<String, dynamic>> keysData = [
       {
         "title": "Switch your world to English",
-        "desc": "Change the language of all your devices (phone, computer, social media) to English.",
-        "icon": Icons.translate_rounded,
+        "desc":
+            "Change the language of all your devices (phone, computer, social media) to English.",
+        "image": "assets/images/language.png",
+        "fallbackIcon": Icons.translate_rounded,
       },
       {
         "title": "Use Our Interactive Notebook BZPad",
-        "desc": "Use the BZPad to save your new vocabulary, phrases, and thoughts daily.",
-        "icon": Icons.event_note_rounded,
+        "desc":
+            "Use the BZPad to save your new vocabulary, phrases, and thoughts daily.",
+        "image": "assets/images/notebook.png",
+        "fallbackIcon": Icons.event_note_rounded,
       },
       {
         "title": "Daily English Immersion (5-10 min)",
-        "desc": "Listen to or watch something you love in English every single day (Podcasts, YouTube, Netflix).",
-        "icon": Icons.volume_up_rounded,
+        "desc":
+            "Listen to or watch something you love in English every single day (Podcasts, YouTube, Netflix).",
+        "image": "assets/images/volume.png",
+        "fallbackIcon": Icons.volume_up_rounded,
       },
       {
         "title": "Record your Voice (3 min)",
-        "desc": "Record 3 audio clips (45-60 sec each) to track your progress and gain confidence.",
-        "icon": Icons.radio_button_checked_rounded,
+        "desc":
+            "Record 3 audio clips (45-60 sec each) to track your progress and gain confidence.",
+        "image": "assets/images/record_voice.png",
+        "fallbackIcon": Icons.radio_button_checked_rounded,
       },
       {
         "title": "Film your Progress (3 min)",
-        "desc": "Record 3 short videos (45-60 sec each). Seeing yourself speak is the best way to improve!",
-        "icon": Icons.text_fields_rounded, // Matches the 'T' icon inside box in image
+        "desc":
+            "Record 3 short videos (45-60 sec each). Seeing yourself speak is the best way to improve!",
+        "image": "assets/images/video_camera.png",
+        "fallbackIcon": Icons.text_fields_rounded,
       },
       {
         "title": "The \"2-2-2\" Routine (8-9 min)",
-        "desc": "Find 2 new words, write their meaning, and create 2 example sentences for each.",
-        "icon": Icons.text_fields_rounded, // Matches the 'T' icon inside box in image
+        "desc":
+            "Find 2 new words, write their meaning, and create 2 example sentences for each.",
+        "image": "assets/images/video_camera.png",
+        "fallbackIcon": Icons.text_fields_rounded,
       },
       {
         "title": "Summary Reading",
-        "desc": "Write a short summary ( 5 - 7 min ) of what you learned today, then read it aloud twice.",
-        "icon": Icons.edit_rounded,
+        "desc":
+            "Write a short summary ( 5 - 7 min ) of what you learned today, then read it aloud twice.",
+        "image": "assets/images/edit.png",
+        "fallbackIcon": Icons.edit_rounded,
       },
     ];
 
@@ -105,13 +119,13 @@ class KeysToSuccessScreen extends StatelessWidget {
               const Text(
                 "The 7 Keys to Success",
                 style: TextStyle(
-                  color: Color(0xFF0F172A),
-                  fontSize: 22,
-                  fontWeight: FontWeight.w800,
-                  letterSpacing: -0.5,
+                  color: Color(0xFF191C1F),
+                  fontSize: 20,
+                  fontWeight: FontWeight.w700,
+                  // letterSpacing: -0.5,
                 ),
               ),
-              const SizedBox(height: 24),
+              const SizedBox(height: 51),
 
               // Scrollable keys list
               Expanded(
@@ -119,7 +133,8 @@ class KeysToSuccessScreen extends StatelessWidget {
                   physics: const BouncingScrollPhysics(),
                   padding: const EdgeInsets.symmetric(horizontal: 6.0),
                   itemCount: keysData.length,
-                  separatorBuilder: (context, index) => const SizedBox(height: 24),
+                  separatorBuilder: (context, index) =>
+                      const SizedBox(height: 24),
                   itemBuilder: (context, index) {
                     final item = keysData[index];
                     return Row(
@@ -129,15 +144,23 @@ class KeysToSuccessScreen extends StatelessWidget {
                         Container(
                           width: 48,
                           height: 48,
-                          decoration: BoxDecoration(
-                            color: const Color(0xFF5151EF).withAlpha(217),
-                            borderRadius: BorderRadius.circular(12),
-                          ),
+                          // decoration: BoxDecoration(
+                          //   color: const Color(0xFF5151EF).withAlpha(217),
+                          //   borderRadius: BorderRadius.circular(12),
+                          // ),
                           alignment: Alignment.center,
-                          child: Icon(
-                            item["icon"] as IconData,
-                            color: Colors.white,
-                            size: 24,
+                          child: Image.asset(
+                            item["image"] as String,
+                            width: 48,
+                            height: 48,
+                            fit: BoxFit.contain,
+                            errorBuilder: (context, error, stackTrace) {
+                              return Icon(
+                                item["fallbackIcon"] as IconData,
+                                color: Colors.white,
+                                size: 24,
+                              );
+                            },
                           ),
                         ),
                         const SizedBox(width: 16),
@@ -150,19 +173,19 @@ class KeysToSuccessScreen extends StatelessWidget {
                               Text(
                                 item["title"] as String,
                                 style: const TextStyle(
-                                  color: Color(0xFF0F172A),
+                                  color: Color(0xFF191C1F),
                                   fontSize: 16,
-                                  fontWeight: FontWeight.w800,
+                                  fontWeight: FontWeight.w600,
                                 ),
                               ),
                               const SizedBox(height: 4),
                               Text(
                                 item["desc"] as String,
                                 style: const TextStyle(
-                                  color: Color(0xFF475569),
-                                  fontSize: 12,
-                                  height: 1.4,
-                                  fontWeight: FontWeight.w500,
+                                  color: Color(0xFF191C1F),
+                                  fontSize: 10,
+                                  height: 1.3,
+                                  fontWeight: FontWeight.w400,
                                 ),
                               ),
                             ],
@@ -176,10 +199,10 @@ class KeysToSuccessScreen extends StatelessWidget {
 
               // Action Ready to Start Button
               Padding(
-                padding: const EdgeInsets.symmetric(vertical: 24.0),
+                padding: const EdgeInsets.only(top: 8, right: 16, bottom: 8, left: 16),
                 child: SizedBox(
                   width: double.infinity,
-                  height: 56,
+                  height: 48,
                   child: ElevatedButton(
                     onPressed: () {
                       Get.to(() => const AllSetScreen());
@@ -195,8 +218,9 @@ class KeysToSuccessScreen extends StatelessWidget {
                     child: const Text(
                       "Ready to Start",
                       style: TextStyle(
+                        color: Color(0xFFFFFFFF),
                         fontSize: 16,
-                        fontWeight: FontWeight.w700,
+                        fontWeight: FontWeight.w400,
                       ),
                     ),
                   ),

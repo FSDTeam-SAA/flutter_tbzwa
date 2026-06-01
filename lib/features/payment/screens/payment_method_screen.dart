@@ -25,7 +25,7 @@ class _PaymentMethodScreenState extends State<PaymentMethodScreen> {
         leading: IconButton(
           icon: const Icon(
             Icons.arrow_back_ios_new_rounded,
-            color: Color(0xFF0F172A),
+            color: Color(0xFF263451),
             size: 20,
           ),
           onPressed: () => Get.back(),
