@@ -7,10 +7,7 @@ import Foundation
 
 import audioplayers_darwin
 import connectivity_plus
-<<<<<<< HEAD
-=======
 import device_info_plus
->>>>>>> 7182cf88c4bd61e01521b501dddd604b0764d9e8
 import file_picker
 import file_selector_macos
 import flutter_secure_storage_darwin
@@ -26,10 +23,7 @@ import wakelock_plus
 func RegisterGeneratedPlugins(registry: FlutterPluginRegistry) {
   AudioplayersDarwinPlugin.register(with: registry.registrar(forPlugin: "AudioplayersDarwinPlugin"))
   ConnectivityPlusPlugin.register(with: registry.registrar(forPlugin: "ConnectivityPlusPlugin"))
-<<<<<<< HEAD
-=======
   DeviceInfoPlusMacosPlugin.register(with: registry.registrar(forPlugin: "DeviceInfoPlusMacosPlugin"))
->>>>>>> 7182cf88c4bd61e01521b501dddd604b0764d9e8
   FilePickerPlugin.register(with: registry.registrar(forPlugin: "FilePickerPlugin"))
   FileSelectorPlugin.register(with: registry.registrar(forPlugin: "FileSelectorPlugin"))
   FlutterSecureStorageDarwinPlugin.register(with: registry.registrar(forPlugin: "FlutterSecureStorageDarwinPlugin"))
