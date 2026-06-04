@@ -8,5 +8,7 @@ import '../services/auth_storage_service.dart';
 import '../services/request_queue_service.dart';
 
 Future<void> setupCore() async {
-
+  Get.put(AuthStorageService());
+  Get.put(RequestQueueService());
+  Get.put(ApiClient());
 }
