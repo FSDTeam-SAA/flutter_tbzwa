@@ -187,7 +187,7 @@ class WelcomeSuccessScreen extends StatelessWidget {
                             ),
                           ),
                           child: const Text(
-                            "Next",
+                            "Next!",
                             style: TextStyle(
                               color: Color(0xFFFFFFFF),
                               fontSize: 16,
