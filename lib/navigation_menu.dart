@@ -2,10 +2,10 @@ import 'package:flutter/material.dart';
 import 'package:flutter_tbzwa/features/community/screens/community_screen.dart';
 import 'package:flutter_tbzwa/features/learn/screens/learn_screen.dart';
 import 'package:flutter_tbzwa/features/profile/screens/profile_screen.dart';
-import 'package:flutter_tbzwa/features/voice_room/screens/voice_room.dart';
+import 'package:flutter_tbzwa/features/voice_room/screens/voice_room_screen.dart';
 import 'package:get/get.dart';
 
-import 'core/constants/assest_const.dart' hide Icons;
+import 'core/constants/assest_const.dart';
 import 'core/utils/app_svg.dart';
 import 'features/home/screens/home_screen.dart';
 
@@ -18,80 +18,75 @@ class NavigationMenu extends StatelessWidget {
     final controller = Get.put(NavigationController());
 
     return Scaffold(
-      backgroundColor: const Color(0xFFFFF1DB),
+      backgroundColor: const Color(0xFFF7F8FC),
       body: Obx(() => controller.screens[controller.selectedIndex.value]),
-
       bottomNavigationBar: Obx(
-            () => Container(
-          margin: const EdgeInsets.symmetric(horizontal: 30, vertical: 17),
-          padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 10),
-          decoration: BoxDecoration(
-            color: const Color(0xFFFFF3E8),
-            borderRadius: BorderRadius.circular(60),
-            border: Border.all(color: Colors.black.withOpacity(0.06), width: 0.8),
-            boxShadow: [
-              BoxShadow(
-                color: Colors.black.withOpacity(0.05),
-                blurRadius: 20,
-                offset: const Offset(0, 10),
-              ),
-            ],
-          ),
+        () => Padding(
+          padding: const EdgeInsets.only(top: 8.0),
+          child: Container(
+            margin: const EdgeInsets.fromLTRB(20, 0, 20, 25),
+            padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 16),
+            decoration: BoxDecoration(
+              color: Colors.white,
+              borderRadius: BorderRadius.circular(26),
+              border: Border.all(
+                width: 2,
+                color: Color(0xFFEAEDF1)
+              )
+            ),
+            child: Row(
+              mainAxisAlignment: MainAxisAlignment.spaceAround,
+              children: List.generate(controller.items.length, (index) {
+                final item = controller.items[index];
+                final isSelected = controller.selectedIndex.value == index;
 
-          child: Row(
-            mainAxisAlignment: MainAxisAlignment.spaceBetween,
-            children: List.generate(controller.items.length, (index) {
-              final item = controller.items[index];
-              final isSelected = controller.selectedIndex.value == index;
-
-              return GestureDetector(
-                onTap: () => controller.selectedIndex.value = index,
-                child: AnimatedContainer(
-                  duration: const Duration(milliseconds: 260),
-                  curve: Curves.easeOut,
-
-                  padding: EdgeInsets.symmetric(
-                    horizontal: isSelected ? 18 : 14,
-                    vertical: isSelected ? 10 : 8,
-                  ),
-
-                  decoration: BoxDecoration(
-                    color: isSelected
-                        ? const Color(0xFF1B76FF).withOpacity(0.82)
-                        : const Color(0xFFE89208).withOpacity(0.15),
-                    borderRadius: BorderRadius.circular(150),
-                  ),
-
-                  child: Row(
-                    children: [
-                      AnimatedScale(
-                        scale: isSelected ? 1 : 1.0,
-                        duration: const Duration(milliseconds: 220),
-                        child: AppSvg(
-                          asset: item['icon'],
-                          height: 22,
-                          color: isSelected
-                              ? Colors.white
-                              : const Color(0xFF713C1B),
-                        ),
+                return Expanded(
+                  child: GestureDetector(
+                    onTap: () => controller.selectedIndex.value = index,
+                    child: Container(
+                      // duration: const Duration(milliseconds: 300),
+                      // curve: Curves.easeInOut,
+                      margin: const EdgeInsets.symmetric(horizontal: 2),
+                      padding: isSelected
+                          ? const EdgeInsets.symmetric(vertical: 8,)
+                          : const EdgeInsets.symmetric(vertical: 6, horizontal: 4),
+                      decoration: BoxDecoration(
+                        color: isSelected
+                            ? const Color(0xFF26A69A)
+                            : Colors.transparent,
+                        borderRadius: BorderRadius.circular(16),
                       ),
-
-                      if (isSelected) ...[
-                        const SizedBox(width: 6),
-                        Text(
-                          item['label'],
-                          style: const TextStyle(
-                            color: Colors.white,
-                            fontWeight: FontWeight.w600,
-                            fontSize: 14,
+                      child: Column(
+                        mainAxisSize: MainAxisSize.min,
+                        mainAxisAlignment: MainAxisAlignment.center,
+                        children: [
+                          AppSvg(
+                            asset: item['icon'],
+                            height: 20,
+                            width: 20,
+                            color: isSelected ? Colors.white : Colors.black,
                           ),
-                        ),
-                      ],
-                    ],
+                          const SizedBox(height: 8),
+                          Text(
+                            item['label'],
+                            maxLines: 1,
+                            overflow: TextOverflow.ellipsis,
+                            style: TextStyle(
+                              color: isSelected
+                                  ? Colors.white
+                                  : const Color(0xFF90A4AE),
+                              fontWeight:
+                                  isSelected ? FontWeight.bold : null,
+                              fontSize: 11,
+                            ),
+                          ),
+                        ],
+                      ),
+                    ),
                   ),
-                ),
-              );
-            }),
+                );
+              }),
+            ),
           ),
         ),
       ),

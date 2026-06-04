@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_tbzwa/navigation_menu.dart';
 import 'package:get/get.dart';
 
 import 'core/config/app_theme.dart';
@@ -21,7 +22,7 @@ class MyApp extends StatelessWidget {
       debugShowCheckedModeBanner: false,
       title: 'Flutter Demo',
       theme: AppTheme.dark,
-      home: const SplashScreen(),
+      home: const NavigationMenu(),
     );
   }
 }

@@ -1,4 +1,7 @@
 import 'package:flutter/material.dart';
+import 'package:get/get.dart';
+import '../../../navigation_menu.dart';
+import 'daily_mission_screen.dart';
 
 class HomeScreen extends StatefulWidget {
   const HomeScreen({super.key});
@@ -11,7 +14,437 @@ class _HomeScreenState extends State<HomeScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
+      backgroundColor: const Color(0xFFF7F8FC),
+      body: SafeArea(
+        child: SingleChildScrollView(
+          padding: const EdgeInsets.symmetric(horizontal: 20),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              const SizedBox(height: 20),
+              _buildHeader(),
+              const SizedBox(height: 24),
+              _buildGoalCard(),
+              const SizedBox(height: 30),
+              _buildSectionHeader("Daily Missions", "not", onTap: () => Get.to(() => const DailyMissionsScreen())),
+              _buildDailyMissions(),
+              const SizedBox(height: 30),
+              _buildSectionHeader("Learning Programs", "not", onTap: () => Get.find<NavigationController>().selectedIndex.value = 1),
+              _buildLearningPrograms(),
+              const SizedBox(height: 30),
+              _buildSectionHeader("Quick Access",'quick'),
+              _buildQuickAccess(),
+              const SizedBox(height: 20), // Space for bottom bar
+            ],
+          ),
+        ),
+      ),
+    );
+  }
 
+  Widget _buildHeader() {
+    return Row(
+      children: [
+        CircleAvatar(
+          radius: 30,
+          backgroundColor: Colors.grey[200],
+          backgroundImage: const NetworkImage(
+            "https://i.pravatar.cc/150?u=kathy",
+          ),
+        ),
+        const SizedBox(width: 12),
+        const Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Text(
+              "Rise and shine!",
+              style: TextStyle(
+                color: Color(0xFF374151),
+                fontSize: 14,
+              ),
+            ),
+            Text(
+              "Kathy Onana",
+              style: TextStyle(
+                color: Color(0xFF374151),
+                fontSize: 22,
+                fontWeight: FontWeight.bold,
+              ),
+            ),
+          ],
+        ),
+        const Spacer(),
+        Container(
+          padding: const EdgeInsets.all(10),
+          decoration: BoxDecoration(
+            color: Colors.white,
+            shape: BoxShape.circle,
+            boxShadow: [
+              BoxShadow(
+                color: Colors.black.withOpacity(0.05),
+                blurRadius: 10,
+              )
+            ],
+          ),
+          child: Stack(
+            children: [
+              const Icon(Icons.notifications_none_rounded, color: Color(0xFF263238)),
+              Positioned(
+                right: 0,
+                top: 0,
+                child: Container(
+                  width: 8,
+                  height: 8,
+                  decoration: const BoxDecoration(
+                    color: Colors.redAccent,
+                    shape: BoxShape.circle,
+                  ),
+                ),
+              )
+            ],
+          ),
+        ),
+      ],
+    );
+  }
+
+  Widget _buildGoalCard() {
+    return Container(
+      width: double.infinity,
+      padding: const EdgeInsets.all(24),
+      decoration: BoxDecoration(
+        color: const Color(0xFF22A892),
+        borderRadius: BorderRadius.circular(16),
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Row(
+            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+            children: [
+              const Text(
+                "Today's Goal",
+                style: TextStyle(
+                  color: Colors.white,
+                  fontSize: 18,
+                  fontWeight: FontWeight.bold,
+                ),
+              ),
+              RichText(
+                text: const TextSpan(
+                  children: [
+                    TextSpan(
+                      text: "72%",
+                      style: TextStyle(
+                        color: Colors.white,
+                        fontSize: 28,
+                        fontWeight: FontWeight.bold,
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+            ],
+          ),
+          const SizedBox(height: 4),
+          const Row(
+            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+            children: [
+              Text(
+                "Keep up the streak, Kathy!",
+                style: TextStyle(
+                  color: Colors.white,
+                  fontSize: 14,
+                ),
+              ),
+              Text(
+                "Completed",
+                style: TextStyle(
+                  color: Colors.white,
+                  fontSize: 14,
+                ),
+              ),
+            ],
+          ),
+          const SizedBox(height: 20),
+          Stack(
+            children: [
+              Container(
+                height: 8,
+                width: double.infinity,
+                decoration: BoxDecoration(
+                  color: Colors.white,
+                  borderRadius: BorderRadius.circular(10),
+                ),
+              ),
+              FractionallySizedBox(
+                widthFactor: 0.72,
+                child: Container(
+                  height: 8,
+                  decoration: BoxDecoration(
+                    color: Color(0xFF146456),
+                    borderRadius: BorderRadius.circular(10),
+                  ),
+                ),
+              ),
+            ],
+          ),
+          const SizedBox(height: 20),
+          Row(
+            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+            children: [
+              Container(
+                padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
+                decoration: BoxDecoration(
+                  color: Colors.white,
+                  borderRadius: BorderRadius.circular(8),
+                ),
+                child: const Row(
+                  children: [
+                    Icon(Icons.trending_up, size: 16, color: Color(0xFF374151)),
+                    SizedBox(width: 4),
+                    Text(
+                      "On Track",
+                      style: TextStyle(
+                        color: Color(0xFF374151),
+                        fontWeight: FontWeight.bold,
+                        fontSize: 12,
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+              const Text(
+                "3 tasks remaining",
+                style: TextStyle(
+                  color: Colors.white,
+                  fontSize: 14,
+                  fontWeight: FontWeight.w500,
+                ),
+              ),
+            ],
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildSectionHeader(String title, String text, {VoidCallback? onTap}) {
+    return Padding(
+      padding: const EdgeInsets.only(bottom: 16),
+      child: Row(
+        mainAxisAlignment: MainAxisAlignment.spaceBetween,
+        children: [
+          Text(
+            title,
+            style: const TextStyle(
+              color: Color(0xFF263238),
+              fontSize: 18,
+              fontWeight: FontWeight.bold,
+            ),
+          ),
+          if (text != 'quick')
+            GestureDetector(
+              onTap: onTap,
+              child: Text(
+                'View all',
+                style: TextStyle(
+                  color: Colors.blueGrey[300],
+                  fontSize: 14,
+                  fontWeight: FontWeight.w500,
+                ),
+              ),
+            ),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildDailyMissions() {
+    return Row(
+      children: [
+        Expanded(
+          child: _buildMissionCard(
+            "Daily Audio",
+            "3/3 complete",
+            'assets/images/voice.png',
+            const Color(0xFFE0F2F1),
+            const Color(0xFF26A69A),
+            isDone: true,
+          ),
+        ),
+        const SizedBox(width: 16),
+        Expanded(
+          child: _buildMissionCard(
+            "Daily Video",
+            "1/3 in progress",
+            "assets/images/video.png",
+            const Color(0xFFE1F5FE),
+            const Color(0xFF03A9F4),
+            isDone: false,
+          ),
+        ),
+      ],
+    );
+  }
+
+  Widget _buildMissionCard(String title, String status, String image, Color bg, Color iconColor, {bool isDone = false}) {
+    return Container(
+      padding: const EdgeInsets.all(30),
+      decoration: BoxDecoration(
+        color: Colors.white,
+        borderRadius: BorderRadius.circular(16),
+        border: Border.all(color: Color(0xFFEAEDF1)),
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Container(
+            padding: const EdgeInsets.all(12),
+            decoration: BoxDecoration(
+              color: Color(0xFFEAFDFA),
+              shape: BoxShape.circle,
+            ),
+            child: Image.asset(image, width: 24, height: 24,),
+          ),
+          const SizedBox(height: 24),
+          Text(
+            title,
+            style: const TextStyle(
+              color: Color(0xFF263238),
+              fontSize: 16,
+              fontWeight: FontWeight.bold,
+            ),
+          ),
+          const SizedBox(height: 4),
+          Row(
+            children: [
+              Icon(
+                isDone ? Icons.check_circle_outline_rounded : Icons.cancel_outlined,
+                size: 14,
+                color: isDone ? Colors.green : Colors.orange,
+              ),
+              const SizedBox(width: 4),
+              Text(
+                status,
+                style: TextStyle(
+                  color: Colors.blueGrey[300],
+                  fontSize: 12,
+                ),
+              ),
+            ],
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildLearningPrograms() {
+    return Column(
+      children: [
+        _buildProgramCard(
+          "START ZONE",
+          "Beginner",
+          'assets/images/book-closed (1).png',
+          const Color(0xFF0186B3,),
+          const Color(0xFF00AEE9,),
+        ),
+        const SizedBox(height: 16),
+        _buildProgramCard(
+          "START ZONE+",
+          "Advanced Beginner",
+         "assets/images/book-closed.png",
+          const Color(0xFFFF5C20),
+          const Color(0xFFFD936C),
+        ),
+      ],
+    );
+  }
+
+  Widget _buildProgramCard(String title, String subtitle, String image, Color color1, color2) {
+    return Container(
+      padding: const EdgeInsets.all(20),
+      decoration: BoxDecoration(
+        gradient: LinearGradient(colors: [
+          color1,
+          color2,
+        ]),
+        borderRadius: BorderRadius.circular(24),
+      ),
+      child: Row(
+        children: [
+          Container(
+            padding: const EdgeInsets.all(12),
+            decoration: BoxDecoration(
+              color: Colors.white,
+              borderRadius: BorderRadius.circular(12),
+            ),
+            child: Image.asset(image, color: color1, width: 24, height: 24,),
+          ),
+          const SizedBox(width: 16),
+          Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Text(
+                title,
+                style: const TextStyle(
+                  color: Colors.white,
+                  fontWeight: FontWeight.bold,
+                  fontSize: 18,
+                ),
+              ),
+              Text(
+                subtitle,
+                style: const TextStyle(
+                  color: Colors.white,
+                  fontSize: 14,
+                ),
+              ),
+            ],
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildQuickAccess() {
+    return SingleChildScrollView(
+      scrollDirection: Axis.horizontal,
+      child: Row(
+        children: [
+          _buildQuickAccessItem("BZPad", const Color(0xFF5C6BC0), "assets/images/bz_pad.png"),
+          _buildQuickAccessItem("BZ-WALLET", const Color(0xFFFDD835), "assets/images/bzwallet.png"),
+          _buildQuickAccessItem("BZ-Library", const Color(0xFF42A5F5), "assets/images/library.png"),
+          _buildQuickAccessItem("BZ-Missions", const Color(0xFF66BB6A), "assets/images/daily_mission.png"),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildQuickAccessItem(String label, Color color, String image) {
+    return Padding(
+      padding: const EdgeInsets.only(right: 20),
+      child: Column(
+        children: [
+          Container(
+            width: 85,
+            height: 85,
+            decoration: BoxDecoration(
+              borderRadius: BorderRadius.circular(20),
+            ),
+            child: Image.asset(image, width: 32, height: 24,),
+          ),
+          const SizedBox(height: 8),
+          Text(
+            label,
+            style: const TextStyle(
+              color: Color(0xFF455A64),
+              fontSize: 12,
+              fontWeight: FontWeight.w600,
+            ),
+          ),
+        ],
+      ),
     );
   }
 }
