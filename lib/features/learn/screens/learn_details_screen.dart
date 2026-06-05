@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
+import 'learn_chat_screen.dart';
 
 class LearnDetailsScreen extends StatelessWidget {
   final String title;
@@ -36,48 +37,90 @@ class LearnDetailsScreen extends StatelessWidget {
             child: ListView(
               padding: const EdgeInsets.symmetric(horizontal: 20),
               children: [
-                _buildBatchCard(
-                  "Early Morning Batch",
-                  "Kathy Onana : Good morning everyone! Today...",
-                  "09:00 AM",
-                  3,
-                  hasBorder: true,
-                  imageUrl: "https://i.pravatar.cc/150?u=1",
+                GestureDetector(
+                  onTap: () => Get.to(() => LearnChatScreen(
+                    batchName: "$title - Early Morning Batch",
+                    lastMessage: "Kathy Onana : Good morning everyone! Today...",
+                    imageUrl: "https://i.pravatar.cc/150?u=1",
+                  )),
+                  child: _buildBatchCard(
+                    "Early Morning Batch",
+                    "Kathy Onana : Good morning everyone! Today...",
+                    "09:00 AM",
+                    3,
+                    hasBorder: true,
+                    imageUrl: "https://i.pravatar.cc/150?u=1",
+                  ),
                 ),
-                _buildBatchCard(
-                  "Morning Batch",
-                  "Kathy Onana : Good morning everyone! Today...",
-                  "09:00 AM",
-                  3,
-                  imageUrl: "https://i.pravatar.cc/150?u=2",
+                GestureDetector(
+                  onTap: () => Get.to(() => LearnChatScreen(
+                    batchName: "$title - Morning Batch",
+                    lastMessage: "Kathy Onana : Good morning everyone! Today...",
+                    imageUrl: "https://i.pravatar.cc/150?u=2",
+                  )),
+                  child: _buildBatchCard(
+                    "Morning Batch",
+                    "Kathy Onana : Good morning everyone! Today...",
+                    "09:00 AM",
+                    3,
+                    imageUrl: "https://i.pravatar.cc/150?u=2",
+                  ),
                 ),
-                _buildBatchCard(
-                  "Noon Batch",
-                  "Kathy Onana : Hello there, I hope you're doing...",
-                  "09:00 AM",
-                  3,
-                  imageUrl: "https://i.pravatar.cc/150?u=3",
+                GestureDetector(
+                  onTap: () => Get.to(() => LearnChatScreen(
+                    batchName: "$title - Noon Batch",
+                    lastMessage: "Kathy Onana : Hello there, I hope you're doing...",
+                    imageUrl: "https://i.pravatar.cc/150?u=3",
+                  )),
+                  child: _buildBatchCard(
+                    "Noon Batch",
+                    "Kathy Onana : Hello there, I hope you're doing...",
+                    "09:00 AM",
+                    3,
+                    imageUrl: "https://i.pravatar.cc/150?u=3",
+                  ),
                 ),
-                _buildBatchCard(
-                  "Afternoon Batch",
-                  "Kathy Onana : Hello there, I hope you're doing...",
-                  "09:00 AM",
-                  3,
-                  imageUrl: "https://i.pravatar.cc/150?u=4",
+                GestureDetector(
+                  onTap: () => Get.to(() => LearnChatScreen(
+                    batchName: "$title - Afternoon Batch",
+                    lastMessage: "Kathy Onana : Hello there, I hope you're doing...",
+                    imageUrl: "https://i.pravatar.cc/150?u=4",
+                  )),
+                  child: _buildBatchCard(
+                    "Afternoon Batch",
+                    "Kathy Onana : Hello there, I hope you're doing...",
+                    "09:00 AM",
+                    3,
+                    imageUrl: "https://i.pravatar.cc/150?u=4",
+                  ),
                 ),
-                _buildBatchCard(
-                  "Evening Batch",
-                  "Kathy Onana : Hello there, I hope you're doing...",
-                  "09:00 AM",
-                  3,
-                  imageUrl: "https://i.pravatar.cc/150?u=5",
+                GestureDetector(
+                  onTap: () => Get.to(() => LearnChatScreen(
+                    batchName: "$title - Evening Batch",
+                    lastMessage: "Kathy Onana : Hello there, I hope you're doing...",
+                    imageUrl: "https://i.pravatar.cc/150?u=5",
+                  )),
+                  child: _buildBatchCard(
+                    "Evening Batch",
+                    "Kathy Onana : Hello there, I hope you're doing...",
+                    "09:00 AM",
+                    3,
+                    imageUrl: "https://i.pravatar.cc/150?u=5",
+                  ),
                 ),
-                _buildBatchCard(
-                  "Night Batch",
-                   "Kathy Onana : Hello there, I hope you're doing...",
-                  "09:00 AM",
-                  3,
-                  imageUrl: "https://i.pravatar.cc/150?u=6",
+                GestureDetector(
+                  onTap: () => Get.to(() => LearnChatScreen(
+                    batchName: "$title - Night Batch",
+                    lastMessage: "Kathy Onana : Hello there, I hope you're doing...",
+                    imageUrl: "https://i.pravatar.cc/150?u=6",
+                  )),
+                  child: _buildBatchCard(
+                    "Night Batch",
+                    "Kathy Onana : Hello there, I hope you're doing...",
+                    "09:00 AM",
+                    3,
+                    imageUrl: "https://i.pravatar.cc/150?u=6",
+                  ),
                 ),
                 const SizedBox(height: 20),
               ],
