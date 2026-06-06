@@ -1,5 +1,6 @@
 import 'package:get/get.dart';
 
+import '../../../navbar_menu.dart';
 import '../../payment/screens/buy_plan_screen.dart';
 
 class RoleSelectionController extends GetxController {
@@ -12,6 +13,6 @@ class RoleSelectionController extends GetxController {
   }
 
   void proceed() {
-    Get.to(() => const BuyPlanScreen());
+    Get.to(() => const NavbarMenu());
   }
 }
