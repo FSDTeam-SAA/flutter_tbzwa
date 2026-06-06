@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 
 import '../../../core/common/widgets/app_scaffold.dart';
+import 'card_payment_screen.dart';
 
 class PaymentMethodScreen extends StatefulWidget {
   const PaymentMethodScreen({super.key});
@@ -24,7 +25,7 @@ class _PaymentMethodScreenState extends State<PaymentMethodScreen> {
         leading: IconButton(
           icon: const Icon(
             Icons.arrow_back_ios_new_rounded,
-            color: Color(0xFF0F172A),
+            color: Color(0xFF263451),
             size: 20,
           ),
           onPressed: () => Get.back(),
@@ -162,7 +163,7 @@ class _PaymentMethodScreenState extends State<PaymentMethodScreen> {
                           subtitle:
                               "Pay securely with your credit or debit card",
                           onTap: () {
-                            // Proceed with Visa payment
+                            Get.to(() => const CardPaymentScreen());
                           },
                         ),
                         const SizedBox(height: 16),
@@ -177,7 +178,7 @@ class _PaymentMethodScreenState extends State<PaymentMethodScreen> {
                           subtitle:
                               "Pay securely with your credit or debit card",
                           onTap: () {
-                            // Proceed with Mastercard payment
+                            Get.to(() => const CardPaymentScreen());
                           },
                         ),
                         const SizedBox(height: 16),

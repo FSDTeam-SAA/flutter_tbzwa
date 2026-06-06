@@ -16,7 +16,7 @@ class FluencyPlusScreen extends StatelessWidget {
         leading: IconButton(
           icon: const Icon(
             Icons.arrow_back_ios_new_rounded,
-            color: Color(0xFF0F172A),
+            color: Color(0xFF94A3B8),
             size: 20,
           ),
           onPressed: () => Get.back(),
@@ -25,8 +25,8 @@ class FluencyPlusScreen extends StatelessWidget {
         title: const Text(
           "FLUENCY+",
           style: TextStyle(
-            color: Color(0xFF0F172A),
-            fontSize: 18,
+            color: Color(0xFF374151),
+            fontSize: 20,
             fontWeight: FontWeight.w700,
           ),
         ),
@@ -39,17 +39,17 @@ class FluencyPlusScreen extends StatelessWidget {
             children: [
               _buildFluencyCard(
                 title: "FLUENCY+ P1",
-                headerColor: const Color(0xFF045C22), // Dark Green
+                headerColor: const Color(0xFF00570E), // Dark Green
               ),
-              const SizedBox(height: 20),
+              const SizedBox(height: 24),
               _buildFluencyCard(
                 title: "FLUENCY+ P2",
-                headerColor: const Color(0xFF028A25), // Medium Green
+                headerColor: const Color(0xFF008816), // Medium Green
               ),
-              const SizedBox(height: 20),
+              const SizedBox(height: 24),
               _buildFluencyCard(
                 title: "FLUENCY+ P3",
-                headerColor: const Color(0xFF00C621), // Vibrant Green
+                headerColor: const Color(0xFF00BA1E), // Vibrant Green
               ),
             ],
           ),
@@ -97,16 +97,16 @@ class FluencyPlusScreen extends StatelessWidget {
                     Text(
                       title,
                       style: const TextStyle(
-                        color: Colors.white,
-                        fontSize: 18,
-                        fontWeight: FontWeight.w700,
+                        color: Color(0xFFFFFFFF),
+                        fontSize: 16,
+                        fontWeight: FontWeight.w600,
                       ),
                     ),
                     const SizedBox(height: 4),
                     Text(
                       "Coming soon",
                       style: TextStyle(
-                        color: Colors.white.withAlpha(200),
+                       color: Color(0xFFFFFFFF),
                         fontSize: 12,
                         fontWeight: FontWeight.w400,
                       ),
@@ -130,8 +130,8 @@ class FluencyPlusScreen extends StatelessWidget {
                 const Text(
                   "Coming Soon",
                   style: TextStyle(
-                    color: Color(0xFF475569),
-                    fontSize: 13,
+                    color: Color(0xFF374151),
+                    fontSize: 12,
                     fontWeight: FontWeight.w500,
                   ),
                 ),
@@ -140,16 +140,16 @@ class FluencyPlusScreen extends StatelessWidget {
                   width: double.infinity,
                   padding: const EdgeInsets.symmetric(vertical: 14),
                   decoration: BoxDecoration(
-                    color: const Color(0xFFBFC4C9), // Grey button in design
-                    borderRadius: BorderRadius.circular(12),
+                    color: const Color(0xFFB1B1B7), // Grey button in design
+                    borderRadius: BorderRadius.circular(8),
                   ),
                   alignment: Alignment.center,
                   child: const Text(
                     "Coming Soon",
                     style: TextStyle(
-                      color: Color(0xFF475569),
-                      fontSize: 14,
-                      fontWeight: FontWeight.w700,
+                      color: Color(0xFF374151),
+                      fontSize: 12,
+                      fontWeight: FontWeight.w500,
                     ),
                   ),
                 ),

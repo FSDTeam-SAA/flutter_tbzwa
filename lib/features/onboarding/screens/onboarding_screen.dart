@@ -219,7 +219,7 @@ class OnboardingScreen extends StatelessWidget {
                         Center(
                           child: PrimaryButton(
                             width: 358,
-                            height: 48,
+                            // height: 48,
                             text: 'Get Started',
                             onSimplePressed: controller.nextPage,
                           ),

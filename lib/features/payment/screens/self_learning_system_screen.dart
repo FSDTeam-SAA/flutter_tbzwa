@@ -17,7 +17,7 @@ class SelfLearningSystemScreen extends StatelessWidget {
         leading: IconButton(
           icon: const Icon(
             Icons.arrow_back_ios_new_rounded,
-            color: Color(0xFF0F172A),
+            color: Color(0xFF94A3B8),
             size: 20,
           ),
           onPressed: () => Get.back(),
@@ -28,7 +28,7 @@ class SelfLearningSystemScreen extends StatelessWidget {
           style: TextStyle(
             color: Color(0xFF374151),
             fontSize: 20,
-            fontWeight: FontWeight.bold,
+            fontWeight: FontWeight.w700,
           ),
         ),
       ),
@@ -61,6 +61,7 @@ class SelfLearningSystemScreen extends StatelessWidget {
                 cardColor: const Color(0xFF0186B3),
                 buttonBgColor: const Color(0xFFEEEEFD),
                 buttonTextColor: const Color(0xFF0186B3),
+                bordercolor: const Color(0xFF02A5DD),
               ),
               const SizedBox(height: 32),
 
@@ -77,6 +78,7 @@ class SelfLearningSystemScreen extends StatelessWidget {
                 cardColor: const Color(0xFFFA8F45),
                 buttonBgColor: const Color(0xFFFEF1E8),
                 buttonTextColor: const Color(0xFFF97316),
+                bordercolor: const Color(0xFFFA8F45),
               ),
               const SizedBox(height: 32),
 
@@ -94,6 +96,7 @@ class SelfLearningSystemScreen extends StatelessWidget {
                 cardColor: const Color(0xFF0A9A50),
                 buttonBgColor: const Color(0xFFE9F9EF),
                 buttonTextColor: const Color(0xFF06783D),
+                bordercolor: const Color(0xFF0A9A50),
                 onTap: () => Get.to(() => const FluencyPlusScreen()),
               ),
               const SizedBox(height: 32),
@@ -111,6 +114,7 @@ class SelfLearningSystemScreen extends StatelessWidget {
                 cardColor: const Color(0xFF6060FD),
                 buttonBgColor: const Color(0xFFFFFFFF),
                 buttonTextColor: const Color(0xFF5151EF),
+                bordercolor: const Color(0xFF6060FD),
               ),
             ],
           ),
@@ -127,8 +131,13 @@ class SelfLearningSystemScreen extends StatelessWidget {
     required Color cardColor,
     required Color buttonBgColor,
     required Color buttonTextColor,
+    required Color bordercolor,
     VoidCallback? onTap,
   }) {
+    final cardBorderColor = cardColor == bordercolor
+        ? Colors.white.withOpacity(0.30)
+        : bordercolor;
+
     return GestureDetector(
       onTap: onTap,
       child: Container(
@@ -137,6 +146,7 @@ class SelfLearningSystemScreen extends StatelessWidget {
         decoration: BoxDecoration(
           color: cardColor,
           borderRadius: BorderRadius.circular(24),
+          border: Border.all(color: cardBorderColor, width: 1.4),
           boxShadow: [
             BoxShadow(
               color: cardColor.withAlpha(51), // 20% opacity
@@ -152,21 +162,28 @@ class SelfLearningSystemScreen extends StatelessWidget {
             Text(
               title,
               style: const TextStyle(
-                color: Colors.white,
-                fontSize: 22,
-                fontWeight: FontWeight.w800,
-                letterSpacing: 0.5,
+                color: Color(0xFFFFFFFF),
+                fontSize: 24,
+                fontWeight: FontWeight.w700,
+                // letterSpacing: 0.5,
               ),
             ),
-            const SizedBox(height: 4),
+            const SizedBox(height: 12),
             // Subtitle
             Text(
               subtitle,
               style: TextStyle(
-                color: Colors.white.withAlpha(217), // 85% opacity
+                color: Color(0xFFFFFFFF), // 85% opacity
                 fontSize: 14,
-                fontWeight: FontWeight.w500,
+                fontWeight: FontWeight.w400,
               ),
+            ),
+            const SizedBox(height: 16),
+            Divider(
+              color: cardColor == bordercolor
+                  ? Colors.white.withOpacity(0.35)
+                  : bordercolor,
+              thickness: 1.2,
             ),
             const SizedBox(height: 20),
             // Bullet points
@@ -179,7 +196,7 @@ class SelfLearningSystemScreen extends StatelessWidget {
                     const Text(
                       "• ",
                       style: TextStyle(
-                        color: Colors.white,
+                        color: Color(0xFFFFFFFF),
                         fontSize: 15,
                         fontWeight: FontWeight.bold,
                       ),
@@ -188,9 +205,9 @@ class SelfLearningSystemScreen extends StatelessWidget {
                       child: Text(
                         bullet,
                         style: TextStyle(
-                          color: Colors.white.withAlpha(230), // 90% opacity
-                          fontSize: 14,
-                          fontWeight: FontWeight.w500,
+                          color: Color(0xFFFFFFFF), // 90% opacity
+                          fontSize: 16,
+                          fontWeight: FontWeight.w600,
                         ),
                       ),
                     ),
@@ -198,7 +215,7 @@ class SelfLearningSystemScreen extends StatelessWidget {
                 ),
               ),
             ),
-            const SizedBox(height: 20),
+            const SizedBox(height: 32),
             // Bottom area: Price and "Coming Soon" button
             Row(
               mainAxisAlignment: MainAxisAlignment.spaceBetween,
@@ -211,9 +228,9 @@ class SelfLearningSystemScreen extends StatelessWidget {
                       Text(
                         price,
                         style: const TextStyle(
-                          color: Colors.white,
-                          fontSize: 22,
-                          fontWeight: FontWeight.w800,
+                          color: Color(0xFFFFFFFF),
+                          fontSize: 24,
+                          fontWeight: FontWeight.w500,
                         ),
                       ),
                       const SizedBox(width: 4),
@@ -221,9 +238,9 @@ class SelfLearningSystemScreen extends StatelessWidget {
                         child: Text(
                           "• Lifetime access",
                           style: TextStyle(
-                            color: Colors.white.withAlpha(217), // 85% opacity
-                            fontSize: 11,
-                            fontWeight: FontWeight.w400,
+                            color: Color(0xFFFFFFFF), // 85% opacity
+                            fontSize: 12,
+                            fontWeight: FontWeight.w500,
                           ),
                           maxLines: 1,
                           overflow: TextOverflow.ellipsis,
@@ -234,20 +251,22 @@ class SelfLearningSystemScreen extends StatelessWidget {
                 ),
                 const SizedBox(width: 8),
                 Container(
-                  padding: const EdgeInsets.symmetric(
-                    horizontal: 14,
-                    vertical: 8,
+                  padding: const EdgeInsets.only(
+                    top: 12,
+                    right: 24,
+                    bottom: 12,
+                    left: 24,
                   ),
                   decoration: BoxDecoration(
                     color: buttonBgColor,
-                    borderRadius: BorderRadius.circular(20),
+                    borderRadius: BorderRadius.circular(12),
                   ),
                   child: Text(
                     "Coming Soon",
                     style: TextStyle(
                       color: buttonTextColor,
-                      fontSize: 13,
-                      fontWeight: FontWeight.bold,
+                      fontSize: 16,
+                      fontWeight: FontWeight.w400,
                     ),
                   ),
                 ),
