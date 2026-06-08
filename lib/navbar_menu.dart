@@ -3,6 +3,7 @@ import 'package:flutter_tbzwa/features/community/screens/community_screen.dart';
 import 'package:flutter_tbzwa/features/learn/screens/learn_screen.dart';
 import 'package:flutter_tbzwa/features/profile/screens/profile_screen.dart';
 import 'package:flutter_tbzwa/features/subcribers_flow/subscriber_community_screen.dart';
+import 'package:flutter_tbzwa/features/subcribers_flow/subscriber_profile_screen.dart';
 import 'package:flutter_tbzwa/features/voice_room/screens/voice_room_screen.dart';
 import 'package:get/get.dart';
 
@@ -112,6 +113,6 @@ class NavigationController extends GetxController {
     LearnScreen(),
     SubscriberCommunityScreen(),
     VoiceRoom(),
-    ProfileScreen()
+    SubscriberProfileScreen()
   ];
 }

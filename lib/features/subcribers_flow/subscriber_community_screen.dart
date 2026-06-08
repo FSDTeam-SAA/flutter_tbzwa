@@ -8,8 +8,7 @@ class SubscriberCommunityScreen extends StatefulWidget {
       _SubscriberCommunityScreenState();
 }
 
-class _SubscriberCommunityScreenState
-    extends State<SubscriberCommunityScreen> {
+class _SubscriberCommunityScreenState extends State<SubscriberCommunityScreen> {
   int _selectedTab = 0; // 0 = Friends, 1 = Voice, 2 = Video room
   bool _translationEnabled = false;
 
@@ -77,10 +76,9 @@ class _SubscriberCommunityScreenState
                       ),
                     )
                   : _selectedTab == 1
-                      ? _buildVoiceTab()
-                      : _buildLiveTab(),
+                  ? _buildVoiceTab()
+                  : _buildLiveTab(),
             ),
-
           ],
         ),
       ),
@@ -104,10 +102,7 @@ class _SubscriberCommunityScreenState
               ),
               children: [
                 TextSpan(text: "TALK/"),
-                TextSpan(
-                  text: "'BZ/",
-                  style: TextStyle(color: Color(0xFF4F5CD1)),
-                ),
+                TextSpan(text: "'BZ/"),
               ],
             ),
           ),
@@ -143,24 +138,31 @@ class _SubscriberCommunityScreenState
             count: '12/20',
             isPro: true,
           ),
-          //const SizedBox(height: 20),
 
+          //const SizedBox(height: 20),
           Padding(
             padding: const EdgeInsets.all(18.0),
-            child: ElevatedButton(onPressed: (){}, style: ElevatedButton.styleFrom(
-              backgroundColor: Color(0xFF00A63E),
-              shape: RoundedRectangleBorder(
-                borderRadius: BorderRadius.circular(8), // Change radius here
+            child: ElevatedButton(
+              onPressed: () {},
+              style: ElevatedButton.styleFrom(
+                backgroundColor: Color(0xFF00A63E),
+                shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(8), // Change radius here
+                ),
               ),
-            ), child: Row(
-              mainAxisAlignment: MainAxisAlignment.center,
-              children: [
-                Icon(Icons.person_add_alt, color: Colors.white,),
-                SizedBox(width: 10,),
-                Text('Create Voice Rooms', style: TextStyle(color: Colors.white),),
-              ],
-            )),
-          )
+              child: Row(
+                mainAxisAlignment: MainAxisAlignment.center,
+                children: [
+                  Icon(Icons.person_add_alt, color: Colors.white),
+                  SizedBox(width: 10),
+                  Text(
+                    'Create Voice Rooms',
+                    style: TextStyle(color: Colors.white),
+                  ),
+                ],
+              ),
+            ),
+          ),
         ],
       ),
     );
@@ -179,8 +181,11 @@ class _SubscriberCommunityScreenState
         children: [
           Row(
             children: [
-              const Icon(Icons.workspace_premium_rounded,
-                  color: Colors.white, size: 20),
+              const Icon(
+                Icons.workspace_premium_rounded,
+                color: Colors.white,
+                size: 20,
+              ),
               const SizedBox(width: 8),
               const Text(
                 'IMMERSION++ Exclusive',
@@ -205,12 +210,14 @@ class _SubscriberCommunityScreenState
               foregroundColor: Color(0xFF655EFF),
               backgroundColor: Colors.white,
               shape: RoundedRectangleBorder(
-                  borderRadius: BorderRadius.circular(10)),
-              padding:
-                  const EdgeInsets.symmetric(horizontal: 20, vertical: 10),
+                borderRadius: BorderRadius.circular(10),
+              ),
+              padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 10),
             ),
-            child: const Text('Upgrade Now',
-                style: TextStyle(fontWeight: FontWeight.bold)),
+            child: const Text(
+              'Upgrade Now',
+              style: TextStyle(fontWeight: FontWeight.bold),
+            ),
           ),
         ],
       ),
@@ -265,22 +272,35 @@ class _SubscriberCommunityScreenState
               ),
               if (isPro)
                 Container(
-                  padding:
-                      const EdgeInsets.symmetric(horizontal: 14, vertical: 6),
+                  padding: const EdgeInsets.symmetric(
+                    horizontal: 14,
+                    vertical: 6,
+                  ),
                   decoration: BoxDecoration(
-                    gradient: LinearGradient(colors: [Color(0xFFFFAE00), Color(0xFFDB9600)], begin: AlignmentGeometry.topCenter, end: AlignmentGeometry.bottomCenter) ,
+                    gradient: LinearGradient(
+                      colors: [Color(0xFFFFAE00), Color(0xFFDB9600)],
+                      begin: AlignmentGeometry.topCenter,
+                      end: AlignmentGeometry.bottomCenter,
+                    ),
                     borderRadius: BorderRadius.circular(8),
                   ),
                   child: Row(
                     mainAxisSize: MainAxisSize.min,
                     children: [
-                      Image.asset('assets/images/crown.png',width: 24, height: 24,),
+                      Image.asset(
+                        'assets/images/crown.png',
+                        width: 24,
+                        height: 24,
+                      ),
                       const SizedBox(width: 4),
-                      const Text('PRO',
-                          style: TextStyle(
-                              color: Colors.white,
-                              fontWeight: FontWeight.bold,
-                              fontSize: 13)),
+                      const Text(
+                        'PRO',
+                        style: TextStyle(
+                          color: Colors.white,
+                          fontWeight: FontWeight.bold,
+                          fontSize: 13,
+                        ),
+                      ),
                     ],
                   ),
                 ),
@@ -293,21 +313,29 @@ class _SubscriberCommunityScreenState
               CircleAvatar(
                 radius: 22,
                 backgroundImage: const NetworkImage(
-                    'https://i.pravatar.cc/150?u=david'),
+                  'https://i.pravatar.cc/150?u=david',
+                ),
                 backgroundColor: const Color(0xFFE8EAF0),
               ),
               const SizedBox(width: 10),
               Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  Text(hostName,
-                      style: const TextStyle(
-                          color: Color(0xFF1E293B),
-                          fontWeight: FontWeight.bold,
-                          fontSize: 14)),
-                  Text(hostSubtitle,
-                      style: const TextStyle(
-                          color: Color(0xFF8493AC), fontSize: 12)),
+                  Text(
+                    hostName,
+                    style: const TextStyle(
+                      color: Color(0xFF1E293B),
+                      fontWeight: FontWeight.bold,
+                      fontSize: 14,
+                    ),
+                  ),
+                  Text(
+                    hostSubtitle,
+                    style: const TextStyle(
+                      color: Color(0xFF8493AC),
+                      fontSize: 12,
+                    ),
+                  ),
                 ],
               ),
             ],
@@ -330,8 +358,7 @@ class _SubscriberCommunityScreenState
                         children: [
                           CircleAvatar(
                             radius: 24,
-                            backgroundImage:
-                                NetworkImage(avatarUrls[i]),
+                            backgroundImage: NetworkImage(avatarUrls[i]),
                             backgroundColor: const Color(0xFFE8EAF0),
                           ),
                           Positioned(
@@ -346,12 +373,12 @@ class _SubscriberCommunityScreenState
                                     : const Color(0xFF22C55E),
                                 shape: BoxShape.circle,
                                 border: Border.all(
-                                    color: Colors.white, width: 1.5),
+                                  color: Colors.white,
+                                  width: 1.5,
+                                ),
                               ),
                               child: Icon(
-                                isMuted[i]
-                                    ? Icons.mic_off
-                                    : Icons.mic,
+                                isMuted[i] ? Icons.mic_off : Icons.mic,
                                 size: 10,
                                 color: Colors.white,
                               ),
@@ -386,40 +413,56 @@ class _SubscriberCommunityScreenState
           // Bottom row: count + language + join
           Row(
             children: [
-              const Icon(Icons.people_outline,
-                  size: 16, color: Color(0xFF000000)),
+              const Icon(
+                Icons.people_outline,
+                size: 16,
+                color: Color(0xFF000000),
+              ),
               const SizedBox(width: 4),
-              Text(count,
-                  style: const TextStyle(
-                      color: Color(0xFF94A3B8), fontSize: 13)),
+              Text(
+                count,
+                style: const TextStyle(color: Color(0xFF94A3B8), fontSize: 13),
+              ),
               const SizedBox(width: 10),
               Container(
                 padding: const EdgeInsets.symmetric(
-                    horizontal: 12, vertical: 5),
+                  horizontal: 12,
+                  vertical: 5,
+                ),
                 decoration: BoxDecoration(
                   border: Border.all(color: const Color(0xD7252424)),
                   borderRadius: BorderRadius.circular(8),
                 ),
-                child: Text(language,
-                    style: const TextStyle(
-                        color: Color(0xFF2C3247),
-                        fontWeight: FontWeight.w600,
-                        fontSize: 12)),
+                child: Text(
+                  language,
+                  style: const TextStyle(
+                    color: Color(0xFF2C3247),
+                    fontWeight: FontWeight.w600,
+                    fontSize: 12,
+                  ),
+                ),
               ),
               const Spacer(),
               ElevatedButton.icon(
                 onPressed: () {},
                 icon: const Icon(Icons.mic, size: 16, color: Colors.white),
-                label: const Text('Join',
-                    style: TextStyle(
-                        fontWeight: FontWeight.bold, color: Colors.white)),
+                label: const Text(
+                  'Join',
+                  style: TextStyle(
+                    fontWeight: FontWeight.bold,
+                    color: Colors.white,
+                  ),
+                ),
                 style: ElevatedButton.styleFrom(
                   backgroundColor: const Color(0xFF1E293B),
                   foregroundColor: Colors.white,
                   shape: RoundedRectangleBorder(
-                      borderRadius: BorderRadius.circular(12)),
+                    borderRadius: BorderRadius.circular(12),
+                  ),
                   padding: const EdgeInsets.symmetric(
-                      horizontal: 20, vertical: 12),
+                    horizontal: 20,
+                    vertical: 12,
+                  ),
                   elevation: 0,
                 ),
               ),
@@ -457,7 +500,7 @@ class _SubscriberCommunityScreenState
                             color: Colors.black.withOpacity(0.08),
                             blurRadius: 8,
                             offset: const Offset(0, 2),
-                          )
+                          ),
                         ]
                       : [],
                 ),
@@ -611,13 +654,18 @@ class _SubscriberCommunityScreenState
                 width: 96,
                 child: OutlinedButton.icon(
                   onPressed: () {},
-                  icon: const Icon(Icons.close, size: 14, color: Color(0xFFEF4444)),
+                  icon: const Icon(
+                    Icons.close,
+                    size: 14,
+                    color: Color(0xFFEF4444),
+                  ),
                   label: const Text(
                     "Decline",
                     style: TextStyle(
-                        fontSize: 12,
-                        fontWeight: FontWeight.bold,
-                        color: Color(0xFFEF4444)),
+                      fontSize: 12,
+                      fontWeight: FontWeight.bold,
+                      color: Color(0xFFEF4444),
+                    ),
                   ),
                   style: OutlinedButton.styleFrom(
                     side: const BorderSide(color: Color(0xFFEF4444)),
@@ -779,7 +827,11 @@ class _SubscriberCommunityScreenState
               borderRadius: BorderRadius.circular(14),
             ),
             alignment: Alignment.center,
-            child: const Icon(Icons.waving_hand_rounded, color: Colors.white, size: 22),
+            child: const Icon(
+              Icons.waving_hand_rounded,
+              color: Colors.white,
+              size: 22,
+            ),
           ),
         ],
       ),
@@ -793,19 +845,22 @@ class _SubscriberCommunityScreenState
       {
         'title': 'Japanese Culture Live',
         'host': 'Yomi Yamamoto',
-        'thumbnail': 'https://images.unsplash.com/photo-1536098561742-ca998e48cbcc?auto=format&fit=crop&w=800&q=80',
+        'thumbnail':
+            'https://images.unsplash.com/photo-1536098561742-ca998e48cbcc?auto=format&fit=crop&w=800&q=80',
         'avatar': 'https://i.pravatar.cc/150?u=yomi1',
       },
       {
         'title': 'Spanish Culture Live',
         'host': 'Yomi Yamamoto',
-        'thumbnail': 'https://images.unsplash.com/photo-1504196606672-aef5c9cefc92?auto=format&fit=crop&w=800&q=80',
+        'thumbnail':
+            'https://images.unsplash.com/photo-1504196606672-aef5c9cefc92?auto=format&fit=crop&w=800&q=80',
         'avatar': 'https://i.pravatar.cc/150?u=yomi2',
       },
       {
         'title': 'French Culture Live',
         'host': 'Yomi Yamamoto',
-        'thumbnail': 'https://images.unsplash.com/photo-1499856871958-5b9627545d1a?auto=format&fit=crop&w=800&q=80',
+        'thumbnail':
+            'https://images.unsplash.com/photo-1499856871958-5b9627545d1a?auto=format&fit=crop&w=800&q=80',
         'avatar': 'https://i.pravatar.cc/150?u=yomi3',
       },
     ];
@@ -935,7 +990,9 @@ class _SubscriberCommunityScreenState
                       borderRadius: BorderRadius.circular(8),
                     ),
                     padding: const EdgeInsets.symmetric(
-                        horizontal: 12, vertical: 6),
+                      horizontal: 12,
+                      vertical: 6,
+                    ),
                     minimumSize: Size.zero,
                     tapTargetSize: MaterialTapTargetSize.shrinkWrap,
                   ),
