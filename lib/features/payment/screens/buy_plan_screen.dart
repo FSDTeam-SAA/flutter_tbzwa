@@ -1,4 +1,6 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_tbzwa/navbar_menu.dart';
+import 'package:flutter_tbzwa/navigation_menu.dart';
 import 'package:get/get.dart';
 
 import '../../../core/common/widgets/app_scaffold.dart';
@@ -50,7 +52,7 @@ class BuyPlanScreen extends StatelessWidget {
                 isSelected: isSelected,
                 onTap: () {
                   controller.selectPlan(1);
-                  Get.to(() => const SelfLearningSystemScreen());
+                  Get.to(() => const NavbarMenu());
                 },
               );
             }),

@@ -1,6 +1,8 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_tbzwa/features/bz_wallet/screens/bz_wallet_splash_screen.dart';
 import 'package:get/get.dart';
 import '../../../navigation_menu.dart';
+import '../../bz_pad/screens/bz_pad_splash_screen.dart';
 import 'daily_mission_screen.dart';
 
 class HomeScreen extends StatefulWidget {
@@ -412,38 +414,41 @@ class _HomeScreenState extends State<HomeScreen> {
       scrollDirection: Axis.horizontal,
       child: Row(
         children: [
-          _buildQuickAccessItem("BZPad", const Color(0xFF5C6BC0), "assets/images/bz_pad.png"),
-          _buildQuickAccessItem("BZ-WALLET", const Color(0xFFFDD835), "assets/images/bzwallet.png"),
-          _buildQuickAccessItem("BZ-Library", const Color(0xFF42A5F5), "assets/images/library.png"),
-          _buildQuickAccessItem("BZ-Missions", const Color(0xFF66BB6A), "assets/images/daily_mission.png"),
+          _buildQuickAccessItem("BZPad", const Color(0xFF5C6BC0), "assets/images/bz_pad.png", ()=> Get.to(() => BZPadSplashScreen())),
+          _buildQuickAccessItem("BZ-WALLET", const Color(0xFFFDD835), "assets/images/bzwallet.png", ()=> Get.to(() => BZWalletSplashScreen())),
+          _buildQuickAccessItem("BZ-Library", const Color(0xFF42A5F5), "assets/images/library.png", ()=> Get.to(() => BZPadSplashScreen())),
+          _buildQuickAccessItem("BZ-Missions", const Color(0xFF66BB6A), "assets/images/daily_mission.png", ()=> Get.to(() => BZPadSplashScreen())),
         ],
       ),
     );
   }
 
-  Widget _buildQuickAccessItem(String label, Color color, String image) {
+  Widget _buildQuickAccessItem(String label, Color color, String image, VoidCallback onTap) {
     return Padding(
       padding: const EdgeInsets.only(right: 20),
-      child: Column(
-        children: [
-          Container(
-            width: 85,
-            height: 85,
-            decoration: BoxDecoration(
-              borderRadius: BorderRadius.circular(20),
+      child: GestureDetector(
+        onTap: onTap,
+        child: Column(
+          children: [
+            Container(
+              width: 85,
+              height: 85,
+              decoration: BoxDecoration(
+                borderRadius: BorderRadius.circular(20),
+              ),
+              child: Image.asset(image, width: 32, height: 24,),
             ),
-            child: Image.asset(image, width: 32, height: 24,),
-          ),
-          const SizedBox(height: 8),
-          Text(
-            label,
-            style: const TextStyle(
-              color: Color(0xFF455A64),
-              fontSize: 12,
-              fontWeight: FontWeight.w600,
+            const SizedBox(height: 8),
+            Text(
+              label,
+              style: const TextStyle(
+                color: Color(0xFF455A64),
+                fontSize: 12,
+                fontWeight: FontWeight.w600,
+              ),
             ),
-          ),
-        ],
+          ],
+        ),
       ),
     );
   }

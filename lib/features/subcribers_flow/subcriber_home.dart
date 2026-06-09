@@ -2,6 +2,10 @@ import 'dart:ui';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'subscriber_choose_program_screen.dart';
+import '../bz_pad/screens/bz_pad_splash_screen.dart';
+import '../bz_wallet/screens/bz_wallet_splash_screen.dart';
+
+
 
 
 class SubscriberHome extends StatelessWidget {
@@ -24,7 +28,8 @@ class SubscriberHome extends StatelessWidget {
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
                       const SizedBox(height: 24),
-                      _buildTodayGoalCard(),
+                      _buildBlurredSection(_buildTodayGoalCard()),
+
                       const SizedBox(height: 30),
                       _buildSectionHeader("Daily Missions", 'yes', onSeeAll: () {}),
                       const SizedBox(height: 16),
@@ -39,7 +44,8 @@ class SubscriberHome extends StatelessWidget {
                         ),
                       ),
                       const SizedBox(height: 16),
-                      _buildNextLiveClassCard(),
+                      _buildBlurredSection(_buildNextLiveClassCard()),
+
                       const SizedBox(height: 30),
                       _buildSectionHeader("Quick Access", 'no', onSeeAll: () {}),
                       const SizedBox(height: 16),
@@ -52,18 +58,6 @@ class SubscriberHome extends StatelessWidget {
             ),
           ),
 
-          // ─── Blur Overlay ──────────────────────────────────────────────────
-          Positioned.fill(
-            child: BackdropFilter(
-              filter: ImageFilter.blur(sigmaX: 5.0, sigmaY: 5.0),
-              child: GestureDetector(
-                onTap: () => Get.to(() => const SubscriberChooseProgramScreen()),
-                child: Container(
-                  color: Colors.black.withOpacity(0.01), // Needs a color to capture taps
-                ),
-              ),
-            ),
-          ),
 
           // ─── Unblurred Header ─────────────────────────────────────────────
           Positioned(
@@ -213,7 +207,7 @@ class SubscriberHome extends StatelessWidget {
                           style: TextStyle(color: Colors.white, fontSize: 12),
                         ),
                         Text(
-                          "\$55.00",
+                          "\$00.00",
                           style: TextStyle(color: Colors.white, fontSize: 16, fontWeight: FontWeight.bold),
                         ),
                       ],
@@ -551,23 +545,34 @@ class SubscriberHome extends StatelessWidget {
             padding: const EdgeInsets.only(right: 16),
             child: Column(
               children: [
-                Container(
-                  width: 85,
-                  height: 85,
-                  //padding: const EdgeInsets.all(8),
-                  decoration: BoxDecoration(
-                    color: Colors.white,
-                    borderRadius: BorderRadius.circular(16),
-                    boxShadow: [
-                      BoxShadow(
-                        color: Colors.black.withOpacity(0.05),
-                        blurRadius: 10,
-                        offset: const Offset(0, 4),
-                      ),
-                    ],
+                GestureDetector(
+                  onTap: () {
+                    if (item['label'] == 'BZPad') {
+                      Get.to(() => const BZPadSplashScreen());
+                    } else if (item['label'] == 'BZ-WALLET') {
+                      Get.to(() => const BZWalletSplashScreen());
+                    }
+                  },
+
+                  child: Container(
+                    width: 85,
+                    height: 85,
+                    //padding: const EdgeInsets.all(8),
+                    decoration: BoxDecoration(
+                      color: Colors.white,
+                      borderRadius: BorderRadius.circular(16),
+                      boxShadow: [
+                        BoxShadow(
+                          color: Colors.black.withOpacity(0.05),
+                          blurRadius: 10,
+                          offset: const Offset(0, 4),
+                        ),
+                      ],
+                    ),
+                    child: Image.asset(item['icon']!),
                   ),
-                  child: Image.asset(item['icon']!),
                 ),
+
                 const SizedBox(height: 8),
                 Text(
                   item['label']!,
@@ -580,4 +585,30 @@ class SubscriberHome extends StatelessWidget {
       ),
     );
   }
+
+  Widget _buildBlurredSection(Widget child) {
+    return Stack(
+      children: [
+        child,
+        Positioned.fill(
+          child: ClipRRect(
+            borderRadius: BorderRadius.circular(24),
+            child: BackdropFilter(
+              filter: ImageFilter.blur(sigmaX: 4.0, sigmaY: 4.0),
+              child: GestureDetector(
+                onTap: () => Get.to(() => const SubscriberChooseProgramScreen()),
+                child: Container(
+                  decoration: BoxDecoration(
+                    color: Colors.white12,
+                    borderRadius: BorderRadius.circular(24),
+                  ),
+                ),
+              ),
+            ),
+          ),
+        ),
+      ],
+    );
+  }
 }
+

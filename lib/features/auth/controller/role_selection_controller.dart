@@ -13,6 +13,6 @@ class RoleSelectionController extends GetxController {
   }
 
   void proceed() {
-    Get.to(() => const NavbarMenu());
+    Get.to(() => BuyPlanScreen());
   }
 }

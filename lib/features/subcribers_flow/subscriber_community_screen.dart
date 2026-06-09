@@ -63,7 +63,7 @@ class _SubscriberCommunityScreenState extends State<SubscriberCommunityScreen> {
       body: SafeArea(
         child: Stack(
           children: [
-            // ─── Main Content (Blurred) ──────────────────────────────────────────
+            // ─── Main Content ──────────────────────────────────────────
             Column(
               children: [
                 _buildHeader(),
@@ -90,26 +90,6 @@ class _SubscriberCommunityScreenState extends State<SubscriberCommunityScreen> {
               ],
             ),
 
-            // ─── Blur Overlay ──────────────────────────────────────────────────
-            Positioned.fill(
-              child: BackdropFilter(
-                filter: ImageFilter.blur(sigmaX: 5.0, sigmaY: 5.0),
-                child: GestureDetector(
-                  onTap: () => Get.to(() => const SubscriberChooseProgramScreen()),
-                  child: Container(
-                    color: Colors.black.withOpacity(0.01),
-                  ),
-                ),
-              ),
-            ),
-
-            // ─── Unblurred Header ─────────────────────────────────────────────
-            Positioned(
-              top: 0,
-              left: 0,
-              right: 0,
-              child: _buildHeader(),
-            ),
           ],
         ),
       ),
