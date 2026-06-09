@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_tbzwa/navigation_menu.dart';
 import 'package:get/get.dart';
 
 import '../../../core/common/widgets/app_scaffold.dart';
@@ -120,10 +121,7 @@ class AllSetScreen extends StatelessWidget {
                     width: double.infinity,
                     height: 48,
                     child: ElevatedButton(
-                      onPressed: () {
-                        // Return to root / dashboard
-                        Get.close(5);
-                      },
+                      onPressed: () => Get.to(() => NavigationMenu()),
                       style: ElevatedButton.styleFrom(
                         backgroundColor: const Color(0xFF5151EF),
                         foregroundColor: Colors.white,

@@ -1,4 +1,7 @@
+import 'dart:ui';
 import 'package:flutter/material.dart';
+import 'package:get/get.dart';
+import 'subscriber_choose_program_screen.dart';
 
 class SubscriberCommunityScreen extends StatefulWidget {
   const SubscriberCommunityScreen({super.key});
@@ -13,6 +16,8 @@ class _SubscriberCommunityScreenState extends State<SubscriberCommunityScreen> {
   bool _translationEnabled = false;
 
   final List<String> _tabs = ['Friends', 'Voice', 'Live'];
+
+  final Set<String> _acceptedFriends = {};
 
   // Sample data
   final List<Map<String, String>> _friendRequests = [
@@ -56,28 +61,54 @@ class _SubscriberCommunityScreenState extends State<SubscriberCommunityScreen> {
     return Scaffold(
       backgroundColor: const Color(0xFFF4F5F9),
       body: SafeArea(
-        child: Column(
+        child: Stack(
           children: [
-            _buildHeader(),
-            _buildTabBar(),
-            Expanded(
-              child: _selectedTab == 0
-                  ? SingleChildScrollView(
-                      padding: const EdgeInsets.symmetric(horizontal: 18),
-                      child: Column(
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        children: [
-                          const SizedBox(height: 20),
-                          _buildFriendRequestsSection(),
-                          const SizedBox(height: 28),
-                          _buildOnlineNowSection(),
-                          const SizedBox(height: 20),
-                        ],
-                      ),
-                    )
-                  : _selectedTab == 1
-                  ? _buildVoiceTab()
-                  : _buildLiveTab(),
+            // ─── Main Content (Blurred) ──────────────────────────────────────────
+            Column(
+              children: [
+                _buildHeader(),
+                _buildTabBar(),
+                Expanded(
+                  child: _selectedTab == 0
+                      ? SingleChildScrollView(
+                          padding: const EdgeInsets.symmetric(horizontal: 18),
+                          child: Column(
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            children: [
+                              const SizedBox(height: 20),
+                              _buildFriendRequestsSection(),
+                              const SizedBox(height: 28),
+                              _buildOnlineNowSection(),
+                              const SizedBox(height: 20),
+                            ],
+                          ),
+                        )
+                      : _selectedTab == 1
+                          ? _buildVoiceTab()
+                          : _buildLiveTab(),
+                ),
+              ],
+            ),
+
+            // ─── Blur Overlay ──────────────────────────────────────────────────
+            Positioned.fill(
+              child: BackdropFilter(
+                filter: ImageFilter.blur(sigmaX: 5.0, sigmaY: 5.0),
+                child: GestureDetector(
+                  onTap: () => Get.to(() => const SubscriberChooseProgramScreen()),
+                  child: Container(
+                    color: Colors.black.withOpacity(0.01),
+                  ),
+                ),
+              ),
+            ),
+
+            // ─── Unblurred Header ─────────────────────────────────────────────
+            Positioned(
+              top: 0,
+              left: 0,
+              right: 0,
+              child: _buildHeader(),
             ),
           ],
         ),

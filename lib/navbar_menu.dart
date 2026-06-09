@@ -4,6 +4,7 @@ import 'package:flutter_tbzwa/features/learn/screens/learn_screen.dart';
 import 'package:flutter_tbzwa/features/profile/screens/profile_screen.dart';
 import 'package:flutter_tbzwa/features/subcribers_flow/subscriber_community_screen.dart';
 import 'package:flutter_tbzwa/features/subcribers_flow/subscriber_profile_screen.dart';
+import 'package:flutter_tbzwa/features/subcribers_flow/subscriber_voice_room_screen.dart';
 import 'package:flutter_tbzwa/features/voice_room/screens/voice_room_screen.dart';
 import 'package:get/get.dart';
 
@@ -11,6 +12,7 @@ import 'core/constants/assest_const.dart';
 import 'core/utils/app_svg.dart';
 import 'features/home/screens/home_screen.dart';
 import 'features/subcribers_flow/subcriber_home.dart';
+import 'features/subcribers_flow/subcriber_learn_screen.dart';
 
 
 class NavbarMenu extends StatelessWidget {
@@ -18,7 +20,7 @@ class NavbarMenu extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final controller = Get.put(NavigationController());
+    final controller = Get.put(NavbarController());
 
     return Scaffold(
       backgroundColor: const Color(0xFFF7F8FC),
@@ -97,7 +99,7 @@ class NavbarMenu extends StatelessWidget {
   }
 }
 
-class NavigationController extends GetxController {
+class NavbarController extends GetxController {
   final RxInt selectedIndex = 0.obs;
 
   final List<Map<String, dynamic>> items = [
@@ -110,9 +112,9 @@ class NavigationController extends GetxController {
 
   final List<Widget> screens = [
     const SubscriberHome(),
-    LearnScreen(),
+    SubcriberLearnScreen(),
     SubscriberCommunityScreen(),
-    VoiceRoom(),
+    SubscriberVoiceRoomScreen(),
     SubscriberProfileScreen()
   ];
 }

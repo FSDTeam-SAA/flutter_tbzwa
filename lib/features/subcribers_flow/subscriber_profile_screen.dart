@@ -1,5 +1,7 @@
+import 'dart:ui';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
+import 'subscriber_choose_program_screen.dart';
 
 class SubscriberProfileScreen extends StatelessWidget {
   const SubscriberProfileScreen({super.key});
@@ -9,37 +11,78 @@ class SubscriberProfileScreen extends StatelessWidget {
     return Scaffold(
       backgroundColor: const Color(0xFFF7F8FC),
       body: SafeArea(
-        child: SingleChildScrollView(
-          child: Column(
-            children: [
-              _buildAppBar(),
-              Divider(
-                color: Color(0xFFD1D1D1),
+        child: Stack(
+          children: [
+            // ─── Main Content (Blurred) ──────────────────────────────────────────
+            SingleChildScrollView(
+              child: Column(
+                children: [
+                  _buildAppBar(),
+                  const Divider(color: Color(0xFFD1D1D1)),
+                  Padding(
+                    padding: const EdgeInsets.symmetric(horizontal: 16),
+                    child: Column(
+                      children: [
+                        const SizedBox(height: 12),
+                        _buildProfileInfoCard(),
+                        const SizedBox(height: 20),
+                        _buildStatsRow(),
+                        const SizedBox(height: 24),
+                        _buildProgressBreakdown(),
+                        const SizedBox(height: 28),
+                        _buildQuickActions(),
+                        const SizedBox(height: 28),
+                        _buildSubscriptionCard(),
+                        const SizedBox(height: 20),
+                        _buildSettingsTile(),
+                        const SizedBox(height: 20),
+                        _buildLogoutButton(),
+                        const SizedBox(height: 30),
+                      ],
+                    ),
+                  ),
+                ],
               ),
-              Padding(
-                padding: const EdgeInsets.symmetric(horizontal: 16),
+            ),
+
+            // ─── Blur Overlay ──────────────────────────────────────────────────
+            Positioned.fill(
+              child: BackdropFilter(
+                filter: ImageFilter.blur(sigmaX: 5.0, sigmaY: 5.0),
+                child: GestureDetector(
+                  onTap: () => Get.to(() => const SubscriberChooseProgramScreen()),
+                  child: Container(
+                    color: Colors.black.withOpacity(0.01),
+                  ),
+                ),
+              ),
+            ),
+
+            // ─── Unblurred Header (AppBar + Profile Card) ──────────────────────
+            Positioned(
+              top: 0,
+              left: 0,
+              right: 0,
+              child: Container(
+                color: const Color(0xFFF7F8FC),
                 child: Column(
                   children: [
-                    const SizedBox(height: 12),
-                    _buildProfileInfoCard(),
-                    const SizedBox(height: 20),
-                    _buildStatsRow(),
-                    const SizedBox(height: 24),
-                    _buildProgressBreakdown(),
-                    const SizedBox(height: 28),
-                    _buildQuickActions(),
-                    const SizedBox(height: 28),
-                    _buildSubscriptionCard(),
-                    const SizedBox(height: 20),
-                    _buildSettingsTile(),
-                    const SizedBox(height: 20),
-                    _buildLogoutButton(),
-                    const SizedBox(height: 30),
+                    _buildAppBar(),
+                    const Divider(color: Color(0xFFD1D1D1)),
+                    Padding(
+                      padding: const EdgeInsets.symmetric(horizontal: 16),
+                      child: Column(
+                        children: [
+                          const SizedBox(height: 12),
+                          _buildProfileInfoCard(),
+                        ],
+                      ),
+                    ),
                   ],
                 ),
               ),
-            ],
-          ),
+            ),
+          ],
         ),
       ),
     );
@@ -78,9 +121,7 @@ class SubscriberProfileScreen extends StatelessWidget {
       decoration: BoxDecoration(
         color: Colors.white,
         borderRadius: BorderRadius.circular(24),
-        border: Border.all(
-          color: Color(0xFFE9E9E9), width: 1
-        )
+        border: Border.all(color: Color(0xFFE9E9E9), width: 1),
       ),
       child: Column(
         children: [
@@ -89,7 +130,9 @@ class SubscriberProfileScreen extends StatelessWidget {
             children: [
               const CircleAvatar(
                 radius: 40,
-                backgroundImage: NetworkImage('https://i.pravatar.cc/150?u=kathy'),
+                backgroundImage: NetworkImage(
+                  'https://i.pravatar.cc/150?u=kathy',
+                ),
               ),
               const SizedBox(width: 16),
               Expanded(
@@ -115,14 +158,21 @@ class SubscriberProfileScreen extends StatelessWidget {
                     const SizedBox(height: 8),
                     Container(
                       width: 130,
-                      padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
+                      padding: const EdgeInsets.symmetric(
+                        horizontal: 10,
+                        vertical: 4,
+                      ),
                       decoration: BoxDecoration(
                         color: const Color(0xFF00A63E),
                         borderRadius: BorderRadius.circular(6),
                       ),
                       child: Row(
                         children: [
-                          Image.asset('assets/images/crown.png', width: 12, height: 12,),
+                          Image.asset(
+                            'assets/images/crown.png',
+                            width: 12,
+                            height: 12,
+                          ),
                           const Text(
                             ' IMMERSION++',
                             style: TextStyle(
@@ -179,11 +229,26 @@ class SubscriberProfileScreen extends StatelessWidget {
   Widget _buildStatsRow() {
     return Row(
       children: [
-        _buildStatCard('Lessons\nCompleted', '45', 'assets/images/medal-star.png', const Color(0xFF5456E7)),
+        _buildStatCard(
+          'Lessons\nCompleted',
+          '45',
+          'assets/images/medal-star.png',
+          const Color(0xFF5456E7),
+        ),
         const SizedBox(width: 12),
-        _buildStatCard('Daily\nStreaks', '15 days', 'assets/images/daily_streak.png', const Color(0xFF5456E7)),
+        _buildStatCard(
+          'Daily\nStreaks',
+          '15 days',
+          'assets/images/daily_streak.png',
+          const Color(0xFF5456E7),
+        ),
         const SizedBox(width: 12),
-        _buildStatCard('Total\nProgress', '68%', 'assets/images/symbols_crown.png', const Color(0xFF5456E7)),
+        _buildStatCard(
+          'Total\nProgress',
+          '68%',
+          'assets/images/symbols_crown.png',
+          const Color(0xFF5456E7),
+        ),
       ],
     );
   }
@@ -194,15 +259,13 @@ class SubscriberProfileScreen extends StatelessWidget {
         decoration: BoxDecoration(
           color: Colors.white,
           borderRadius: BorderRadius.circular(20),
-          border: Border.all(
-            color: Color(0xFFEAEAEA)
-          )
+          border: Border.all(color: Color(0xFFEAEAEA)),
         ),
         child: Padding(
           padding: const EdgeInsets.symmetric(horizontal: 24.0, vertical: 18),
           child: Column(
             children: [
-              Image.asset(image, width: 26, height: 26,),
+              Image.asset(image, width: 26, height: 26),
               const SizedBox(height: 12),
               Text(
                 value,
@@ -274,8 +337,22 @@ class SubscriberProfileScreen extends StatelessWidget {
         Row(
           mainAxisAlignment: MainAxisAlignment.spaceBetween,
           children: [
-            Text(label, style: const TextStyle(fontSize: 12, color: Color(0xFF878787), fontWeight: FontWeight.bold)),
-            const Text('23/35%', style: TextStyle(fontSize: 12, color: Color(0xFF878787), fontWeight: FontWeight.bold)),
+            Text(
+              label,
+              style: const TextStyle(
+                fontSize: 12,
+                color: Color(0xFF878787),
+                fontWeight: FontWeight.bold,
+              ),
+            ),
+            const Text(
+              '23/35%',
+              style: TextStyle(
+                fontSize: 12,
+                color: Color(0xFF878787),
+                fontWeight: FontWeight.bold,
+              ),
+            ),
           ],
         ),
         const SizedBox(height: 8),
@@ -296,15 +373,31 @@ class SubscriberProfileScreen extends StatelessWidget {
     return Row(
       mainAxisAlignment: MainAxisAlignment.spaceBetween,
       children: [
-        _buildActionItem('BZ-WALLET', 'assets/images/wallet.png', const Color(0xFFD2D3F6)),
-        _buildActionItem('BZ-Daily Mission', 'assets/images/note.png', const Color(0xFFCBF2EF),),
-        _buildActionItem('BZ-Library', 'assets/images/bz_library.png', const Color(0xFFF5E3EE),),
-        _buildActionItem('BZPad', 'assets/images/pad.png', const Color(0xFFAAFFB4),),
+        _buildActionItem(
+          'BZ-WALLET',
+          'assets/images/wallet.png',
+          const Color(0xFFD2D3F6),
+        ),
+        _buildActionItem(
+          'BZ-Daily Mission',
+          'assets/images/note.png',
+          const Color(0xFFCBF2EF),
+        ),
+        _buildActionItem(
+          'BZ-Library',
+          'assets/images/bz_library.png',
+          const Color(0xFFF5E3EE),
+        ),
+        _buildActionItem(
+          'BZPad',
+          'assets/images/pad.png',
+          const Color(0xFFAAFFB4),
+        ),
       ],
     );
   }
 
-  Widget _buildActionItem(String label, String image, Color bgColor, ) {
+  Widget _buildActionItem(String label, String image, Color bgColor) {
     return Column(
       children: [
         Container(
@@ -316,7 +409,7 @@ class SubscriberProfileScreen extends StatelessWidget {
           ),
           child: Padding(
             padding: const EdgeInsets.all(18.0),
-            child: Image.asset(image, width: 24, height: 24,),
+            child: Image.asset(image, width: 24, height: 24),
           ),
         ),
         const SizedBox(height: 10),
@@ -356,17 +449,29 @@ class SubscriberProfileScreen extends StatelessWidget {
                   children: [
                     const Text(
                       'Subscription',
-                      style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold, color: Color(0xFF1E293B)),
+                      style: TextStyle(
+                        fontSize: 16,
+                        fontWeight: FontWeight.bold,
+                        color: Color(0xFF1E293B),
+                      ),
                     ),
                     const SizedBox(height: 4),
                     Text(
                       'IMMERSION++ - Active',
-                      style: TextStyle(fontSize: 13, color: Color(0xFF878787), fontWeight: FontWeight.w500),
+                      style: TextStyle(
+                        fontSize: 13,
+                        color: Color(0xFF878787),
+                        fontWeight: FontWeight.w500,
+                      ),
                     ),
                   ],
                 ),
               ),
-              Image.asset('assets/images/glyphs-poly_crown-1.png', width: 24, height: 24,),
+              Image.asset(
+                'assets/images/glyphs-poly_crown-1.png',
+                width: 24,
+                height: 24,
+              ),
             ],
           ),
           const SizedBox(height: 20),
@@ -380,7 +485,10 @@ class SubscriberProfileScreen extends StatelessWidget {
               onPressed: () {},
               child: const Text(
                 'Manage Subscription',
-                style: TextStyle(color: Colors.black, fontWeight: FontWeight.bold),
+                style: TextStyle(
+                  color: Colors.black,
+                  fontWeight: FontWeight.bold,
+                ),
               ),
             ),
           ),
@@ -409,7 +517,11 @@ class SubscriberProfileScreen extends StatelessWidget {
           SizedBox(width: 16),
           Text(
             'Settings',
-            style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold, color: Color(0xFF1E293B)),
+            style: TextStyle(
+              fontSize: 16,
+              fontWeight: FontWeight.bold,
+              color: Color(0xFF1E293B),
+            ),
           ),
           Spacer(),
           Icon(Icons.arrow_forward_ios, size: 16, color: Colors.grey),
@@ -431,7 +543,11 @@ class SubscriberProfileScreen extends StatelessWidget {
         icon: const Icon(Icons.logout, color: Color(0xFFE00000)),
         label: const Text(
           'Logout',
-          style: TextStyle(color: Color(0xFFE00000), fontWeight: FontWeight.bold, fontSize: 16),
+          style: TextStyle(
+            color: Color(0xFFE00000),
+            fontWeight: FontWeight.bold,
+            fontSize: 16,
+          ),
         ),
       ),
     );

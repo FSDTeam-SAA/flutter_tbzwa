@@ -1,5 +1,8 @@
+import 'dart:ui';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
+import 'subscriber_choose_program_screen.dart';
+
 
 class SubscriberHome extends StatelessWidget {
   const SubscriberHome({super.key});
@@ -8,42 +11,119 @@ class SubscriberHome extends StatelessWidget {
   Widget build(BuildContext context) {
     return Scaffold(
       backgroundColor: const Color(0xFFF7F8FC),
-      body: SingleChildScrollView(
-        child: Column(
-          children: [
-            _buildHeader(),
-            Padding(
-              padding: const EdgeInsets.symmetric(horizontal: 20),
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
+      body: Stack(
+        children: [
+          // ─── Main Content (Blurred) ──────────────────────────────────────────
+          SingleChildScrollView(
+            child: Column(
+              children: [
+                _buildHeader(),
+                Padding(
+                  padding: const EdgeInsets.symmetric(horizontal: 20),
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      const SizedBox(height: 24),
+                      _buildTodayGoalCard(),
+                      const SizedBox(height: 30),
+                      _buildSectionHeader("Daily Missions", 'yes', onSeeAll: () {}),
+                      const SizedBox(height: 16),
+                      _buildDailyMissionsGrid(),
+                      const SizedBox(height: 30),
+                      const Text(
+                        "Next Live Class",
+                        style: TextStyle(
+                          color: Color(0xFF263238),
+                          fontSize: 18,
+                          fontWeight: FontWeight.bold,
+                        ),
+                      ),
+                      const SizedBox(height: 16),
+                      _buildNextLiveClassCard(),
+                      const SizedBox(height: 30),
+                      _buildSectionHeader("Quick Access", 'no', onSeeAll: () {}),
+                      const SizedBox(height: 16),
+                      _buildQuickAccessList(),
+                      const SizedBox(height: 30),
+                    ],
+                  ),
+                ),
+              ],
+            ),
+          ),
+
+          // ─── Blur Overlay ──────────────────────────────────────────────────
+          Positioned.fill(
+            child: BackdropFilter(
+              filter: ImageFilter.blur(sigmaX: 5.0, sigmaY: 5.0),
+              child: GestureDetector(
+                onTap: () => Get.to(() => const SubscriberChooseProgramScreen()),
+                child: Container(
+                  color: Colors.black.withOpacity(0.01), // Needs a color to capture taps
+                ),
+              ),
+            ),
+          ),
+
+          // ─── Unblurred Header ─────────────────────────────────────────────
+          Positioned(
+            top: 0,
+            left: 0,
+            right: 0,
+            child: Container(
+              padding: const EdgeInsets.fromLTRB(20, 60, 20, 0),
+              child: Row(
                 children: [
-                  const SizedBox(height: 24),
-                  _buildTodayGoalCard(),
-                  const SizedBox(height: 30),
-                  _buildSectionHeader("Daily Missions", 'yes', onSeeAll: () {}),
-                  const SizedBox(height: 16),
-                  _buildDailyMissionsGrid(),
-                  const SizedBox(height: 30),
-                  const Text(
-                    "Next Live Class",
-                    style: TextStyle(
-                      color: Color(0xFF263238),
-                      fontSize: 18,
-                      fontWeight: FontWeight.bold,
+                  const Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Text(
+                        "Bonjour,",
+                        style: TextStyle(
+                          color: Colors.white,
+                          fontSize: 14,
+                        ),
+                      ),
+                      Text(
+                        "Kathy Onana",
+                        style: TextStyle(
+                          color: Colors.white,
+                          fontSize: 22,
+                          fontWeight: FontWeight.bold,
+                        ),
+                      ),
+                    ],
+                  ),
+                  const Spacer(),
+                  Container(
+                    padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 5),
+                    decoration: BoxDecoration(
+                      color: Colors.white,
+                      borderRadius: BorderRadius.circular(20),
+                    ),
+                    child: const Text(
+                      "PRO",
+                      style: TextStyle(
+                        color: Color(0xFF000000),
+                        fontWeight: FontWeight.bold,
+                        fontSize: 12,
+                      ),
                     ),
                   ),
-                  const SizedBox(height: 16),
-                  _buildNextLiveClassCard(),
-                  const SizedBox(height: 30),
-                  _buildSectionHeader("Quick Access",'no', onSeeAll: () {}),
-                  const SizedBox(height: 16),
-                  _buildQuickAccessList(),
-                  const SizedBox(height: 30),
+                  const SizedBox(width: 12),
+                  Container(
+                    padding: const EdgeInsets.all(8),
+                    decoration: BoxDecoration(
+                      color: Colors.white,
+                      shape: BoxShape.circle,
+                    ),
+                    child: const Icon(Icons.notifications_none_rounded, color: Colors.black),
+                  ),
                 ],
               ),
             ),
-          ],
-        ),
+          ),
+        ],
       ),
     );
   }
