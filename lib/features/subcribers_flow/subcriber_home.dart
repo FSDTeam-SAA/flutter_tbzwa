@@ -4,18 +4,27 @@ import 'package:get/get.dart';
 import 'subscriber_choose_program_screen.dart';
 import '../bz_pad/screens/bz_pad_splash_screen.dart';
 import '../bz_wallet/screens/bz_wallet_splash_screen.dart';
+import 'subscriber_menu_drawer.dart';
 
 
-
-
-class SubscriberHome extends StatelessWidget {
+class SubscriberHome extends StatefulWidget {
   const SubscriberHome({super.key});
+
+  @override
+  State<SubscriberHome> createState() => _SubscriberHomeState();
+}
+
+class _SubscriberHomeState extends State<SubscriberHome> {
+  final _scaffoldKey = GlobalKey<ScaffoldState>();
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
+      key: _scaffoldKey,
       backgroundColor: const Color(0xFFF7F8FC),
+      drawer: const SubscriberMenuDrawer(),
       body: Stack(
+
         children: [
           // ─── Main Content (Blurred) ──────────────────────────────────────────
           SingleChildScrollView(
@@ -68,6 +77,7 @@ class SubscriberHome extends StatelessWidget {
               padding: const EdgeInsets.fromLTRB(20, 60, 20, 0),
               child: Row(
                 children: [
+
                   const Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
@@ -113,6 +123,7 @@ class SubscriberHome extends StatelessWidget {
                     ),
                     child: const Icon(Icons.notifications_none_rounded, color: Colors.black),
                   ),
+                  const SizedBox(width: 12),
                 ],
               ),
             ),
@@ -158,30 +169,15 @@ class SubscriberHome extends StatelessWidget {
                 ],
               ),
               const Spacer(),
-              Container(
-                padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 5),
-                decoration: BoxDecoration(
-                  color: Colors.white,
-                  borderRadius: BorderRadius.circular(20),
-                ),
-                child: const Text(
-                  "PRO",
-                  style: TextStyle(
-                    color: Color(0xFF000000),
-                    fontWeight: FontWeight.bold,
-                    fontSize: 12,
-                  ),
-                ),
-              ),
               const SizedBox(width: 12),
-              Container(
-                padding: const EdgeInsets.all(8),
-                decoration: BoxDecoration(
-                  color: Colors.white,
-                  shape: BoxShape.circle,
-                ),
-                child: const Icon(Icons.notifications_none_rounded, color: Colors.black),
-              ),
+              // Container(
+              //   padding: const EdgeInsets.all(8),
+              //   decoration: BoxDecoration(
+              //     color: Colors.white,
+              //     shape: BoxShape.circle,
+              //   ),
+              //   child: const Icon(Icons.notifications_none_rounded, color: Colors.black),
+              // ),
             ],
           ),
           const SizedBox(height: 24),

@@ -3,6 +3,7 @@ import 'package:flutter_tbzwa/features/community/screens/community_screen.dart';
 import 'package:flutter_tbzwa/features/learn/screens/learn_screen.dart';
 import 'package:flutter_tbzwa/features/profile/screens/profile_screen.dart';
 import 'package:flutter_tbzwa/features/subcribers_flow/subscriber_community_screen.dart';
+import 'package:flutter_tbzwa/features/subcribers_flow/subscriber_menu_drawer.dart';
 import 'package:flutter_tbzwa/features/subcribers_flow/subscriber_profile_screen.dart';
 import 'package:flutter_tbzwa/features/subcribers_flow/subscriber_voice_room_screen.dart';
 import 'package:flutter_tbzwa/features/voice_room/screens/voice_room_screen.dart';
@@ -14,7 +15,6 @@ import 'features/home/screens/home_screen.dart';
 import 'features/subcribers_flow/subcriber_home.dart';
 import 'features/subcribers_flow/subcriber_learn_screen.dart';
 
-
 class NavbarMenu extends StatelessWidget {
   const NavbarMenu({super.key});
 
@@ -24,6 +24,7 @@ class NavbarMenu extends StatelessWidget {
 
     return Scaffold(
       backgroundColor: const Color(0xFFF7F8FC),
+      drawer: const SubscriberMenuDrawer(),
       body: Obx(() => controller.screens[controller.selectedIndex.value]),
       bottomNavigationBar: Obx(
             () => Padding(

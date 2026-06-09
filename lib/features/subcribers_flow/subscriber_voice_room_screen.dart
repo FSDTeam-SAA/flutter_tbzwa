@@ -63,11 +63,28 @@ class _SubscriberVoiceRoomScreenState extends State<SubscriberVoiceRoomScreen> {
             // ─── Main Content (Blurred) ──────────────────────────────────────────
             Column(
               children: [
-                const SizedBox(height: 20),
+                const SizedBox(height: 16),
+                // ─── Header row with menu icon ──────────────────────────────
+                Padding(
+                  padding: const EdgeInsets.symmetric(horizontal: 20),
+                  child: Row(
+                    children: [
+                      Builder(
+                        builder: (context) => GestureDetector(
+                          onTap: () => Scaffold.of(context).openDrawer(),
+                          child: const Icon(Icons.menu, color: Color(0xFF1E293B), size: 26),
+                        ),
+                      ),
+                      const Spacer(),
+                    ],
+                  ),
+                ),
+                const SizedBox(height: 16),
                 Padding(
                   padding: const EdgeInsets.symmetric(horizontal: 20),
                   child: _buildSearchBar(),
                 ),
+
                 const SizedBox(height: 20),
                 Expanded(
                   child: _filteredRooms.isEmpty

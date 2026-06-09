@@ -27,8 +27,21 @@ class _SubcriberLearnScreenState extends State<SubcriberLearnScreen> {
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  const SizedBox(height: 20),
+                  const SizedBox(height: 16),
+                  // ─── Header row with menu icon ──────────────────────────────
+                  Row(
+                    children: [
+                      Builder(
+                        builder: (context) => GestureDetector(
+                          onTap: () => Scaffold.of(context).openDrawer(),
+                          child: const Icon(Icons.menu, color: Color(0xFF1E293B), size: 26),
+                        ),
+                      ),
+                    ],
+                  ),
+                  const SizedBox(height: 16),
                   _buildCurrentLevelCard(),
+
                   const SizedBox(height: 30),
                   const Text(
                     "Choose Your Level",

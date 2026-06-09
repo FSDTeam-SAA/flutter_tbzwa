@@ -102,7 +102,12 @@ class _SubscriberCommunityScreenState extends State<SubscriberCommunityScreen> {
       child: Row(
         mainAxisAlignment: MainAxisAlignment.spaceBetween,
         children: [
-          const Icon(Icons.menu, color: Color(0xFF1E293B), size: 24),
+          Builder(
+            builder: (context) => GestureDetector(
+              onTap: () => Scaffold.of(context).openDrawer(),
+              child: const Icon(Icons.menu, color: Color(0xFF1E293B), size: 24),
+            ),
+          ),
           RichText(
             text: const TextSpan(
               style: TextStyle(
