@@ -2,6 +2,7 @@ import 'dart:ui';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'subscriber_choose_program_screen.dart';
+import 'subscriber_menu_drawer.dart';
 
 class SubscriberCommunityScreen extends StatefulWidget {
   const SubscriberCommunityScreen({super.key});
@@ -60,6 +61,7 @@ class _SubscriberCommunityScreenState extends State<SubscriberCommunityScreen> {
   Widget build(BuildContext context) {
     return Scaffold(
       backgroundColor: const Color(0xFFF4F5F9),
+      drawer: const SubscriberMenuDrawer(),
       body: SafeArea(
         child: Stack(
           children: [
@@ -100,14 +102,14 @@ class _SubscriberCommunityScreenState extends State<SubscriberCommunityScreen> {
     return Padding(
       padding: const EdgeInsets.fromLTRB(16, 16, 16, 12),
       child: Row(
-        mainAxisAlignment: MainAxisAlignment.spaceBetween,
+        mainAxisAlignment: MainAxisAlignment.center,
         children: [
-          Builder(
-            builder: (context) => GestureDetector(
-              onTap: () => Scaffold.of(context).openDrawer(),
-              child: const Icon(Icons.menu, color: Color(0xFF1E293B), size: 24),
-            ),
-          ),
+          // Builder(
+          //   builder: (context) => GestureDetector(
+          //     onTap: () => Scaffold.of(context).openDrawer(),
+          //     child: const Icon(Icons.menu, color: Color(0xFF1E293B), size: 24),
+          //   ),
+          // ),
           RichText(
             text: const TextSpan(
               style: TextStyle(

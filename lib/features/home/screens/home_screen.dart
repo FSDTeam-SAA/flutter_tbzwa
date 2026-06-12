@@ -1,8 +1,10 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_tbzwa/features/bz_wallet/screens/bz_wallet_splash_screen.dart';
+import 'package:flutter_tbzwa/features/library/screens/library_splash_screen.dart';
 import 'package:get/get.dart';
 import '../../../navigation_menu.dart';
 import '../../bz_pad/screens/bz_pad_splash_screen.dart';
+import '../../daily_mission/screens/daily_mission_splash_screen.dart';
 import 'daily_mission_screen.dart';
 
 class HomeScreen extends StatefulWidget {
@@ -416,8 +418,8 @@ class _HomeScreenState extends State<HomeScreen> {
         children: [
           _buildQuickAccessItem("BZPad", const Color(0xFF5C6BC0), "assets/images/bz_pad.png", ()=> Get.to(() => BZPadSplashScreen())),
           _buildQuickAccessItem("BZ-WALLET", const Color(0xFFFDD835), "assets/images/bzwallet.png", ()=> Get.to(() => BZWalletSplashScreen())),
-          _buildQuickAccessItem("BZ-Library", const Color(0xFF42A5F5), "assets/images/library.png", ()=> Get.to(() => BZPadSplashScreen())),
-          _buildQuickAccessItem("BZ-Missions", const Color(0xFF66BB6A), "assets/images/daily_mission.png", ()=> Get.to(() => BZPadSplashScreen())),
+          _buildQuickAccessItem("BZ-Library", const Color(0xFF42A5F5), "assets/images/library.png", ()=> Get.to(() => LibrarySplashScreen())),
+          _buildQuickAccessItem("BZ-Missions", const Color(0xFF66BB6A), "assets/images/daily_mission.png", ()=> Get.to(() => DailyMissionSplashScreen())),
         ],
       ),
     );

@@ -4,6 +4,9 @@ import 'package:get/get.dart';
 import 'subscriber_choose_program_screen.dart';
 import '../bz_pad/screens/bz_pad_splash_screen.dart';
 import '../bz_wallet/screens/bz_wallet_splash_screen.dart';
+import '../bz_wallet/screens/top_up_screen.dart';
+import '../library/screens/library_splash_screen.dart';
+import '../daily_mission/screens/daily_mission_splash_screen.dart';
 import 'subscriber_menu_drawer.dart';
 
 
@@ -77,7 +80,11 @@ class _SubscriberHomeState extends State<SubscriberHome> {
               padding: const EdgeInsets.fromLTRB(20, 60, 20, 0),
               child: Row(
                 children: [
-
+                  // GestureDetector(
+                  //   onTap: () => _scaffoldKey.currentState?.openDrawer(),
+                  //   child: const Icon(Icons.menu, color: Colors.white, size: 28),
+                  // ),
+                  //const SizedBox(width: 16),
                   const Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
@@ -123,7 +130,7 @@ class _SubscriberHomeState extends State<SubscriberHome> {
                     ),
                     child: const Icon(Icons.notifications_none_rounded, color: Colors.black),
                   ),
-                  const SizedBox(width: 12),
+                  //const SizedBox(width: 12),
                 ],
               ),
             ),
@@ -146,40 +153,7 @@ class _SubscriberHomeState extends State<SubscriberHome> {
       padding: const EdgeInsets.fromLTRB(20, 60, 20, 30),
       child: Column(
         children: [
-          Row(
-            children: [
-              const Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Text(
-                    "Bonjour,",
-                    style: TextStyle(
-                      color: Colors.white,
-                      fontSize: 14,
-                    ),
-                  ),
-                  Text(
-                    "Kathy Onana",
-                    style: TextStyle(
-                      color: Colors.white,
-                      fontSize: 22,
-                      fontWeight: FontWeight.bold,
-                    ),
-                  ),
-                ],
-              ),
-              const Spacer(),
-              const SizedBox(width: 12),
-              // Container(
-              //   padding: const EdgeInsets.all(8),
-              //   decoration: BoxDecoration(
-              //     color: Colors.white,
-              //     shape: BoxShape.circle,
-              //   ),
-              //   child: const Icon(Icons.notifications_none_rounded, color: Colors.black),
-              // ),
-            ],
-          ),
+          const SizedBox(height: 40), // Space for the fixed header
           const SizedBox(height: 24),
           Row(
             mainAxisAlignment: MainAxisAlignment.spaceBetween,
@@ -191,24 +165,27 @@ class _SubscriberHomeState extends State<SubscriberHome> {
                   borderRadius: BorderRadius.circular(25),
                   border: Border.all(color: Color(0xFF8585F1)),
                 ),
-                child: Row(
-                  children: [
-                    const Icon(Icons.account_balance_wallet_outlined, size: 20, color: Color(0xFFFFFFFF)),
-                    const SizedBox(width: 8),
-                    const Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        Text(
-                          "TalkCoin Balance",
-                          style: TextStyle(color: Colors.white, fontSize: 12),
-                        ),
-                        Text(
-                          "\$00.00",
-                          style: TextStyle(color: Colors.white, fontSize: 16, fontWeight: FontWeight.bold),
-                        ),
-                      ],
-                    ),
-                  ],
+                child: GestureDetector(
+                  onTap: () => Get.to(() => const TopUpScreen()),
+                  child: Row(
+                    children: [
+                      const Icon(Icons.account_balance_wallet_outlined, size: 20, color: Color(0xFFFFFFFF)),
+                      const SizedBox(width: 8),
+                      const Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          Text(
+                            "TalkCoin Balance",
+                            style: TextStyle(color: Colors.white, fontSize: 12),
+                          ),
+                          Text(
+                            "\$00.00",
+                            style: TextStyle(color: Colors.white, fontSize: 16, fontWeight: FontWeight.bold),
+                          ),
+                        ],
+                      ),
+                    ],
+                  ),
                 ),
               ),
               Column(
@@ -547,6 +524,10 @@ class _SubscriberHomeState extends State<SubscriberHome> {
                       Get.to(() => const BZPadSplashScreen());
                     } else if (item['label'] == 'BZ-WALLET') {
                       Get.to(() => const BZWalletSplashScreen());
+                    } else if (item['label'] == 'BZ-Library') {
+                      Get.to(() => const LibrarySplashScreen());
+                    } else if (item['label'] == 'BZ-Daily Mission') {
+                      Get.to(() => const DailyMissionSplashScreen());
                     }
                   },
 

@@ -4,6 +4,9 @@ import '../controllers/bz_wallet_controller.dart';
 import '../widgets/balance_card.dart';
 import '../widgets/quick_action_item.dart';
 import '../widgets/transaction_item.dart';
+import '../widgets/send_gift_sheet.dart';
+import 'top_up_screen.dart';
+import 'transactions_history_screen.dart';
 
 class BZWalletHomeScreen extends StatelessWidget {
   const BZWalletHomeScreen({super.key});
@@ -13,7 +16,7 @@ class BZWalletHomeScreen extends StatelessWidget {
     final controller = Get.put(BZWalletController());
 
     return Scaffold(
-      backgroundColor: Colors.white,
+      backgroundColor: Color(0xFFF7F8FC),
       body: SafeArea(
         child: SingleChildScrollView(
           padding: const EdgeInsets.symmetric(horizontal: 20),
@@ -21,18 +24,23 @@ class BZWalletHomeScreen extends StatelessWidget {
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
               const SizedBox(height: 10),
-              IconButton(
-                padding: EdgeInsets.zero,
-                alignment: Alignment.centerLeft,
-                icon: const Icon(Icons.arrow_back_ios, color: Colors.black, size: 20),
-                onPressed: () => Get.back(),
+              Row(
+                children: [
+                  IconButton(
+                    padding: EdgeInsets.zero,
+                    alignment: Alignment.centerLeft,
+                    icon: const Icon(Icons.arrow_back_ios, color: Colors.black, size: 20),
+                    onPressed: () => Get.back(),
+                  ),
+
+                  Expanded(child: _buildHeader()),
+                ],
               ),
-              const SizedBox(height: 10),
-              _buildHeader(),
+
               const SizedBox(height: 30),
               const BalanceCard(),
               const SizedBox(height: 30),
-              _buildQuickActions(),
+              _buildQuickActions(context),
               const SizedBox(height: 30),
               _buildUpcomingSection(controller),
               const SizedBox(height: 30),
@@ -75,7 +83,7 @@ class BZWalletHomeScreen extends StatelessWidget {
           decoration: BoxDecoration(
             color: Colors.white,
             shape: BoxShape.circle,
-            border: Border.all(color: const Color(0xFFF3F4F6)),
+            border: Border.all(color: const Color(0xFFEBECEE)),
           ),
           child: const Badge(
             smallSize: 8,
@@ -87,7 +95,7 @@ class BZWalletHomeScreen extends StatelessWidget {
     );
   }
 
-  Widget _buildQuickActions() {
+  Widget _buildQuickActions(BuildContext context) {
     return Row(
       mainAxisAlignment: MainAxisAlignment.spaceBetween,
       children: [
@@ -95,7 +103,7 @@ class BZWalletHomeScreen extends StatelessWidget {
           icon: Icons.add,
           label: "Top Up",
           color: const Color(0xFF5151EF),
-          onTap: () {},
+          onTap: () => Get.to(() => const TopUpScreen()),
         ),
         QuickActionItem(
           icon: Icons.shopping_cart_outlined,
@@ -107,13 +115,20 @@ class BZWalletHomeScreen extends StatelessWidget {
           icon: Icons.card_giftcard_outlined,
           label: "Send Gift",
           color: const Color(0xFFEC4899),
-          onTap: () {},
+          onTap: () {
+            showModalBottomSheet(
+              context: context,
+              isScrollControlled: true,
+              backgroundColor: Colors.transparent,
+              builder: (context) => const SendGiftSheet(),
+            );
+          },
         ),
         QuickActionItem(
           icon: Icons.history_outlined,
           label: "History",
           color: const Color(0xFF6B7280),
-          onTap: () {},
+          onTap: () => Get.to(() => const TransactionsHistoryScreen()),
         ),
       ],
     );
@@ -315,7 +330,7 @@ class BZWalletHomeScreen extends StatelessWidget {
           ),
         ),
         TextButton(
-          onPressed: () {},
+          onPressed: () => Get.to(() => const TransactionsHistoryScreen()),
           child: const Text(
             "View All",
             style: TextStyle(color: Color(0xFF9CA3AF), fontSize: 12),

@@ -39,7 +39,7 @@ class _ImmersionPlansScreenState extends State<ImmersionPlansScreen> {
         ),
         centerTitle: true,
         title: const Text(
-          "IMMERSION++ Plans",
+          "IMMERSION++",
           style: TextStyle(
             color: Color(0xFF374151),
             fontSize: 20,

@@ -2,6 +2,7 @@ import 'dart:ui';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'subscriber_choose_program_screen.dart';
+import 'subscriber_menu_drawer.dart';
 
 class SubscriberProfileScreen extends StatelessWidget {
   const SubscriberProfileScreen({super.key});
@@ -10,6 +11,7 @@ class SubscriberProfileScreen extends StatelessWidget {
   Widget build(BuildContext context) {
     return Scaffold(
       backgroundColor: const Color(0xFFF7F8FC),
+      drawer: const SubscriberMenuDrawer(),
       body: SafeArea(
         child: Stack(
           children: [
@@ -92,14 +94,14 @@ class SubscriberProfileScreen extends StatelessWidget {
     return Padding(
       padding: const EdgeInsets.fromLTRB(16, 8, 16, 8),
       child: Row(
-        mainAxisAlignment: MainAxisAlignment.spaceBetween,
+        mainAxisAlignment: MainAxisAlignment.center,
         children: [
-          Builder(
-            builder: (context) => GestureDetector(
-              onTap: () => Scaffold.of(context).openDrawer(),
-              child: const Icon(Icons.menu, color: Color(0xFF1E293B), size: 28),
-            ),
-          ),
+          // Builder(
+          //   builder: (context) => GestureDetector(
+          //     onTap: () => Scaffold.of(context).openDrawer(),
+          //     child: const Icon(Icons.menu, color: Color(0xFF1E293B), size: 28),
+          //   ),
+          // ),
           RichText(
             text: const TextSpan(
               style: TextStyle(

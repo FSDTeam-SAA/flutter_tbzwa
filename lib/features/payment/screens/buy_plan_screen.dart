@@ -153,16 +153,16 @@ class BuyPlanScreen extends StatelessWidget {
                   ),
                   if (subtitle != null) ...[
                     const SizedBox(height: 2),
-                    Text(
-                      subtitle,
-                      style: TextStyle(
-                        color: isSelected
-                            ? const Color(0xFF374151)
-                            : const Color(0xFF374151),
-                        fontSize: 16,
-                        fontWeight: FontWeight.w500,
-                      ),
-                    ),
+                    // Text(
+                    //   subtitle,
+                    //   style: TextStyle(
+                    //     color: isSelected
+                    //         ? const Color(0xFF374151)
+                    //         : const Color(0xFF374151),
+                    //     fontSize: 16,
+                    //     fontWeight: FontWeight.w500,
+                    //   ),
+                    // ),
                   ],
                 ],
               ),
