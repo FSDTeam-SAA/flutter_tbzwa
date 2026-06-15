@@ -23,9 +23,9 @@ class ChooseProgramDetailsScreen extends StatelessWidget {
           icon: const Icon(Icons.arrow_back_ios_new, color: Color(0xFF1E293B), size: 20),
           onPressed: () => Get.back(),
         ),
-        title: Text(
+        title: _buildSubscriptText(
           title,
-          style: const TextStyle(
+          const TextStyle(
             color: Color(0xFF1E293B),
             fontSize: 20,
             fontWeight: FontWeight.bold,
@@ -102,9 +102,9 @@ class ChooseProgramDetailsScreen extends StatelessWidget {
                   Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
-                      Text(
+                      _buildSubscriptText(
                         subTitle,
-                        style: const TextStyle(
+                        const TextStyle(
                           color: Colors.white,
                           fontSize: 18,
                           fontWeight: FontWeight.w900,
@@ -161,6 +161,43 @@ class ChooseProgramDetailsScreen extends StatelessWidget {
           ],
         ),
       ),
+    );
+  }
+
+  Widget _buildSubscriptText(String text, TextStyle baseStyle) {
+    if (!text.contains('+')) {
+      return Text(text, style: baseStyle);
+    }
+
+    List<InlineSpan> spans = [];
+    final parts = text.split('+');
+
+    for (int i = 0; i < parts.length; i++) {
+      if (parts[i].isNotEmpty) {
+        spans.add(TextSpan(text: parts[i], style: baseStyle));
+      }
+
+      if (i < parts.length - 1) {
+        spans.add(
+          WidgetSpan(
+            alignment: PlaceholderAlignment.baseline,
+            baseline: TextBaseline.alphabetic,
+            child: Transform.translate(
+              offset: const Offset(1, -6), // Superscript shift
+              child: Text(
+                '+',
+                style: baseStyle.copyWith(
+                  fontSize: baseStyle.fontSize! * 0.65,
+                ),
+              ),
+            ),
+          ),
+        );
+      }
+    }
+
+    return Text.rich(
+      TextSpan(children: spans),
     );
   }
 }

@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
+import 'daily_voice_recording_screen.dart';
 
 class DailyMissionsScreen extends StatelessWidget {
   const DailyMissionsScreen({super.key});
@@ -12,7 +13,11 @@ class DailyMissionsScreen extends StatelessWidget {
         backgroundColor: Colors.transparent,
         elevation: 0,
         leading: IconButton(
-          icon: const Icon(Icons.arrow_back_ios_new_rounded, color: Color(0xFF374151), size: 20),
+          icon: const Icon(
+            Icons.arrow_back_ios_new_rounded,
+            color: Color(0xFF374151),
+            size: 20,
+          ),
           onPressed: () => Get.back(),
         ),
         title: const Text(
@@ -26,7 +31,7 @@ class DailyMissionsScreen extends StatelessWidget {
         centerTitle: true,
       ),
       body: SingleChildScrollView(
-        padding: const EdgeInsets.all(20),
+        padding: const EdgeInsets.all(18),
         child: Column(
           children: [
             GridView.count(
@@ -34,15 +39,18 @@ class DailyMissionsScreen extends StatelessWidget {
               physics: const NeverScrollableScrollPhysics(),
               crossAxisCount: 2,
               mainAxisSpacing: 16,
-              crossAxisSpacing: 16,
-              childAspectRatio: 1.12,
+              crossAxisSpacing: 12,
+              //childAspectRatio: 1.12,
               children: [
-                _buildMissionCard(
-                  "Daily Voice",
-                  "3/3 complete",
-                  "assets/images/voice.png",
-                  statusColor: Colors.green,
-                  isDone: true,
+                GestureDetector(
+                  onTap: () => Get.to(() => const DailyVoiceRecordingScreen()),
+                  child: _buildMissionCard(
+                    "Daily Voice",
+                    "3/3 complete",
+                    "assets/images/voice.png",
+                    statusColor: Colors.green,
+                    isDone: true,
+                  ),
                 ),
                 _buildMissionCard(
                   "Daily Video",
@@ -95,13 +103,21 @@ class DailyMissionsScreen extends StatelessWidget {
     );
   }
 
-  Widget _buildMissionCard(String title, String status, String image, {String? label, required Color statusColor, bool isDone = false, bool isReminder = false}) {
+  Widget _buildMissionCard(
+    String title,
+    String status,
+    String image, {
+    String? label,
+    required Color statusColor,
+    bool isDone = false,
+    bool isReminder = false,
+  }) {
     return Container(
       padding: const EdgeInsets.all(16),
       decoration: BoxDecoration(
         color: Colors.white,
         borderRadius: BorderRadius.circular(16),
-        border: Border.all(color: Color(0xFFEAEDF1))
+        border: Border.all(color: Color(0xFFEAEDF1)),
       ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
@@ -113,10 +129,22 @@ class DailyMissionsScreen extends StatelessWidget {
               shape: BoxShape.circle,
             ),
             child: label != null
-                ? Text(label, style: const TextStyle(color: Color(0xFF26A69A), fontWeight: FontWeight.bold, fontSize: 18))
-                : Image.asset(image, color: const Color(0xFF26A69A), width:  24, height: 24,),
+                ? Text(
+                    label,
+                    style: const TextStyle(
+                      color: Color(0xFF26A69A),
+                      fontWeight: FontWeight.bold,
+                      fontSize: 18,
+                    ),
+                  )
+                : Image.asset(
+                    image,
+                    color: const Color(0xFF26A69A),
+                    width: 24,
+                    height: 24,
+                  ),
           ),
-          SizedBox(height: 40,),
+          SizedBox(height: 30),
           Text(
             title,
             style: const TextStyle(
@@ -129,7 +157,11 @@ class DailyMissionsScreen extends StatelessWidget {
           Row(
             children: [
               Icon(
-                isReminder ? Icons.star : (isDone ? Icons.check_circle_outline_rounded : Icons.cancel_outlined),
+                isReminder
+                    ? Icons.star
+                    : (isDone
+                          ? Icons.check_circle_outline_rounded
+                          : Icons.cancel_outlined),
                 size: 14,
                 color: statusColor,
               ),
@@ -137,10 +169,7 @@ class DailyMissionsScreen extends StatelessWidget {
               Expanded(
                 child: Text(
                   status,
-                  style: TextStyle(
-                    color: Colors.grey[500],
-                    fontSize: 12,
-                  ),
+                  style: TextStyle(color: Colors.grey[500], fontSize: 12),
                 ),
               ),
             ],
@@ -161,7 +190,7 @@ class DailyMissionsScreen extends StatelessWidget {
             color: Colors.black.withOpacity(0.02),
             blurRadius: 10,
             offset: const Offset(0, 4),
-          )
+          ),
         ],
       ),
       child: Column(
@@ -191,10 +220,7 @@ class DailyMissionsScreen extends StatelessWidget {
               const SizedBox(width: 4),
               Text(
                 status,
-                style: TextStyle(
-                  color: Colors.grey[500],
-                  fontSize: 12,
-                ),
+                style: TextStyle(color: Colors.grey[500], fontSize: 12),
               ),
             ],
           ),

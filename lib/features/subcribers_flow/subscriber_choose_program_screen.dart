@@ -110,13 +110,13 @@ class SubscriberChooseProgramScreen extends StatelessWidget {
           color: color,
           borderRadius: BorderRadius.circular(24),
         ),
-        padding: const EdgeInsets.all(24),
+        padding: const EdgeInsets.all(15),
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            Text(
+            _buildSubscriptText(
               title,
-              style: const TextStyle(
+              const TextStyle(
                 color: Colors.white,
                 fontSize: 24,
                 fontWeight: FontWeight.w900,
@@ -202,6 +202,43 @@ class SubscriberChooseProgramScreen extends StatelessWidget {
           ],
         ),
       ),
+    );
+  }
+
+  Widget _buildSubscriptText(String text, TextStyle baseStyle) {
+    if (!text.contains('+')) {
+      return Text(text, style: baseStyle);
+    }
+
+    List<InlineSpan> spans = [];
+    final parts = text.split('+');
+
+    for (int i = 0; i < parts.length; i++) {
+      if (parts[i].isNotEmpty) {
+        spans.add(TextSpan(text: parts[i], style: baseStyle));
+      }
+
+      if (i < parts.length - 1) {
+        spans.add(
+          WidgetSpan(
+            alignment: PlaceholderAlignment.baseline,
+            baseline: TextBaseline.alphabetic,
+            child: Transform.translate(
+              offset: const Offset(1, -8), // Superscript shift
+              child: Text(
+                '+',
+                style: baseStyle.copyWith(
+                  fontSize: baseStyle.fontSize! * 0.65,
+                ),
+              ),
+            ),
+          ),
+        );
+      }
+    }
+
+    return Text.rich(
+      TextSpan(children: spans),
     );
   }
 }

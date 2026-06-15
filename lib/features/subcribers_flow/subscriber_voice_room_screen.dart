@@ -3,11 +3,12 @@ import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'subscriber_choose_program_screen.dart';
 
-class SubscriberVoiceRoomScreen  extends StatefulWidget {
+class SubscriberVoiceRoomScreen extends StatefulWidget {
   const SubscriberVoiceRoomScreen({super.key});
 
   @override
-  State<SubscriberVoiceRoomScreen> createState() => _SubscriberVoiceRoomScreenState();
+  State<SubscriberVoiceRoomScreen> createState() =>
+      _SubscriberVoiceRoomScreenState();
 }
 
 class _SubscriberVoiceRoomScreenState extends State<SubscriberVoiceRoomScreen> {
@@ -20,7 +21,7 @@ class _SubscriberVoiceRoomScreenState extends State<SubscriberVoiceRoomScreen> {
     "Lee",
     "Eduardo",
     "Calvin",
-    "Sarah"
+    "Sarah",
   ];
 
   late List<Map<String, dynamic>> _allRooms;
@@ -33,7 +34,8 @@ class _SubscriberVoiceRoomScreenState extends State<SubscriberVoiceRoomScreen> {
       return {
         "index": index + 1,
         "teacher": _teacherNames[index % _teacherNames.length],
-        "title": "Advanced English - Class ${(index + 1).toString().padLeft(2, '0')}"
+        "title":
+            "Advanced English - Class ${(index + 1).toString().padLeft(2, '0')}",
       };
     });
     _filteredRooms = _allRooms;
@@ -45,9 +47,11 @@ class _SubscriberVoiceRoomScreenState extends State<SubscriberVoiceRoomScreen> {
         _filteredRooms = _allRooms;
       } else {
         _filteredRooms = _allRooms
-            .where((room) =>
-        room['title'].toLowerCase().contains(query.toLowerCase()) ||
-            room['teacher'].toLowerCase().contains(query.toLowerCase()))
+            .where(
+              (room) =>
+                  room['title'].toLowerCase().contains(query.toLowerCase()) ||
+                  room['teacher'].toLowerCase().contains(query.toLowerCase()),
+            )
             .toList();
       }
     });
@@ -72,7 +76,11 @@ class _SubscriberVoiceRoomScreenState extends State<SubscriberVoiceRoomScreen> {
                       Builder(
                         builder: (context) => GestureDetector(
                           onTap: () => Scaffold.of(context).openDrawer(),
-                          child: const Icon(Icons.menu, color: Color(0xFF1E293B), size: 26),
+                          child: const Icon(
+                            Icons.menu,
+                            color: Color(0xFF1E293B),
+                            size: 26,
+                          ),
                         ),
                       ),
                       const Spacer(),
@@ -109,21 +117,15 @@ class _SubscriberVoiceRoomScreenState extends State<SubscriberVoiceRoomScreen> {
               child: BackdropFilter(
                 filter: ImageFilter.blur(sigmaX: 5.0, sigmaY: 5.0),
                 child: GestureDetector(
-                  onTap: () => Get.to(() => const SubscriberChooseProgramScreen()),
-                  child: Container(
-                    color: Colors.black.withOpacity(0.01),
-                  ),
+                  onTap: () =>
+                      Get.to(() => const SubscriberChooseProgramScreen()),
+                  child: Container(color: Colors.black.withOpacity(0.01)),
                 ),
               ),
             ),
 
             // ─── Unblurred Search Bar ──────────────────────────────────────────
-            Positioned(
-              top: 20,
-              left: 20,
-              right: 20,
-              child: _buildSearchBar(),
-            ),
+            Positioned(top: 20, left: 20, right: 20, child: _buildSearchBar()),
           ],
         ),
       ),
@@ -168,7 +170,11 @@ class _SubscriberVoiceRoomScreenState extends State<SubscriberVoiceRoomScreen> {
     );
   }
 
-  Widget _buildVoiceRoomCard({required int index, required String teacherName, bool hasBorder = false}) {
+  Widget _buildVoiceRoomCard({
+    required int index,
+    required String teacherName,
+    bool hasBorder = false,
+  }) {
     return Container(
       margin: const EdgeInsets.only(bottom: 12),
       padding: const EdgeInsets.all(16),
@@ -199,7 +205,9 @@ class _SubscriberVoiceRoomScreenState extends State<SubscriberVoiceRoomScreen> {
                 children: [
                   CircleAvatar(
                     radius: 20,
-                    backgroundImage: NetworkImage("https://i.pravatar.cc/150?u=$teacherName"),
+                    backgroundImage: NetworkImage(
+                      "https://i.pravatar.cc/150?u=$teacherName",
+                    ),
                   ),
                   const SizedBox(width: 12),
                   Text(
@@ -235,7 +243,9 @@ class _SubscriberVoiceRoomScreenState extends State<SubscriberVoiceRoomScreen> {
               ),
               child: CircleAvatar(
                 radius: 14,
-                backgroundImage: NetworkImage("https://i.pravatar.cc/150?u=p$index${DateTime.now().millisecond}"),
+                backgroundImage: NetworkImage(
+                  "https://i.pravatar.cc/150?u=p$index${DateTime.now().millisecond}",
+                ),
               ),
             ),
           );

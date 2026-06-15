@@ -43,16 +43,31 @@ class BuyPlanScreen extends StatelessWidget {
         child: Column(
           children: [
             /// Plan Option 1: Self Learning System
+            ///
             Obx(() {
               final isSelected = controller.selectedPlan.value == 1;
+              return _buildPlanCard(
+                number: 1,
+                title: "Non Paid Learning System",
+                subtitle: null,
+                isSelected: isSelected,
+                onTap: () {
+                  controller.selectPlan(1);
+                  Get.to(() =>  NavbarMenu());
+                },
+              );
+            }),
+            const SizedBox(height: 16),
+            Obx(() {
+              final isSelected = controller.selectedPlan.value == 2;
               return _buildPlanCard(
                 number: 1,
                 title: "Self Learning System",
                 subtitle: null,
                 isSelected: isSelected,
                 onTap: () {
-                  controller.selectPlan(1);
-                  Get.to(() => const NavbarMenu());
+                  controller.selectPlan(2);
+                  Get.to(() =>  NavbarMenu());
                 },
               );
             }),
@@ -60,14 +75,14 @@ class BuyPlanScreen extends StatelessWidget {
 
             /// Plan Option 2: Live Learning System
             Obx(() {
-              final isSelected = controller.selectedPlan.value == 2;
+              final isSelected = controller.selectedPlan.value == 3;
               return _buildPlanCard(
                 number: 2,
                 title: "Live Learning System",
                 subtitle: "(Immersion++ Plans)",
                 isSelected: isSelected,
                 onTap: () {
-                  controller.selectPlan(2);
+                  controller.selectPlan(3);
                   Get.to(() => const ImmersionPlansScreen());
                 },
               );

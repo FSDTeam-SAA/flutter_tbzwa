@@ -2,7 +2,7 @@ import 'dart:ui';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'subscriber_choose_program_screen.dart';
-import 'subscriber_menu_drawer.dart';
+import 'subscriber_choose_program_screen.dart';
 
 class SubscriberCommunityScreen extends StatefulWidget {
   const SubscriberCommunityScreen({super.key});
@@ -61,7 +61,6 @@ class _SubscriberCommunityScreenState extends State<SubscriberCommunityScreen> {
   Widget build(BuildContext context) {
     return Scaffold(
       backgroundColor: const Color(0xFFF4F5F9),
-      drawer: const SubscriberMenuDrawer(),
       body: SafeArea(
         child: Stack(
           children: [
@@ -86,12 +85,11 @@ class _SubscriberCommunityScreenState extends State<SubscriberCommunityScreen> {
                           ),
                         )
                       : _selectedTab == 1
-                          ? _buildVoiceTab()
-                          : _buildLiveTab(),
+                      ? _buildVoiceTab()
+                      : _buildLiveTab(),
                 ),
               ],
             ),
-
           ],
         ),
       ),

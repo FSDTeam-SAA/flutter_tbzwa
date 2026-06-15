@@ -2,6 +2,8 @@ import 'package:flutter/material.dart';
 import 'package:flutter_tbzwa/core/constants/assest_const.dart';
 import 'package:flutter_tbzwa/features/community/screens/create_post_screen.dart';
 import 'package:get/get.dart';
+import '../../subcribers_flow/subscriber_menu_drawer.dart';
+import 'community_messages_screen.dart';
 
 class CommunityScreen extends StatefulWidget {
   const CommunityScreen({super.key});
@@ -17,9 +19,38 @@ class _CommunityScreenState extends State<CommunityScreen> {
   Widget build(BuildContext context) {
     return Scaffold(
       backgroundColor: Color(0xFFF7F8FC),
+      drawer: const SubscriberMenuDrawer(),
       body: SafeArea(
         child: Column(
           children: [
+            SizedBox(
+              height: 50,
+              child: Stack(
+                alignment: Alignment.center,
+                children: [
+                  Align(
+                    alignment: Alignment.centerLeft,
+                    child: Builder(
+                      builder: (context) => GestureDetector(
+                        onTap: () => Scaffold.of(context).openDrawer(),
+                        child: Padding(
+                          padding: const EdgeInsets.only(left: 18.0),
+                          child: const Icon(
+                            Icons.menu,
+                            color: Color(0xFF1E293B),
+                            size: 28,
+                          ),
+                        ),
+                      ),
+                    ),
+                  ),
+                  _buildHeaders(),
+                ],
+              ),
+            ),
+            
+            Divider(color: Color(0xFFD1D1D1),),
+
             _buildHeader(),
             _buildFilters(),
             Expanded(
@@ -102,13 +133,61 @@ class _CommunityScreenState extends State<CommunityScreen> {
               child: const Icon(Icons.edit_outlined, color: Color(0xFF1E293B)),
             ),
           ),
+
+          SizedBox(width: 12,),
+
+          GestureDetector(
+            onTap: () => Get.to(() => const CommunityMessagesScreen()),
+            child: Container(
+              height: 48,
+              width: 48,
+              decoration: BoxDecoration(
+                  border: Border.all(color: const Color(0xFFE2E8F0)),
+                  borderRadius: BorderRadius.circular(12),
+                  color: Color(0xFFFFFFFF)
+              ),
+              child: const Icon(Icons.chat, color: Color(0xFF1E293B)),
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildHeaders() {
+    return Padding(
+      padding: const EdgeInsets.fromLTRB(16, 16, 16, 12),
+      child: Row(
+        mainAxisAlignment: MainAxisAlignment.center,
+        children: [
+          // Builder(
+          //   builder: (context) => GestureDetector(
+          //     onTap: () => Scaffold.of(context).openDrawer(),
+          //     child: const Icon(Icons.menu, color: Color(0xFF1E293B), size: 24),
+          //   ),
+          // ),
+          RichText(
+            text: const TextSpan(
+              style: TextStyle(
+                fontSize: 20,
+                fontWeight: FontWeight.bold,
+                color: Color(0xFF1E293B),
+                letterSpacing: 0.5,
+              ),
+              children: [
+                TextSpan(text: "TALK/"),
+                TextSpan(text: "'BZ/"),
+              ],
+            ),
+          ),
+          const SizedBox(width: 24), // balance spacer
         ],
       ),
     );
   }
 
   Widget _buildFilters() {
-    final filters = ['Recent', 'Image', 'Voice', 'Video'];
+    final filters = ['Recent', 'Image', 'Voice', 'Video', ];
     return Container(
       height: 40,
       margin: const EdgeInsets.only(bottom: 20),

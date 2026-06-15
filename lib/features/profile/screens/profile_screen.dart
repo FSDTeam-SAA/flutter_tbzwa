@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_tbzwa/core/constants/assest_const.dart';
 import 'package:get/get.dart';
+import '../../subcribers_flow/subscriber_menu_drawer.dart';
 
 class ProfileScreen extends StatefulWidget {
   const ProfileScreen({super.key});
@@ -14,27 +15,68 @@ class _ProfileScreenState extends State<ProfileScreen> {
   Widget build(BuildContext context) {
     return Scaffold(
       backgroundColor: const Color(0xFFF7F8FC),
+      drawer: const SubscriberMenuDrawer(),
       body: SafeArea(
         child: SingleChildScrollView(
-          padding: const EdgeInsets.all(20),
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              _buildProfileHeader(),
+            SizedBox(
+            height: 50,
+            child: Stack(
+              alignment: Alignment.center,
+              children: [
+                Align(
+                  alignment: Alignment.centerLeft,
+                  child: Builder(
+                    builder: (context) => GestureDetector(
+                      onTap: () => Scaffold.of(context).openDrawer(),
+                      child: Padding(
+                        padding: const EdgeInsets.only(left: 18.0),
+                        child: const Icon(
+                          Icons.menu,
+                          color: Color(0xFF1E293B),
+                          size: 28,
+                        ),
+                      ),
+                    ),
+                  ),
+                ),
+                _buildHeader(),
+              ],
+            ),
+          ),
+              Divider(
+                color: Color(0xFFD1D1D1),
+              ),
+              const SizedBox(height: 16),
+              Padding(
+                padding: const EdgeInsets.symmetric(horizontal: 18.0),
+                child: _buildProfileHeader(),
+              ),
               const SizedBox(height: 30),
               _buildSectionTitle('Performance Analytics'),
               const SizedBox(height: 12),
               Row(
                 children: [
-                  Expanded(child: _buildAnalyticsCard('Current Streak', '12 Days', Icons.bolt_rounded)),
+                  Expanded(child: Padding(
+                    padding: const EdgeInsets.only(left: 18.0),
+                    child: _buildAnalyticsCard('Current Streak', '12 Days', Icons.bolt_rounded),
+                  )),
                   const SizedBox(width: 16),
-                  Expanded(child: _buildAnalyticsCard('Average Score', '70%', Icons.percent_rounded)),
+                  Expanded(child: Padding(
+                    padding: const EdgeInsets.only(right: 18.0),
+                    child: _buildAnalyticsCard('Average Score', '70%', Icons.percent_rounded),
+                  )),
                 ],
               ),
               const SizedBox(height: 30),
               _buildSectionTitle('Weekly Consistency'),
               const SizedBox(height: 12),
-              _buildConsistencyChart(),
+              Padding(
+                padding: const EdgeInsets.symmetric(horizontal: 18.0),
+                child: _buildConsistencyChart(),
+              ),
               const SizedBox(height: 30),
               _buildSectionTitle('Quick Access'),
               const SizedBox(height: 12),
@@ -49,7 +91,10 @@ class _ProfileScreenState extends State<ProfileScreen> {
               _buildSettingsItem('Buy Plan', Icons.card_membership_rounded),
               _buildSettingsItem('Account Settings', Icons.settings_outlined),
               const SizedBox(height: 30),
-              _buildLogoutButton(),
+              Padding(
+                padding: const EdgeInsets.symmetric(horizontal: 18.0),
+                child: _buildLogoutButton(),
+              ),
               const SizedBox(height: 20),
             ],
           ),
@@ -130,12 +175,15 @@ class _ProfileScreenState extends State<ProfileScreen> {
   }
 
   Widget _buildSectionTitle(String title) {
-    return Text(
-      title,
-      style: const TextStyle(
-        fontSize: 16,
-        fontWeight: FontWeight.w700,
-        color: Color(0xFF374151),
+    return Padding(
+      padding: const EdgeInsets.symmetric(horizontal: 18.0),
+      child: Text(
+        title,
+        style: const TextStyle(
+          fontSize: 16,
+          fontWeight: FontWeight.w700,
+          color: Color(0xFF374151),
+        ),
       ),
     );
   }
@@ -226,82 +274,120 @@ class _ProfileScreenState extends State<ProfileScreen> {
   }
 
   Widget _buildAccessItem(String title, String subtitle, IconData icon) {
-    return Container(
-      margin: const EdgeInsets.only(bottom: 12),
-      padding: const EdgeInsets.all(16),
-      decoration: BoxDecoration(
-        color: Colors.white,
-        borderRadius: BorderRadius.circular(16),
-      ),
-      child: Row(
-        children: [
-          Container(
-            padding: const EdgeInsets.all(10),
-            decoration: BoxDecoration(
-              color: const Color(0xFFEAFDFA),
-              borderRadius: BorderRadius.circular(12),
+    return Padding(
+      padding: const EdgeInsets.symmetric(horizontal: 18.0),
+      child: Container(
+        margin: const EdgeInsets.only(bottom: 12),
+        padding: const EdgeInsets.all(16),
+        decoration: BoxDecoration(
+          color: Colors.white,
+          borderRadius: BorderRadius.circular(16),
+        ),
+        child: Row(
+          children: [
+            Container(
+              padding: const EdgeInsets.all(10),
+              decoration: BoxDecoration(
+                color: const Color(0xFFEAFDFA),
+                borderRadius: BorderRadius.circular(12),
+              ),
+              child: Icon(icon, color: const Color(0xFF22A892), size: 22),
             ),
-            child: Icon(icon, color: const Color(0xFF22A892), size: 22),
-          ),
-          const SizedBox(width: 16),
-          Expanded(
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Text(
-                  title,
-                  style: const TextStyle(
-                    fontSize: 15,
-                    fontWeight: FontWeight.w700,
-                    color: Color(0xFF1E293B),
+            const SizedBox(width: 16),
+            Expanded(
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text(
+                    title,
+                    style: const TextStyle(
+                      fontSize: 15,
+                      fontWeight: FontWeight.w700,
+                      color: Color(0xFF1E293B),
+                    ),
                   ),
-                ),
-                Text(
-                  subtitle,
-                  style: const TextStyle(
-                    fontSize: 12,
-                    color: Color(0xFF94A3B8),
+                  Text(
+                    subtitle,
+                    style: const TextStyle(
+                      fontSize: 12,
+                      color: Color(0xFF94A3B8),
+                    ),
                   ),
-                ),
-              ],
+                ],
+              ),
             ),
-          ),
-          const Icon(Icons.chevron_right_rounded, color: Color(0xFFBBBBBB)),
-        ],
+            const Icon(Icons.chevron_right_rounded, color: Color(0xFFBBBBBB)),
+          ],
+        ),
       ),
     );
   }
 
   Widget _buildSettingsItem(String title, IconData icon) {
-    return Container(
-      margin: const EdgeInsets.only(bottom: 12),
-      padding: const EdgeInsets.all(16),
-      decoration: BoxDecoration(
-        color: Colors.white,
-        borderRadius: BorderRadius.circular(16),
-      ),
-      child: Row(
-        children: [
-          Container(
-            padding: const EdgeInsets.all(10),
-            decoration: BoxDecoration(
-              color: const Color(0xFFEAFDFA),
-              borderRadius: BorderRadius.circular(12),
+    return Padding(
+      padding: const EdgeInsets.symmetric(horizontal: 18.0),
+      child: Container(
+        margin: const EdgeInsets.only(bottom: 12),
+        padding: const EdgeInsets.all(16),
+        decoration: BoxDecoration(
+          color: Colors.white,
+          borderRadius: BorderRadius.circular(16),
+        ),
+        child: Row(
+          children: [
+            Container(
+              padding: const EdgeInsets.all(10),
+              decoration: BoxDecoration(
+                color: const Color(0xFFEAFDFA),
+                borderRadius: BorderRadius.circular(12),
+              ),
+              child: Icon(icon, color: const Color(0xFF22A892), size: 22),
             ),
-            child: Icon(icon, color: const Color(0xFF22A892), size: 22),
-          ),
-          const SizedBox(width: 16),
-          Expanded(
-            child: Text(
-              title,
-              style: const TextStyle(
-                fontSize: 15,
-                fontWeight: FontWeight.w600,
-                color: Color(0xFF1E293B),
+            const SizedBox(width: 16),
+            Expanded(
+              child: Text(
+                title,
+                style: const TextStyle(
+                  fontSize: 15,
+                  fontWeight: FontWeight.w600,
+                  color: Color(0xFF1E293B),
+                ),
               ),
             ),
+            const Icon(Icons.chevron_right_rounded, color: Color(0xFFCBD5E1)),
+          ],
+        ),
+      ),
+    );
+  }
+
+  Widget _buildHeader() {
+    return Padding(
+      padding: const EdgeInsets.fromLTRB(16, 16, 16, 12),
+      child: Row(
+        mainAxisAlignment: MainAxisAlignment.center,
+        children: [
+          // Builder(
+          //   builder: (context) => GestureDetector(
+          //     onTap: () => Scaffold.of(context).openDrawer(),
+          //     child: const Icon(Icons.menu, color: Color(0xFF1E293B), size: 24),
+          //   ),
+          // ),
+          RichText(
+            text: const TextSpan(
+              style: TextStyle(
+                fontSize: 20,
+                fontWeight: FontWeight.bold,
+                color: Color(0xFF1E293B),
+                letterSpacing: 0.5,
+              ),
+              children: [
+                TextSpan(text: "TALK/"),
+                TextSpan(text: "'BZ/"),
+              ],
+            ),
           ),
-          const Icon(Icons.chevron_right_rounded, color: Color(0xFFCBD5E1)),
+          const SizedBox(width: 24), // balance spacer
         ],
       ),
     );

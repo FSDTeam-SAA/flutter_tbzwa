@@ -38,12 +38,29 @@ class _ImmersionPlansScreenState extends State<ImmersionPlansScreen> {
           onPressed: () => Get.back(),
         ),
         centerTitle: true,
-        title: const Text(
-          "IMMERSION++",
-          style: TextStyle(
-            color: Color(0xFF374151),
-            fontSize: 20,
-            fontWeight: FontWeight.w700,
+        title: Text.rich(
+          TextSpan(
+            style: const TextStyle(
+              color: Color(0xFF374151),
+              fontSize: 20,
+              fontWeight: FontWeight.w700,
+            ),
+            children: [
+              const TextSpan(text: "IMMERSION"),
+              WidgetSpan(
+                child: Transform.translate(
+                  offset: const Offset(0, -8),
+                  child: const Text(
+                    "++",
+                    style: TextStyle(
+                      color: Color(0xFF374151),
+                      fontSize: 12,
+                      fontWeight: FontWeight.w700,
+                    ),
+                  ),
+                ),
+              ),
+            ],
           ),
         ),
       ),

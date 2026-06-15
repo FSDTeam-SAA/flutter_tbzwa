@@ -49,6 +49,8 @@ class TodayProgressScreen extends StatelessWidget {
             const SizedBox(height: 40),
             _buildWeeklyActivity(),
             const SizedBox(height: 40),
+            _buildEvolutionChart(),
+            const SizedBox(height: 40),
             _buildStatsCards(),
             const SizedBox(height: 40),
             ElevatedButton(
@@ -215,33 +217,121 @@ class TodayProgressScreen extends StatelessWidget {
       {'day': 'S', 'progress': 0.7},
     ];
 
-    return Row(
-      mainAxisAlignment: MainAxisAlignment.spaceBetween,
-      children: days.map((d) => Column(
-        children: [
-          Container(
-            width: 40,
-            height: 60,
-            decoration: BoxDecoration(
-              borderRadius: BorderRadius.circular(8),
-            ),
-            child: FractionallySizedBox(
-              heightFactor: d['progress'] as double,
-              alignment: Alignment.bottomCenter,
-              child: Container(
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        const Text("Weekly Activity", style: TextStyle(fontWeight: FontWeight.bold, fontSize: 16, color: Colors.black)),
+        const SizedBox(height: 24),
+        Row(
+          mainAxisAlignment: MainAxisAlignment.spaceBetween,
+          children: days.map((d) => Column(
+            children: [
+              Container(
+                width: 32,
+                height: 100,
                 decoration: BoxDecoration(
-                  color: const Color(0xFF30EDCD),
+                  color: const Color(0xFFF3F4F6),
                   borderRadius: BorderRadius.circular(8),
                 ),
+                child: FractionallySizedBox(
+                  heightFactor: d['progress'] as double,
+                  alignment: Alignment.bottomCenter,
+                  child: Container(
+                    decoration: BoxDecoration(
+                      gradient: const LinearGradient(
+                        colors: [Color(0xFF30EDCD), Color(0xFF26A69A)],
+                        begin: Alignment.topCenter,
+                        end: Alignment.bottomCenter,
+                      ),
+                      borderRadius: BorderRadius.circular(8),
+                    ),
+                  ),
+                ),
               ),
-            ),
-          ),
-          const SizedBox(height: 8),
-          Text(d['day'] as String, style: const TextStyle(fontSize: 12, fontWeight: FontWeight.bold, color: Color(0xFF1F2937))),
-        ],
-      )).toList(),
+              const SizedBox(height: 8),
+              Text(d['day'] as String, style: const TextStyle(fontSize: 12, fontWeight: FontWeight.bold, color: Color(0xFF6B7280))),
+            ],
+          )).toList(),
+        ),
+      ],
     );
   }
+
+  Widget _buildEvolutionChart() {
+    return Container(
+      padding: const EdgeInsets.all(24),
+      decoration: BoxDecoration(
+        color: Colors.white,
+        borderRadius: BorderRadius.circular(24),
+        boxShadow: [
+          BoxShadow(
+            color: Colors.black.withOpacity(0.04),
+            blurRadius: 10,
+            offset: const Offset(0, 4),
+          ),
+        ],
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Row(
+            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+            children: [
+              Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                   const Text(
+                    "Overall Evolution",
+                    style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold, color: Color(0xFF1F2937)),
+                  ),
+                  const Text(
+                    "Statistical progress since Day 1",
+                    style: TextStyle(fontSize: 12, color: Color(0xFF6B7280)),
+                  ),
+                ],
+              ),
+              Container(
+                padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
+                decoration: BoxDecoration(
+                  color: const Color(0xFFEBFDF5),
+                  borderRadius: BorderRadius.circular(20),
+                ),
+                child: const Row(
+                  children: [
+                    Icon(Icons.trending_up, color: Color(0xFF10B981), size: 16),
+                    SizedBox(width: 4),
+                    Text(
+                      "+15%",
+                      style: TextStyle(color: Color(0xFF10B981), fontSize: 12, fontWeight: FontWeight.bold),
+                    ),
+                  ],
+                ),
+              ),
+            ],
+          ),
+          const SizedBox(height: 32),
+          SizedBox(
+            height: 120,
+            width: double.infinity,
+            child: CustomPaint(
+              painter: _EvolutionPainter(),
+            ),
+          ),
+          const SizedBox(height: 16),
+          const Row(
+            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+            children: [
+              Text("Day 1", style: TextStyle(fontSize: 11, color: Color(0xFF9CA3AF), fontWeight: FontWeight.bold)),
+              Text("Current", style: TextStyle(fontSize: 11, color: Color(0xFF9CA3AF), fontWeight: FontWeight.bold)),
+            ],
+          ),
+        ],
+      ),
+    );
+  }
+
+
+
 
   Widget _buildStatsCards() {
     return Row(
@@ -280,4 +370,48 @@ class TodayProgressScreen extends StatelessWidget {
       ),
     );
   }
+}
+
+class _EvolutionPainter extends CustomPainter {
+  @override
+  void paint(Canvas canvas, Size size) {
+    final paint = Paint()
+      ..color = const Color(0xFF26A69A)
+      ..style = PaintingStyle.stroke
+      ..strokeWidth = 3
+      ..strokeCap = StrokeCap.round;
+
+    final shadowPaint = Paint()
+      ..color = const Color(0xFF26A69A).withOpacity(0.1)
+      ..style = PaintingStyle.stroke
+      ..strokeWidth = 6
+      ..strokeCap = StrokeCap.round;
+
+    final path = Path();
+    path.moveTo(0, size.height * 0.8);
+    path.cubicTo(
+      size.width * 0.2, size.height * 0.85,
+      size.width * 0.4, size.height * 0.4,
+      size.width * 0.6, size.height * 0.5,
+    );
+    path.cubicTo(
+      size.width * 0.8, size.height * 0.6,
+      size.width * 0.9, size.height * 0.1,
+      size.width, size.height * 0.2,
+    );
+
+    canvas.drawPath(path, shadowPaint);
+    canvas.drawPath(path, paint);
+
+    // Draw points
+    final pointPaint = Paint()
+      ..color = const Color(0xFF26A69A)
+      ..style = PaintingStyle.fill;
+
+    canvas.drawCircle(Offset(0, size.height * 0.8), 4, pointPaint);
+    canvas.drawCircle(Offset(size.width, size.height * 0.2), 4, pointPaint);
+  }
+
+  @override
+  bool shouldRepaint(covariant CustomPainter oldDelegate) => false;
 }

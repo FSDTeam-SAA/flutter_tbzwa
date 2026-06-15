@@ -27,18 +27,15 @@ class NavbarMenu extends StatelessWidget {
       drawer: const SubscriberMenuDrawer(),
       body: Obx(() => controller.screens[controller.selectedIndex.value]),
       bottomNavigationBar: Obx(
-            () => Padding(
+        () => Padding(
           padding: const EdgeInsets.only(top: 8.0),
           child: Container(
             margin: const EdgeInsets.fromLTRB(20, 0, 20, 25),
             padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 16),
             decoration: BoxDecoration(
-                color: Colors.white,
-                borderRadius: BorderRadius.circular(26),
-                border: Border.all(
-                    width: 2,
-                    color: Color(0xFFEAEDF1)
-                )
+              color: Colors.white,
+              borderRadius: BorderRadius.circular(26),
+              border: Border.all(width: 2, color: Color(0xFFEAEDF1)),
             ),
             child: Row(
               mainAxisAlignment: MainAxisAlignment.spaceAround,
@@ -54,8 +51,11 @@ class NavbarMenu extends StatelessWidget {
                       // curve: Curves.easeInOut,
                       margin: const EdgeInsets.symmetric(horizontal: 2),
                       padding: isSelected
-                          ? const EdgeInsets.symmetric(vertical: 8,)
-                          : const EdgeInsets.symmetric(vertical: 6, horizontal: 4),
+                          ? const EdgeInsets.symmetric(vertical: 8)
+                          : const EdgeInsets.symmetric(
+                              vertical: 6,
+                              horizontal: 4,
+                            ),
                       decoration: BoxDecoration(
                         color: isSelected
                             ? const Color(0xFF5456E7)
@@ -81,8 +81,7 @@ class NavbarMenu extends StatelessWidget {
                               color: isSelected
                                   ? Colors.white
                                   : const Color(0xFF90A4AE),
-                              fontWeight:
-                              isSelected ? FontWeight.bold : null,
+                              fontWeight: isSelected ? FontWeight.bold : null,
                               fontSize: 11,
                             ),
                           ),
@@ -116,6 +115,6 @@ class NavbarController extends GetxController {
     SubcriberLearnScreen(),
     SubscriberCommunityScreen(),
     SubscriberVoiceRoomScreen(),
-    SubscriberProfileScreen()
+    SubscriberProfileScreen(),
   ];
 }

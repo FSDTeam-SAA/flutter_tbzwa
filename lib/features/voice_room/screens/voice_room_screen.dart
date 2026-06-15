@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import '../../subcribers_flow/subscriber_menu_drawer.dart';
 
 class VoiceRoom extends StatefulWidget {
   const VoiceRoom({super.key});
@@ -54,10 +55,42 @@ class _VoiceRoomState extends State<VoiceRoom> {
   Widget build(BuildContext context) {
     return Scaffold(
       backgroundColor: const Color(0xFFF7F8FC),
+      drawer: const SubscriberMenuDrawer(),
       body: SafeArea(
         child: Column(
           children: [
-            const SizedBox(height: 20),
+            const SizedBox(height: 16),
+            SizedBox(
+                height: 50,
+                child: Stack(
+                  alignment: Alignment.center,
+                  children: [
+                    Align(
+                      alignment: Alignment.centerLeft,
+                      child: Builder(
+                        builder: (context) => GestureDetector(
+                          onTap: () => Scaffold.of(context).openDrawer(),
+                          child: Padding(
+                            padding: const EdgeInsets.only(left: 18.0),
+                            child: const Icon(
+                              Icons.menu,
+                              color: Color(0xFF1E293B),
+                              size: 28,
+                            ),
+                          ),
+                        ),
+                      ),
+                    ),
+                    _buildHeader(),
+                  ],
+                ),
+              ),
+
+            Divider(
+              color: Color(0xFFD1D1D1),
+            ),
+            
+            const SizedBox(height: 16),
             Padding(
               padding: const EdgeInsets.symmetric(horizontal: 20),
               child: _buildSearchBar(),
@@ -169,6 +202,39 @@ class _VoiceRoomState extends State<VoiceRoom> {
               _buildParticipantAvatars(),
             ],
           ),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildHeader() {
+    return Padding(
+      padding: const EdgeInsets.fromLTRB(16, 16, 16, 12),
+      child: Row(
+        mainAxisAlignment: MainAxisAlignment.center,
+        children: [
+          // Builder(
+          //   builder: (context) => GestureDetector(
+          //     onTap: () => Scaffold.of(context).openDrawer(),
+          //     child: const Icon(Icons.menu, color: Color(0xFF1E293B), size: 24),
+          //   ),
+          // ),
+          RichText(
+            text: const TextSpan(
+              style: TextStyle(
+                fontSize: 20,
+                fontWeight: FontWeight.bold,
+                color: Color(0xFF1E293B),
+                letterSpacing: 0.5,
+              ),
+              children: [
+                TextSpan(text: "TALK/"),
+                TextSpan(text: "'BZ/"),
+              ],
+            ),
+          ),
+          const SizedBox(width: 24),
+          // balance spacer
         ],
       ),
     );

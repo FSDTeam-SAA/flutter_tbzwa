@@ -9,7 +9,6 @@ import 'core/constants/assest_const.dart';
 import 'core/utils/app_svg.dart';
 import 'features/home/screens/home_screen.dart';
 
-
 class NavigationMenu extends StatelessWidget {
   const NavigationMenu({super.key});
 
@@ -29,10 +28,7 @@ class NavigationMenu extends StatelessWidget {
             decoration: BoxDecoration(
               color: Colors.white,
               borderRadius: BorderRadius.circular(26),
-              border: Border.all(
-                width: 2,
-                color: Color(0xFFEAEDF1)
-              )
+              border: Border.all(width: 2, color: Color(0xFFEAEDF1)),
             ),
             child: Row(
               mainAxisAlignment: MainAxisAlignment.spaceAround,
@@ -48,8 +44,11 @@ class NavigationMenu extends StatelessWidget {
                       // curve: Curves.easeInOut,
                       margin: const EdgeInsets.symmetric(horizontal: 2),
                       padding: isSelected
-                          ? const EdgeInsets.symmetric(vertical: 8,)
-                          : const EdgeInsets.symmetric(vertical: 6, horizontal: 4),
+                          ? const EdgeInsets.symmetric(vertical: 8)
+                          : const EdgeInsets.symmetric(
+                              vertical: 6,
+                              horizontal: 4,
+                            ),
                       decoration: BoxDecoration(
                         color: isSelected
                             ? const Color(0xFF26A69A)
@@ -75,8 +74,7 @@ class NavigationMenu extends StatelessWidget {
                               color: isSelected
                                   ? Colors.white
                                   : const Color(0xFF90A4AE),
-                              fontWeight:
-                                  isSelected ? FontWeight.bold : null,
+                              fontWeight: isSelected ? FontWeight.bold : null,
                               fontSize: 11,
                             ),
                           ),
@@ -110,6 +108,6 @@ class NavigationController extends GetxController {
     LearnScreen(),
     CommunityScreen(),
     VoiceRoom(),
-    ProfileScreen()
+    ProfileScreen(),
   ];
 }

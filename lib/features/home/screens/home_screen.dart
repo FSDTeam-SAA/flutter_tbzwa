@@ -419,7 +419,7 @@ class _HomeScreenState extends State<HomeScreen> {
           _buildQuickAccessItem("BZPad", const Color(0xFF5C6BC0), "assets/images/bz_pad.png", ()=> Get.to(() => BZPadSplashScreen())),
           _buildQuickAccessItem("BZ-WALLET", const Color(0xFFFDD835), "assets/images/bzwallet.png", ()=> Get.to(() => BZWalletSplashScreen())),
           _buildQuickAccessItem("BZ-Library", const Color(0xFF42A5F5), "assets/images/library.png", ()=> Get.to(() => LibrarySplashScreen())),
-          _buildQuickAccessItem("BZ-Missions", const Color(0xFF66BB6A), "assets/images/daily_mission.png", ()=> Get.to(() => DailyMissionSplashScreen())),
+          _buildQuickAccessItem("BZ-Daily Missions", const Color(0xFF66BB6A), "assets/images/daily_mission.png", ()=> Get.to(() => DailyMissionSplashScreen())),
         ],
       ),
     );
