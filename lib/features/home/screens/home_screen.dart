@@ -5,7 +5,9 @@ import 'package:get/get.dart';
 import '../../../navigation_menu.dart';
 import '../../bz_pad/screens/bz_pad_splash_screen.dart';
 import '../../daily_mission/screens/daily_mission_splash_screen.dart';
+import 'audio_recording_screen.dart';
 import 'daily_mission_screen.dart';
+import 'daily_video_recording_screen.dart';
 
 class HomeScreen extends StatefulWidget {
   const HomeScreen({super.key});
@@ -268,24 +270,30 @@ class _HomeScreenState extends State<HomeScreen> {
     return Row(
       children: [
         Expanded(
-          child: _buildMissionCard(
-            "Daily Audio",
-            "3/3 complete",
-            'assets/images/voice.png',
-            const Color(0xFFE0F2F1),
-            const Color(0xFF26A69A),
-            isDone: true,
+          child: GestureDetector(
+            onTap: () => Get.to(() => AudioRecordingScreen()),
+            child: _buildMissionCard(
+              "Daily Audio",
+              "3/3 complete",
+              'assets/images/voice.png',
+              const Color(0xFFE0F2F1),
+              const Color(0xFF26A69A),
+              isDone: true,
+            ),
           ),
         ),
         const SizedBox(width: 16),
         Expanded(
-          child: _buildMissionCard(
-            "Daily Video",
-            "1/3 in progress",
-            "assets/images/video.png",
-            const Color(0xFFE1F5FE),
-            const Color(0xFF03A9F4),
-            isDone: false,
+          child: GestureDetector(
+            onTap: () => Get.to(() => const DailyVideoRecordingScreen()),
+            child: _buildMissionCard(
+              "Daily Video",
+              "1/3 in progress",
+              "assets/images/video.png",
+              const Color(0xFFE1F5FE),
+              const Color(0xFF03A9F4),
+              isDone: false,
+            ),
           ),
         ),
       ],

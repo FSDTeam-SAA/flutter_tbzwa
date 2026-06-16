@@ -23,7 +23,7 @@ class NavigationMenu extends StatelessWidget {
         () => Padding(
           padding: const EdgeInsets.only(top: 8.0),
           child: Container(
-            margin: const EdgeInsets.fromLTRB(20, 0, 20, 25),
+            margin: const EdgeInsets.fromLTRB(5, 0, 5, 25),
             padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 16),
             decoration: BoxDecoration(
               color: Colors.white,
@@ -42,7 +42,7 @@ class NavigationMenu extends StatelessWidget {
                     child: Container(
                       // duration: const Duration(milliseconds: 300),
                       // curve: Curves.easeInOut,
-                      margin: const EdgeInsets.symmetric(horizontal: 2),
+                      //margin: const EdgeInsets.symmetric(horizontal: 2),
                       padding: isSelected
                           ? const EdgeInsets.symmetric(vertical: 8)
                           : const EdgeInsets.symmetric(

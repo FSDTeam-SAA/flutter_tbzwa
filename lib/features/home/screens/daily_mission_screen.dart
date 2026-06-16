@@ -1,6 +1,10 @@
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
+import 'daily_video_recording_screen.dart';
 import 'daily_voice_recording_screen.dart';
+import 'daily_vocabulary_screen.dart';
+import 'daily_summary_screen.dart';
+import 'daily_immersion_screen.dart';
 
 class DailyMissionsScreen extends StatelessWidget {
   const DailyMissionsScreen({super.key});
@@ -52,34 +56,46 @@ class DailyMissionsScreen extends StatelessWidget {
                     isDone: true,
                   ),
                 ),
-                _buildMissionCard(
-                  "Daily Video",
-                  "1/3 in progress",
-                  'assets/images/video.png',
-                  statusColor: Colors.orange,
-                  isDone: false,
+                GestureDetector(
+                  onTap: ()=> Get.to(() => DailyVideoRecordingScreen()),
+                  child: _buildMissionCard(
+                    "Daily Video",
+                    "1/3 in progress",
+                    'assets/images/video.png',
+                    statusColor: Colors.orange,
+                    isDone: false,
+                  ),
                 ),
-                _buildMissionCard(
-                  "Daily Vocabulary",
-                  "3/3 complete",
-                  'assets/images/vocabulary.png',
-                  label: "Aa",
-                  statusColor: Colors.green,
-                  isDone: true,
+                GestureDetector(
+                  onTap: () => Get.to(() => const DailyVocabularyScreen()),
+                  child: _buildMissionCard(
+                    "Daily Vocabulary",
+                    "3/3 complete",
+                    'assets/images/vocabulary.png',
+                    label: "Aa",
+                    statusColor: Colors.green,
+                    isDone: true,
+                  ),
                 ),
-                _buildMissionCard(
-                  "Daily Summary",
-                  "1/3 in progress",
-                  'assets/images/summary.png',
-                  statusColor: Colors.orange,
-                  isDone: false,
+                GestureDetector(
+                  onTap: () => Get.to(() => const DailySummaryScreen()),
+                  child: _buildMissionCard(
+                    "Daily Summary",
+                    "1/3 in progress",
+                    'assets/images/summary.png',
+                    statusColor: Colors.orange,
+                    isDone: false,
+                  ),
                 ),
-                _buildMissionCard(
-                  "Daily English Imrs.",
-                  "3/3 complete",
-                  "assets/images/eng_immerce.png",
-                  statusColor: Colors.green,
-                  isDone: true,
+                GestureDetector(
+                  onTap: () => Get.to(() => const DailyImmersionScreen()),
+                  child: _buildMissionCard(
+                    "Daily English Imrs.",
+                    "3/3 complete",
+                    "assets/images/eng_immerce.png",
+                    statusColor: Colors.green,
+                    isDone: true,
+                  ),
                 ),
                 _buildMissionCard(
                   "Daily BZPad",
