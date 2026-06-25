@@ -15,6 +15,15 @@ class Images {
 
   // Event image
   final String eventImage = '$_base/events_bg.jpg';
+
+  // Instructor
+  final String home = '$_base/home.png';
+  final String group = '$_base/group.png';
+  final String chat = '$_base/message.png';
+  final String room = '$_base/room.png';
+  final String profile = '$_base/profile.png';
+  final String roomIcon = '$_base/roomIcon.png'; 
+  final String clock = '$_base/clock.png';
 }
 
 class Icons {
