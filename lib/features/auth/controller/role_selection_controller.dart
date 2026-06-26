@@ -1,7 +1,8 @@
 import 'package:get/get.dart';
 
-import '../../../navbar_menu.dart';
+import '../../navigation/instructor_nav_menu.dart';
 import '../../payment/screens/buy_plan_screen.dart';
+import '../../instructor/screens/instructor_dashboard_screen.dart';
 
 class RoleSelectionController extends GetxController {
   // Selection State
@@ -13,6 +14,10 @@ class RoleSelectionController extends GetxController {
   }
 
   void proceed() {
-    Get.to(() => BuyPlanScreen());
+    if (selectedRole.value == 'instructor') {
+      Get.to(() => const NavigationMenu());
+    } else {
+      Get.to(() => const BuyPlanScreen());
+    }
   }
 }
