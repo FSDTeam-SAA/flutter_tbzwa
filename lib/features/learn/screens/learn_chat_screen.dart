@@ -5,6 +5,7 @@ import 'package:flutter_tbzwa/features/learn/controllers/learn_chat_controller.d
 import 'package:get/get.dart';
 
 import 'class_details_screen.dart';
+import 'live_classes_screen.dart';
 
 class LearnChatScreen extends StatelessWidget {
   final String batchName;
@@ -119,7 +120,7 @@ class LearnChatScreen extends StatelessWidget {
           ),
         ),
         actions: [
-          GestureDetector(onTap: () => Get.to(ClassDetailsScreen()),
+          GestureDetector(onTap: () => Get.to(() => const LiveClassesScreen()),
               child: Padding(
             padding: const EdgeInsets.only(right: 8.0),
             child: Container(decoration:BoxDecoration(

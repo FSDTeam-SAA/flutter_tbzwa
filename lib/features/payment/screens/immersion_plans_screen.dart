@@ -18,8 +18,8 @@ class _ImmersionPlansScreenState extends State<ImmersionPlansScreen> {
   final List<Map<String, dynamic>> _durations = [
     {"duration": "3 months", "price": "€45/mo", "badge": null},
     {"duration": "6 months", "price": "€35/mo", "badge": null},
-    {"duration": "9 months", "price": "€30/mo", "badge": "BEST VALUE"},
-    {"duration": "12 months", "price": "€25/mo", "badge": null},
+    {"duration": "9 months", "price": "€30/mo", "badge": null},
+    {"duration": "12 months", "price": "€25/mo", "badge": "BEST VALUE"},
   ];
 
   @override

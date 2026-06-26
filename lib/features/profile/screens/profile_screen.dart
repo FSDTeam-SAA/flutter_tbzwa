@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_tbzwa/core/constants/assest_const.dart';
+import 'package:flutter_tbzwa/features/profile/screens/profile_edit_screen.dart';
 import 'package:get/get.dart';
 import '../../subcribers_flow/subscriber_menu_drawer.dart';
 
@@ -89,11 +90,17 @@ class _ProfileScreenState extends State<ProfileScreen> {
               const SizedBox(height: 12),
               _buildSettingsItem('Language', Icons.language_rounded),
               _buildSettingsItem('Buy Plan', Icons.card_membership_rounded),
-              _buildSettingsItem('Account Settings', Icons.settings_outlined),
+              _buildSettingsItem('Change Password', Icons.lock_outline),
+
               const SizedBox(height: 30),
               Padding(
                 padding: const EdgeInsets.symmetric(horizontal: 18.0),
-                child: _buildLogoutButton(),
+                child: _buildLogoutButton('Delete Account'),
+              ),
+              SizedBox(height: 10,),
+              Padding(
+                padding: const EdgeInsets.symmetric(horizontal: 18.0),
+                child: _buildLogoutButton('Logout'),
               ),
               const SizedBox(height: 20),
             ],
@@ -105,7 +112,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
 
   Widget _buildProfileHeader() {
     return Container(
-      padding: const EdgeInsets.all(16),
+      padding: const EdgeInsets.all(12),
       decoration: BoxDecoration(
         color: Colors.white,
         borderRadius: BorderRadius.circular(20),
@@ -151,6 +158,11 @@ class _ProfileScreenState extends State<ProfileScreen> {
                   ],
                 ),
               ),
+              
+              Padding(
+                padding: const EdgeInsets.only(left: 18.0),
+                child: IconButton(onPressed: (){Get.to(() => ProfileEditScreen());}, icon: Icon(Icons.mode_edit_outlined, color: Colors.black54,)),
+              )
             ],
           ),
           const SizedBox(height: 12),
@@ -393,7 +405,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
     );
   }
 
-  Widget _buildLogoutButton() {
+  Widget _buildLogoutButton(String text) {
     return Container(
       width: double.infinity,
       padding: const EdgeInsets.symmetric(vertical: 16),
@@ -401,13 +413,13 @@ class _ProfileScreenState extends State<ProfileScreen> {
         color: const Color(0xFFFCEDED),
         borderRadius: BorderRadius.circular(16),
       ),
-      child: const Row(
+      child:  Row(
         mainAxisAlignment: MainAxisAlignment.center,
         children: [
-          Icon(Icons.logout_rounded, color: Color(0xFFE24B4A), size: 20),
-          const SizedBox(width: 8),
+          Icon(text == 'Logout' ? Icons.logout_rounded: null, color: Color(0xFFE24B4A), size: 20),
+           SizedBox(width: 8),
           Text(
-            'Log Out',
+            text,
             style: TextStyle(
               color: Color(0xFFE24B4A),
               fontSize: 15,

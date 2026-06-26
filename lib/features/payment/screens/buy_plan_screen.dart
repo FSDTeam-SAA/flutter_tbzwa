@@ -44,20 +44,20 @@ class BuyPlanScreen extends StatelessWidget {
           children: [
             /// Plan Option 1: Self Learning System
             ///
-            Obx(() {
-              final isSelected = controller.selectedPlan.value == 1;
-              return _buildPlanCard(
-                number: 1,
-                title: "Non Paid Learning System",
-                subtitle: null,
-                isSelected: isSelected,
-                onTap: () {
-                  controller.selectPlan(1);
-                  Get.to(() =>  NavbarMenu());
-                },
-              );
-            }),
-            const SizedBox(height: 16),
+            // Obx(() {
+            //   final isSelected = controller.selectedPlan.value == 1;
+            //   return _buildPlanCard(
+            //     number: 1,
+            //     title: "Non Paid Learning System",
+            //     subtitle: null,
+            //     isSelected: isSelected,
+            //     onTap: () {
+            //       controller.selectPlan(1);
+            //       Get.to(() =>  NavbarMenu());
+            //     },
+            //   );
+            // }),
+            //const SizedBox(height: 16),
             Obx(() {
               final isSelected = controller.selectedPlan.value == 2;
               return _buildPlanCard(

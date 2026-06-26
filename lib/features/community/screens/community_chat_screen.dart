@@ -1,5 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
+import 'audio_call_screen.dart';
+import 'video_call_screen.dart';
 
 class CommunityChatScreen extends StatefulWidget {
   final String name;
@@ -116,7 +118,10 @@ class _CommunityChatScreenState extends State<CommunityChatScreen> {
               ),
               child: const Icon(Icons.phone_outlined, color: Color(0xFF5456E7), size: 18),
             ),
-            onPressed: () {},
+            onPressed: () => Get.to(() => AudioCallScreen(
+              name: widget.name,
+              imageUrl: widget.imageUrl,
+            )),
           ),
           IconButton(
             icon: Container(
@@ -127,7 +132,10 @@ class _CommunityChatScreenState extends State<CommunityChatScreen> {
               ),
               child: const Icon(Icons.videocam_outlined, color: Color(0xFF5456E7), size: 18),
             ),
-            onPressed: () {},
+            onPressed: () => Get.to(() => VideoCallScreen(
+              name: widget.name,
+              imageUrl: widget.imageUrl,
+            )),
           ),
           const SizedBox(width: 8),
         ],

@@ -74,7 +74,7 @@ class _LearnScreenState extends State<LearnScreen> {
                   crossAxisCount: 2,
                   mainAxisSpacing: 16,
                   crossAxisSpacing: 16,
-                  childAspectRatio: 1.1,
+                  //childAspectRatio: 1.1,
                   children: [
                     _buildLevelCard(
                       title: "START ZONE",
@@ -146,9 +146,9 @@ class _LearnScreenState extends State<LearnScreen> {
           const SizedBox(height: 8),
           Row(
             children: [
-              const Text(
+              _buildTitleWithPlus(
                 "START ZONE",
-                style: TextStyle(
+                const TextStyle(
                   color: Color(0xFF374151),
                   fontSize: 24,
                   fontWeight: FontWeight.bold,
@@ -229,9 +229,9 @@ class _LearnScreenState extends State<LearnScreen> {
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  Text(
+                  _buildTitleWithPlus(
                     title,
-                    style: const TextStyle(
+                    const TextStyle(
                       color: Colors.white,
                       fontSize: 18,
                       fontWeight: FontWeight.bold,
@@ -267,6 +267,42 @@ class _LearnScreenState extends State<LearnScreen> {
           ],
         ),
       ),
+    );
+  }
+
+  Widget _buildTitleWithPlus(String title, TextStyle style) {
+    if (!title.contains('+')) {
+      return Text(title, style: style);
+    }
+
+    final List<InlineSpan> children = [];
+    final parts = title.split('+');
+
+    for (int i = 0; i < parts.length; i++) {
+      if (parts[i].isNotEmpty) {
+        children.add(TextSpan(text: parts[i]));
+      }
+      if (i < parts.length - 1) {
+        children.add(
+          WidgetSpan(
+            alignment: PlaceholderAlignment.middle,
+            child: Transform.translate(
+              offset: const Offset(0, -6),
+              child: Text(
+                '+',
+                style: style.copyWith(
+                  fontSize: style.fontSize! * 0.65,
+                  height: 1.0,
+                ),
+              ),
+            ),
+          ),
+        );
+      }
+    }
+
+    return Text.rich(
+      TextSpan(children: children, style: style),
     );
   }
 }

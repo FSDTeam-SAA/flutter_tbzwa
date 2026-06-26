@@ -43,7 +43,7 @@ class KeysToSuccessScreen extends StatelessWidget {
         "title": "Film your Progress (3 min)",
         "desc":
             "Record 3 short videos (45-60 sec each). Seeing yourself speak is the best way to improve!",
-        "image": "assets/images/video_camera.png",
+        "image": "assets/images/camera.png",
         "fallbackIcon": Icons.text_fields_rounded,
       },
       {

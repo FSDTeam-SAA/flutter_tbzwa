@@ -2,6 +2,10 @@ import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import '../bz_pad/screens/bz_pad_splash_screen.dart';
 import '../bz_wallet/screens/bz_wallet_splash_screen.dart';
+import '../daily_mission/screens/daily_mission_splash_screen.dart';
+import '../library/screens/library_splash_screen.dart';
+import '../bz_wallet/widgets/send_gift_sheet.dart';
+import '../profile/screens/referral_screen.dart';
 
 class SubscriberMenuDrawer extends StatelessWidget {
   const SubscriberMenuDrawer({super.key});
@@ -70,25 +74,42 @@ class SubscriberMenuDrawer extends StatelessWidget {
               context,
               icon: Icons.library_books_outlined,
               label: "BZ-Library",
-              onTap: () => Navigator.pop(context),
+              onTap: () {
+                Navigator.pop(context);
+                Get.to(() => LibrarySplashScreen());
+              } 
             ),
             _buildMenuItem(
               context,
               icon: Icons.task_alt_outlined,
               label: "BZ-Daily Mission",
-              onTap: () => Navigator.pop(context),
+              onTap: () {
+                Navigator.pop(context);
+                DailyMissionSplashScreen();
+              }
             ),
             _buildMenuItem(
               context,
               icon: Icons.card_giftcard_outlined,
               label: "Reward/Gifts",
-              onTap: () => Navigator.pop(context),
+              onTap: () {
+                Navigator.pop(context);
+                showModalBottomSheet(
+                  context: context,
+                  isScrollControlled: true,
+                  backgroundColor: Colors.transparent,
+                  builder: (context) => const SendGiftSheet(),
+                );
+              },
             ),
             _buildMenuItem(
               context,
               icon: Icons.reply_outlined,
               label: "Referral",
-              onTap: () => Navigator.pop(context),
+              onTap: () {
+                Navigator.pop(context);
+                Get.to(() => const ReferralScreen());
+              },
             ),
             _buildMenuItem(
               context,
