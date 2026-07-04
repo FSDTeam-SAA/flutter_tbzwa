@@ -1,4 +1,7 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_tbzwa/features/auth/screens/login_screen.dart';
+import 'package:flutter_tbzwa/features/auth/screens/role_selection_screen.dart';
+import 'package:flutter_tbzwa/navigation_menu.dart';
 import 'package:get/get.dart';
 import 'package:video_player/video_player.dart';
 
@@ -50,7 +53,7 @@ class SplashController extends GetxController {
         await Future.delayed(duration);
       } else {
         print("SplashController: Video duration is zero, waiting for 5 seconds fallback.");
-        await Future.delayed(const Duration(seconds: 5));
+        await Future.delayed(const Duration(seconds: 0));
       }
     } catch (e) {
 
@@ -71,17 +74,18 @@ class SplashController extends GetxController {
     final isAuth = await _authStorageService.isAuthenticated();
 
     if (isAuth) {
-      // Get.offAll(() => NavigationMenu());
+      Get.to(() => LoginScreen());
+      //Get.offAll(() => RoleSelectionScreen());
       // For now, if no navigation target is defined for Auth, go to Onboarding or similar
       // Or uncomment the above if NavigationMenu exists.
-      Get.off(() => const OnboardingScreen());
+    
     } else if (savedEmail != null && savedPassword != null) {
-      // Get.offAll(
-      //   () => LoginScreen(
-      //     email: savedEmail,
-      //     password: savedPassword,
-      //   ),
-      // );
+      Get.offAll(
+        () => LoginScreen(
+          // email: savedEmail,
+          // password: savedPassword,
+        ),
+      );
       Get.off(() => const OnboardingScreen());
     } else {
       Get.off(() => const OnboardingScreen());

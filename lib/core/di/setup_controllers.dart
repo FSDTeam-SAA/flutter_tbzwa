@@ -1,8 +1,7 @@
 import 'package:get/get.dart';
-
-import '../utils/getx_helper.dart';
+import '../../features/auth/controller/auth_controller.dart';
 
 Future<void> setupControllers() async {
   // --- App Controllers ---
-
+  Get.lazyPut(() => AuthController());
 }

@@ -1,0 +1,258 @@
+import 'package:dartz/dartz.dart';
+import 'package:flutter/material.dart';
+import 'package:get/get.dart';
+
+import '../../../core/base/base_controller.dart';
+import '../../../core/services/auth_storage_service.dart';
+import '../../auth/model/request/login_request.dart';
+import '../../auth/model/request/register_request.dart';
+import '../../auth/model/request/otp_request.dart';
+import '../../auth/model/request/reset_password_request.dart';
+import '../../auth/repositories/auth_repository.dart';
+import '../screens/role_selection_screen.dart';
+import '../screens/login_screen.dart';
+import '../screens/verify_code_screen.dart';
+
+class AuthController extends BaseController {
+  final AuthRepository _authRepo = Get.find<AuthRepository>();
+  final AuthStorageService _authStorageService = AuthStorageService();
+
+  // Form Controllers (can be used if needed, or passed from screens)
+  final emailController = TextEditingController();
+  final passwordController = TextEditingController();
+  final nameController = TextEditingController();
+  final confirmPasswordController = TextEditingController();
+  final referralCodeController = TextEditingController();
+
+  // Reset Password controllers
+  final otpController = TextEditingController();
+  final newPasswordController = TextEditingController();
+
+  final loginFormKey = GlobalKey<FormState>();
+  final signupFormKey = GlobalKey<FormState>();
+  final forgotPassFormKey = GlobalKey<FormState>();
+  final resetPassFormKey = GlobalKey<FormState>();
+
+  // Interactive States
+  final isPasswordVisible = false.obs;
+  final isConfirmPasswordVisible = false.obs;
+  final isAgreedToTerms = false.obs;
+
+  @override
+  void onClose() {
+    emailController.dispose();
+    passwordController.dispose();
+    nameController.dispose();
+    confirmPasswordController.dispose();
+    referralCodeController.dispose();
+    otpController.dispose();
+    newPasswordController.dispose();
+    super.onClose();
+  }
+
+  // Toggles
+  void togglePasswordVisibility() => isPasswordVisible.toggle();
+  void toggleConfirmPasswordVisibility() => isConfirmPasswordVisible.toggle();
+  void toggleTermsAgreement() => isAgreedToTerms.toggle();
+
+  // --- Registration ---
+  Future<void> register() async {
+    if (!signupFormKey.currentState!.validate()) return;
+
+    if (!isAgreedToTerms.value) {
+      Get.snackbar(
+        "Terms & Conditions",
+        "You must agree to the Terms and Conditions to continue.",
+        snackPosition: SnackPosition.BOTTOM,
+        backgroundColor: Colors.red[600],
+        colorText: Colors.white,
+      );
+      return;
+    }
+
+    setLoading(true);
+    clearError();
+
+    final request = RegisterRequest(
+      fullName: nameController.text.trim(),
+      email: emailController.text.trim(),
+      password: passwordController.text,
+      confirmPassword: confirmPasswordController.text,
+      referralCode: referralCodeController.text.isNotEmpty 
+          ? referralCodeController.text.trim() 
+          : null,
+    );
+
+    final result = await _authRepo.register(request);
+
+    setLoading(false);
+
+    result.fold(
+      (fail) {
+        setError(fail.message);
+        Get.snackbar("Error", fail.message, backgroundColor: Colors.red[600], colorText: Colors.white);
+      },
+      (success) {
+        Get.snackbar(
+          "Success",
+          success.message,
+          snackPosition: SnackPosition.BOTTOM,
+          backgroundColor: Colors.green[600],
+          colorText: Colors.white,
+        );
+        // Optionally navigate to OTP Verification Screen
+        Get.to(() => const LoginScreen());
+      },
+    );
+  }
+
+  // --- Login ---
+  Future<void> login() async {
+    if (!loginFormKey.currentState!.validate()) return;
+
+    setLoading(true);
+    clearError();
+
+    final request = LoginRequest(
+      email: emailController.text.trim(),
+      password: passwordController.text,
+    );
+
+    final result = await _authRepo.login(request);
+
+    setLoading(false);
+
+    result.fold(
+      (fail) {
+        setError(fail.message);
+        Get.snackbar("Login Failed", fail.message, backgroundColor: Colors.red[600], colorText: Colors.white);
+      },
+      (success) async {
+        final data = success.data;
+        if (data != null) {
+          await _authStorageService.storeAuthData(
+            accessToken: data.accessToken,
+            refreshToken: data.refreshToken,
+            userId: data.user.id,
+            role: data.user.role,
+          );
+
+          Get.snackbar(
+            "Success",
+            "Welcome back, ${data.user.fullName}!",
+            snackPosition: SnackPosition.BOTTOM,
+            backgroundColor: Colors.green[600],
+            colorText: Colors.white,
+          );
+
+          Get.offAll(() => const RoleSelectionScreen());
+        }
+      },
+    );
+  }
+
+  // --- Forgot Password ---
+  Future<void> forgotPassword() async {
+    if (!forgotPassFormKey.currentState!.validate()) return;
+
+    setLoading(true);
+    clearError();
+
+    final email = emailController.text.trim();
+    final result = await _authRepo.forgotPassword(email);
+
+    setLoading(false);
+
+    result.fold(
+      (fail) {
+        setError(fail.message);
+        Get.snackbar("Error", fail.message, backgroundColor: Colors.red[600], colorText: Colors.white);
+      },
+      (success) {
+        Get.snackbar("Success", success.message, backgroundColor: Colors.green[600], colorText: Colors.white);
+        Get.to(() => VerifyCodeScreen(email: email));
+      },
+    );
+  }
+
+  // --- Verify OTP for Reset ---
+  Future<String?> verifyResetOTP(String email) async {
+    if (otpController.text.length < 6) {
+      Get.snackbar("Error", "Please enter a valid 6-digit OTP", backgroundColor: Colors.red[600], colorText: Colors.white);
+      return null;
+    }
+
+    setLoading(true);
+    clearError();
+
+    final request = OTPRequest(
+      email: email,
+      otp: otpController.text.trim(),
+    );
+
+    final result = await _authRepo.verifyResetOTP(request);
+
+    setLoading(false);
+
+    return result.fold(
+      (fail) {
+        setError(fail.message);
+        Get.snackbar("Error", fail.message, backgroundColor: Colors.red[600], colorText: Colors.white);
+        return null;
+      },
+      (success) => success.data, // This is the resetToken
+    );
+  }
+
+  // --- Reset Password ---
+  Future<void> resetPassword(String resetToken) async {
+    if (!resetPassFormKey.currentState!.validate()) return;
+
+    setLoading(true);
+    clearError();
+
+    final request = ResetPasswordRequest(
+      resetToken: resetToken,
+      newPassword: newPasswordController.text,
+      confirmPassword: confirmPasswordController.text,
+    );
+
+    final result = await _authRepo.resetPassword(request);
+
+    setLoading(false);
+
+    result.fold(
+      (fail) {
+        setError(fail.message);
+        Get.snackbar("Error", fail.message, backgroundColor: Colors.red[600], colorText: Colors.white);
+      },
+      (success) {
+        Get.snackbar("Success", success.message, backgroundColor: Colors.green[600], colorText: Colors.white);
+        Get.offAll(() => const LoginScreen());
+      },
+    );
+  }
+
+  // --- Token Management ---
+  Future<bool> refreshToken() async {
+    final token = await _authStorageService.getRefreshToken();
+    if (token == null) return false;
+
+    final result = await _authRepo.refreshToken(token);
+
+    return result.fold(
+      (fail) => false,
+      (success) async {
+        await _authStorageService.storeAccessToken(accessToken: success.data);
+        return true;
+      },
+    );
+  }
+
+  // --- Logout ---
+  Future<void> logout() async {
+    await _authRepo.logout(); // Best effort backend logout
+    await _authStorageService.clearAuthData();
+    Get.offAll(() => const LoginScreen());
+  }
+}

@@ -7,7 +7,7 @@ import 'package:get/get.dart';
 import '../../../core/common/widgets/app_logo.dart';
 import '../../../core/common/widgets/app_scaffold.dart';
 import '../../../core/common/widgets/button_widgets.dart';
-import '../controller/signup_controller.dart';
+import '../controller/auth_controller.dart';
 
 // Raw SVG icons for Google and Apple social buttons to ensure clean vector scaling
 const String googleSvg =
@@ -77,7 +77,7 @@ class SignUpScreen extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final controller = Get.put(SignUpController());
+    final controller = Get.find<AuthController>();
 
     return AppScaffold(
       backgroundColor: const Color(0xFFF9FAFC), // Ultra premium soft background
@@ -98,7 +98,7 @@ class SignUpScreen extends StatelessWidget {
         child: Padding(
           padding: const EdgeInsets.only(bottom: 40),
           child: Form(
-            key: controller.formKey,
+            key: controller.signupFormKey,
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.stretch,
               children: [
@@ -107,8 +107,8 @@ class SignUpScreen extends StatelessWidget {
                 Center(
                   child: AppLogo(
                     images: 'assets/images/mainLogo.png',
-                    height: 93,
-                    width: 72,
+                    height: 150,
+                    width: 150,
                   ),
                 ),
                 const SizedBox(height: 24),
@@ -266,9 +266,10 @@ class SignUpScreen extends StatelessWidget {
                 ),
                 const SizedBox(height: 24),
 
-                /// Referral Code Box (Dotted Container styling)
-                Obx(() {
-                  final isVerified = controller.referredByName.value.isNotEmpty;
+                // Referral Code Box (Dotted Container styling)
+                Builder(builder: (context) {
+                  // Note: Referred logic can be updated in AuthController if needed
+                  const isVerified = false; 
                   final primaryColor = isVerified
                       ? const Color(0xFF0F9B8E)
                       : const Color(0xFF5151EF);
@@ -327,7 +328,7 @@ class SignUpScreen extends StatelessWidget {
                                     fillColor: Colors.white,
                                     contentPadding: const EdgeInsets.symmetric(
                                       horizontal: 16,
-                                      vertical: 12,
+                                      vertical: 14,
                                     ),
                                     border: OutlineInputBorder(
                                       borderRadius: BorderRadius.circular(12),
@@ -370,9 +371,9 @@ class SignUpScreen extends StatelessWidget {
                                         size: 18,
                                       ),
                                       const SizedBox(width: 8),
-                                      Text(
-                                        "Referred by ${controller.referredByName.value}",
-                                        style: const TextStyle(
+                                      const Text(
+                                        "Referred",
+                                        style: TextStyle(
                                           color: Color(0xFF0F9B8E),
                                           fontSize: 13,
                                           fontWeight: FontWeight.w600,
@@ -402,7 +403,7 @@ class SignUpScreen extends StatelessWidget {
                         ),
                         child: Text(
                           isVerified
-                              ? "${controller.referredByName.value} will receive a reward automatically when you subscribe to any paid program."
+                              ? "Friend will receive a reward automatically when you subscribe to any paid program."
                               : "If a friend invited you, enter their User ID here. They will earn a reward when you subscribe to a program.",
                           style: TextStyle(
                             fontSize: 12.5,
@@ -422,7 +423,7 @@ class SignUpScreen extends StatelessWidget {
                 /// Main "Create Account" Action Button
                 PrimaryButton(
                   text: 'Create Account',
-                  onApiPressed: controller.signUp,
+                  onApiPressed: controller.register,
                 ),
                 const SizedBox(height: 20),
 

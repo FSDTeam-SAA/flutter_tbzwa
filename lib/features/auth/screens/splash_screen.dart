@@ -12,23 +12,35 @@ class SplashScreen extends StatelessWidget {
     final controller = Get.put(SplashController());
 
     return Scaffold(
-      backgroundColor: Colors.black,
-      body: SizedBox.expand(
-        child: Obx(() {
-          if (controller.isVideoInitialized.value &&
-              controller.videoController != null) {
-            return AspectRatio(
-              aspectRatio: controller.videoController!.value.aspectRatio,
-              child: VideoPlayer(controller.videoController!),
-            );
-          } else {
-            return const Center(
-              child: CircularProgressIndicator(
-                color: Colors.white,
-              ),
-            );
-          }
-        }),
+      backgroundColor: Colors.white,
+      body: Stack(
+        fit: StackFit.expand,
+        children: [
+          // Background Image
+          Image.asset(
+            'assets/images/Splash.png',
+            fit: BoxFit.cover,
+          ),
+          
+          // Video Player Overlay
+          Obx(() {
+            if (controller.isVideoInitialized.value &&
+                controller.videoController != null) {
+              return SizedBox.expand(
+                child: FittedBox(
+                  fit: BoxFit.cover,
+                  child: SizedBox(
+                    width: 140,
+                    height: 80,
+                    child: VideoPlayer(controller.videoController!),
+                  ),
+                ),
+              );
+            } else {
+              return const SizedBox.shrink();
+            }
+          }),
+        ],
       ),
     );
 

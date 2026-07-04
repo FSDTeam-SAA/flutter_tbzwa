@@ -5,7 +5,8 @@ import 'package:get/get.dart';
 import '../../../core/common/widgets/app_logo.dart';
 import '../../../core/common/widgets/app_scaffold.dart';
 import '../../../core/common/widgets/button_widgets.dart';
-import '../controller/login_controller.dart';
+import '../controller/auth_controller.dart';
+import 'forgot_password_screen.dart';
 import 'signup_screen.dart';
 
 // Raw SVG icons for Google and Apple social buttons to ensure clean vector scaling
@@ -27,7 +28,7 @@ class LoginScreen extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final controller = Get.put(LoginController());
+    final controller = Get.find<AuthController>();
 
     return AppScaffold(
       backgroundColor: const Color(0xFFF9FAFC), // Ultra premium soft background
@@ -41,7 +42,7 @@ class LoginScreen extends StatelessWidget {
         child: Padding(
           padding: const EdgeInsets.only(bottom: 40),
           child: Form(
-            key: controller.formKey,
+            key: controller.loginFormKey,
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.stretch,
               children: [
@@ -50,8 +51,8 @@ class LoginScreen extends StatelessWidget {
                 Center(
                   child: AppLogo(
                     images: 'assets/images/mainLogo.png',
-                    height: 93,
-                    width: 72,
+                    height: 150,
+                    width: 150,
                   ),
                 ),
                 const SizedBox(height: 24),
@@ -130,15 +131,7 @@ class LoginScreen extends StatelessWidget {
                 Align(
                   alignment: Alignment.centerRight,
                   child: GestureDetector(
-                    onTap: () {
-                      Get.snackbar(
-                        "Reset Password",
-                        "Password reset email sent!",
-                        snackPosition: SnackPosition.BOTTOM,
-                        backgroundColor: const Color(0xFF5151EF),
-                        colorText: Colors.white,
-                      );
-                    },
+                    onTap: () => Get.to(() => const ForgotPasswordScreen()),
                     child: const Text(
                       "Forgot Password?",
                       style: TextStyle(

@@ -1,6 +1,6 @@
 class ApiConstants {
   /// [Base Configuration]
-  static const String baseDomain = 'http://10.10.5.48:5006'; // Noyon Office
+  static const String baseDomain = 'http://localhost:5001'; // Noyon Office
   // static const String baseDomain = 'http://192.168.10.243:5006'; // Noyon Office Wifi
   // static const String baseDomain = 'http://192.168.0.218:5006'; // Noyon Home
 
@@ -127,16 +127,14 @@ class AuthEndpoints {
 
   final String login = '$_base/login';
   final String register = '$_base/register';
-
-  // final String forgetPassSendOtp = '$_base/forget';
-  // final String verifyOtp = '$_base/verify-otp';
-  // final String resetPass = '$_base/reset-password';
-
+  final String verifyEmail = '$_base/verify-email';
+  final String resendOTP = '$_base/resend-otp';
+  final String forgotPassword = '$_base/forgot-password';
+  final String verifyResetOTP = '$_base/verify-reset-otp';
+  final String resetPassword = '$_base/reset-password';
   final String changePassword = '$_base/change-password';
-
   final String refreshToken = '$_base/refresh-token';
-
-  // final String logout = '$_base/logout';
+  final String logout = '$_base/logout';
 }
 
 class UserEndpoints {
