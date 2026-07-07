@@ -5,6 +5,7 @@ import '../../../core/common/widgets/app_logo.dart';
 import '../../../core/common/widgets/app_scaffold.dart';
 import '../../../core/common/widgets/button_widgets.dart';
 import '../controller/auth_controller.dart';
+import 'login_screen.dart';
 
 class ResetPasswordScreen extends StatelessWidget {
   final String resetToken;
@@ -108,7 +109,13 @@ class ResetPasswordScreen extends StatelessWidget {
               /// Main Action Button
               PrimaryButton(
                 text: 'Update Password',
-                onApiPressed: () => controller.resetPassword(resetToken),
+                onApiPressed: () async {
+                  final success = await controller.resetPassword(resetToken);
+                  if (success) {
+                    Get.delete<AuthController>();
+                    Get.offAll(() => const LoginScreen());
+                  }
+                },
               ),
             ],
           ),

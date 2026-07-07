@@ -74,19 +74,13 @@ class SplashController extends GetxController {
     final isAuth = await _authStorageService.isAuthenticated();
 
     if (isAuth) {
-      Get.to(() => LoginScreen());
-      //Get.offAll(() => RoleSelectionScreen());
+      //Get.to(() => LoginScreen());
+      Get.offAll(() => RoleSelectionScreen());
       // For now, if no navigation target is defined for Auth, go to Onboarding or similar
       // Or uncomment the above if NavigationMenu exists.
     
     } else if (savedEmail != null && savedPassword != null) {
-      Get.offAll(
-        () => LoginScreen(
-          // email: savedEmail,
-          // password: savedPassword,
-        ),
-      );
-      Get.off(() => const OnboardingScreen());
+      Get.offAll(() => LoginScreen());
     } else {
       Get.off(() => const OnboardingScreen());
     }

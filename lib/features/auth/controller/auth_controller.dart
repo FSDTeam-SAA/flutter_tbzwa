@@ -38,17 +38,12 @@ class AuthController extends BaseController {
   final isConfirmPasswordVisible = false.obs;
   final isAgreedToTerms = false.obs;
 
-  @override
-  void onClose() {
-    emailController.dispose();
-    passwordController.dispose();
-    nameController.dispose();
-    confirmPasswordController.dispose();
-    referralCodeController.dispose();
-    otpController.dispose();
-    newPasswordController.dispose();
-    super.onClose();
-  }
+  // @override
+  // void onClose() {
+  //   // Controllers are managed by the AuthController lifecycle.
+  //   // Manual disposal is removed to prevent "used after disposed" errors during fast navigation transitions.
+  //   super.onClose();
+  // }
 
   // Toggles
   void togglePasswordVisibility() => isPasswordVisible.toggle();
@@ -78,8 +73,8 @@ class AuthController extends BaseController {
       email: emailController.text.trim(),
       password: passwordController.text,
       confirmPassword: confirmPasswordController.text,
-      referralCode: referralCodeController.text.isNotEmpty 
-          ? referralCodeController.text.trim() 
+      referralCode: referralCodeController.text.isNotEmpty
+          ? referralCodeController.text.trim()
           : null,
     );
 
@@ -90,7 +85,12 @@ class AuthController extends BaseController {
     result.fold(
       (fail) {
         setError(fail.message);
-        Get.snackbar("Error", fail.message, backgroundColor: Colors.red[600], colorText: Colors.white);
+        Get.snackbar(
+          "Error",
+          fail.message,
+          backgroundColor: Colors.red[600],
+          colorText: Colors.white,
+        );
       },
       (success) {
         Get.snackbar(
@@ -100,8 +100,8 @@ class AuthController extends BaseController {
           backgroundColor: Colors.green[600],
           colorText: Colors.white,
         );
-        // Optionally navigate to OTP Verification Screen
-        Get.to(() => const LoginScreen());
+        // Navigate to OTP Verification Screen
+        Get.to(() => VerifyCodeScreen(email: emailController.text.trim()));
       },
     );
   }
@@ -125,7 +125,12 @@ class AuthController extends BaseController {
     result.fold(
       (fail) {
         setError(fail.message);
-        Get.snackbar("Login Failed", fail.message, backgroundColor: Colors.red[600], colorText: Colors.white);
+        Get.snackbar(
+          "Login Failed",
+          fail.message,
+          backgroundColor: Colors.red[600],
+          colorText: Colors.white,
+        );
       },
       (success) async {
         final data = success.data;
@@ -166,11 +171,21 @@ class AuthController extends BaseController {
     result.fold(
       (fail) {
         setError(fail.message);
-        Get.snackbar("Error", fail.message, backgroundColor: Colors.red[600], colorText: Colors.white);
+        Get.snackbar(
+          "Error",
+          fail.message,
+          backgroundColor: Colors.red[600],
+          colorText: Colors.white,
+        );
       },
       (success) {
-        Get.snackbar("Success", success.message, backgroundColor: Colors.green[600], colorText: Colors.white);
-        Get.to(() => VerifyCodeScreen(email: email));
+        Get.snackbar(
+          "Success",
+          success.message,
+          backgroundColor: Colors.green[600],
+          colorText: Colors.white,
+        );
+        Get.to(() => VerifyCodeScreen(email: email, isForForgotPassword: true));
       },
     );
   }
@@ -178,17 +193,19 @@ class AuthController extends BaseController {
   // --- Verify OTP for Reset ---
   Future<String?> verifyResetOTP(String email) async {
     if (otpController.text.length < 6) {
-      Get.snackbar("Error", "Please enter a valid 6-digit OTP", backgroundColor: Colors.red[600], colorText: Colors.white);
+      Get.snackbar(
+        "Error",
+        "Please enter a valid 6-digit OTP",
+        backgroundColor: Colors.red[600],
+        colorText: Colors.white,
+      );
       return null;
     }
 
     setLoading(true);
     clearError();
 
-    final request = OTPRequest(
-      email: email,
-      otp: otpController.text.trim(),
-    );
+    final request = OTPRequest(email: email, otp: otpController.text.trim());
 
     final result = await _authRepo.verifyResetOTP(request);
 
@@ -197,16 +214,106 @@ class AuthController extends BaseController {
     return result.fold(
       (fail) {
         setError(fail.message);
-        Get.snackbar("Error", fail.message, backgroundColor: Colors.red[600], colorText: Colors.white);
+        Get.snackbar(
+          "Error",
+          fail.message,
+          backgroundColor: Colors.red[600],
+          colorText: Colors.white,
+        );
         return null;
       },
       (success) => success.data, // This is the resetToken
     );
   }
 
+  // --- Verify OTP for SignUp ---
+  Future<bool> verifySignUpOTP(String email) async {
+    if (otpController.text.length < 6) {
+      Get.snackbar(
+        "Error",
+        "Please enter a valid 6-digit OTP",
+        backgroundColor: Colors.red[600],
+        colorText: Colors.white,
+      );
+      return false;
+    }
+
+    setLoading(true);
+    clearError();
+
+    final request = OTPRequest(email: email, otp: otpController.text.trim());
+
+    final result = await _authRepo.verifyEmail(request);
+
+    setLoading(false);
+
+    return result.fold(
+      (fail) {
+        setError(fail.message);
+        Get.snackbar(
+          "Error",
+          fail.message,
+          backgroundColor: Colors.red[600],
+          colorText: Colors.white,
+        );
+        return false;
+      },
+      (success) async {
+        final data = success.data;
+        if (data != null) {
+          await _authStorageService.storeAuthData(
+            accessToken: data.accessToken,
+            refreshToken: data.refreshToken,
+            userId: data.user.id,
+            role: data.user.role,
+          );
+
+          Get.snackbar(
+            "Success",
+            success.message,
+            backgroundColor: Colors.green[600],
+            colorText: Colors.white,
+          );
+          return true;
+        }
+        return false;
+      },
+    );
+  }
+
+  // --- Resend OTP ---
+  Future<void> resendOTP(String email) async {
+    setLoading(true);
+    clearError();
+
+    final result = await _authRepo.resendOTP(email);
+
+    setLoading(false);
+
+    result.fold(
+      (fail) {
+        setError(fail.message);
+        Get.snackbar(
+          "Error",
+          fail.message,
+          backgroundColor: Colors.red[600],
+          colorText: Colors.white,
+        );
+      },
+      (success) {
+        Get.snackbar(
+          "Success",
+          success.message,
+          backgroundColor: Colors.green[600],
+          colorText: Colors.white,
+        );
+      },
+    );
+  }
+
   // --- Reset Password ---
-  Future<void> resetPassword(String resetToken) async {
-    if (!resetPassFormKey.currentState!.validate()) return;
+  Future<bool> resetPassword(String resetToken) async {
+    if (!resetPassFormKey.currentState!.validate()) return false;
 
     setLoading(true);
     clearError();
@@ -221,14 +328,25 @@ class AuthController extends BaseController {
 
     setLoading(false);
 
-    result.fold(
+    return result.fold(
       (fail) {
         setError(fail.message);
-        Get.snackbar("Error", fail.message, backgroundColor: Colors.red[600], colorText: Colors.white);
+        Get.snackbar(
+          "Error",
+          fail.message,
+          backgroundColor: Colors.red[600],
+          colorText: Colors.white,
+        );
+        return false;
       },
       (success) {
-        Get.snackbar("Success", success.message, backgroundColor: Colors.green[600], colorText: Colors.white);
-        Get.offAll(() => const LoginScreen());
+        Get.snackbar(
+          "Success",
+          success.message,
+          backgroundColor: Colors.green[600],
+          colorText: Colors.white,
+        );
+        return true;
       },
     );
   }
@@ -240,19 +358,17 @@ class AuthController extends BaseController {
 
     final result = await _authRepo.refreshToken(token);
 
-    return result.fold(
-      (fail) => false,
-      (success) async {
-        await _authStorageService.storeAccessToken(accessToken: success.data);
-        return true;
-      },
-    );
+    return result.fold((fail) => false, (success) async {
+      await _authStorageService.storeAccessToken(accessToken: success.data);
+      return true;
+    });
   }
 
   // --- Logout ---
   Future<void> logout() async {
     await _authRepo.logout(); // Best effort backend logout
     await _authStorageService.clearAuthData();
+    Get.delete<AuthController>();
     Get.offAll(() => const LoginScreen());
   }
 }

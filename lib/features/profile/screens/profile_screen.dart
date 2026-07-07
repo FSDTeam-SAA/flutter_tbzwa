@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_tbzwa/core/constants/assest_const.dart';
+import 'package:flutter_tbzwa/features/auth/controller/auth_controller.dart';
 import 'package:flutter_tbzwa/features/profile/screens/profile_edit_screen.dart';
 import 'package:get/get.dart';
 import '../../subcribers_flow/subscriber_menu_drawer.dart';
@@ -22,34 +23,32 @@ class _ProfileScreenState extends State<ProfileScreen> {
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-            SizedBox(
-            height: 50,
-            child: Stack(
-              alignment: Alignment.center,
-              children: [
-                Align(
-                  alignment: Alignment.centerLeft,
-                  child: Builder(
-                    builder: (context) => GestureDetector(
-                      onTap: () => Scaffold.of(context).openDrawer(),
-                      child: Padding(
-                        padding: const EdgeInsets.only(left: 18.0),
-                        child: const Icon(
-                          Icons.menu,
-                          color: Color(0xFF1E293B),
-                          size: 28,
+              SizedBox(
+                height: 50,
+                child: Stack(
+                  alignment: Alignment.center,
+                  children: [
+                    Align(
+                      alignment: Alignment.centerLeft,
+                      child: Builder(
+                        builder: (context) => GestureDetector(
+                          onTap: () => Scaffold.of(context).openDrawer(),
+                          child: Padding(
+                            padding: const EdgeInsets.only(left: 18.0),
+                            child: const Icon(
+                              Icons.menu,
+                              color: Color(0xFF1E293B),
+                              size: 28,
+                            ),
+                          ),
                         ),
                       ),
                     ),
-                  ),
+                    _buildHeader(),
+                  ],
                 ),
-                _buildHeader(),
-              ],
-            ),
-          ),
-              Divider(
-                color: Color(0xFFD1D1D1),
               ),
+              Divider(color: Color(0xFFD1D1D1)),
               const SizedBox(height: 16),
               Padding(
                 padding: const EdgeInsets.symmetric(horizontal: 18.0),
@@ -60,15 +59,27 @@ class _ProfileScreenState extends State<ProfileScreen> {
               const SizedBox(height: 12),
               Row(
                 children: [
-                  Expanded(child: Padding(
-                    padding: const EdgeInsets.only(left: 18.0),
-                    child: _buildAnalyticsCard('Current Streak', '12 Days', Icons.bolt_rounded),
-                  )),
+                  Expanded(
+                    child: Padding(
+                      padding: const EdgeInsets.only(left: 18.0),
+                      child: _buildAnalyticsCard(
+                        'Current Streak',
+                        '12 Days',
+                        Icons.bolt_rounded,
+                      ),
+                    ),
+                  ),
                   const SizedBox(width: 16),
-                  Expanded(child: Padding(
-                    padding: const EdgeInsets.only(right: 18.0),
-                    child: _buildAnalyticsCard('Average Score', '70%', Icons.percent_rounded),
-                  )),
+                  Expanded(
+                    child: Padding(
+                      padding: const EdgeInsets.only(right: 18.0),
+                      child: _buildAnalyticsCard(
+                        'Average Score',
+                        '70%',
+                        Icons.percent_rounded,
+                      ),
+                    ),
+                  ),
                 ],
               ),
               const SizedBox(height: 30),
@@ -81,10 +92,26 @@ class _ProfileScreenState extends State<ProfileScreen> {
               const SizedBox(height: 30),
               _buildSectionTitle('Quick Access'),
               const SizedBox(height: 12),
-              _buildAccessItem('BZPad', 'Your Personal Notebook', Icons.description_outlined),
-              _buildAccessItem('BZ-Wallet', 'Your Personal Wallet', Icons.account_balance_wallet_outlined),
-              _buildAccessItem('BZ-Library', 'Your Personal Dictionary', Icons.library_books_outlined),
-              _buildAccessItem('BZ-Daily Mission', 'Your Personal Progress', Icons.insights_rounded),
+              _buildAccessItem(
+                'BZPad',
+                'Your Personal Notebook',
+                Icons.description_outlined,
+              ),
+              _buildAccessItem(
+                'BZ-Wallet',
+                'Your Personal Wallet',
+                Icons.account_balance_wallet_outlined,
+              ),
+              _buildAccessItem(
+                'BZ-Library',
+                'Your Personal Dictionary',
+                Icons.library_books_outlined,
+              ),
+              _buildAccessItem(
+                'BZ-Daily Mission',
+                'Your Personal Progress',
+                Icons.insights_rounded,
+              ),
               const SizedBox(height: 30),
               _buildSectionTitle('Settings'),
               const SizedBox(height: 12),
@@ -97,10 +124,35 @@ class _ProfileScreenState extends State<ProfileScreen> {
                 padding: const EdgeInsets.symmetric(horizontal: 18.0),
                 child: _buildLogoutButton('Delete Account'),
               ),
-              SizedBox(height: 10,),
+              SizedBox(height: 10),
               Padding(
                 padding: const EdgeInsets.symmetric(horizontal: 18.0),
-                child: _buildLogoutButton('Logout'),
+                child: GestureDetector(
+                  onTap: () {
+                    Get.dialog(
+                      AlertDialog(
+                        title: const Text("Logout"),
+                        content: const Text("Are you sure you want to logout?"),
+                        actions: [
+                          TextButton(
+                            onPressed: () => Get.back(),
+                            child: const Text("Cancel"),
+                          ),
+                          TextButton(
+                            onPressed: () {
+                              Get.find<AuthController>().logout();
+                            },
+                            child: const Text(
+                              "Logout",
+                              style: TextStyle(color: Colors.red),
+                            ),
+                          ),
+                        ],
+                      ),
+                    );
+                  },
+                  child: _buildLogoutButton('Logout'),
+                ),
               ),
               const SizedBox(height: 20),
             ],
@@ -131,7 +183,9 @@ class _ProfileScreenState extends State<ProfileScreen> {
             children: [
               CircleAvatar(
                 radius: 35,
-                backgroundImage: AssetImage('assets/images/20b88955d6e91b0f9cbf6e8b1d6959045013c348.jpg'),
+                backgroundImage: AssetImage(
+                  'assets/images/20b88955d6e91b0f9cbf6e8b1d6959045013c348.jpg',
+                ),
               ),
               const SizedBox(width: 16),
               Expanded(
@@ -158,11 +212,16 @@ class _ProfileScreenState extends State<ProfileScreen> {
                   ],
                 ),
               ),
-              
+
               Padding(
                 padding: const EdgeInsets.only(left: 18.0),
-                child: IconButton(onPressed: (){Get.to(() => ProfileEditScreen());}, icon: Icon(Icons.mode_edit_outlined, color: Colors.black54,)),
-              )
+                child: IconButton(
+                  onPressed: () {
+                    Get.to(() => ProfileEditScreen());
+                  },
+                  icon: Icon(Icons.mode_edit_outlined, color: Colors.black54),
+                ),
+              ),
             ],
           ),
           const SizedBox(height: 12),
@@ -244,7 +303,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
   Widget _buildConsistencyChart() {
     final days = ['M', 'T', 'W', 'T', 'F', 'S', 'S'];
     final values = [0.8, 0.6, 0.8, 0.6, 0.9, 0.1, 0.6];
-    
+
     return Container(
       padding: const EdgeInsets.all(24),
       decoration: BoxDecoration(
@@ -261,11 +320,13 @@ class _ProfileScreenState extends State<ProfileScreen> {
                 width: 32,
                 height: 60 * values[index],
                 decoration: BoxDecoration(
-                  color: values[index] > 0.8 
-                    ? const Color(0xFFBFF9F0)
-                    : values[index] < 0.2 
+                  color: values[index] > 0.8
+                      ? const Color(0xFFBFF9F0)
+                      : values[index] < 0.2
                       ? const Color(0xFF146456)
-                      : const Color(0xFF30EDCD).withOpacity(index % 2 == 0 ? 0.3 : 0.8),
+                      : const Color(
+                          0xFF30EDCD,
+                        ).withOpacity(index % 2 == 0 ? 0.3 : 0.8),
                   borderRadius: BorderRadius.circular(6),
                 ),
               ),
@@ -413,11 +474,15 @@ class _ProfileScreenState extends State<ProfileScreen> {
         color: const Color(0xFFFCEDED),
         borderRadius: BorderRadius.circular(16),
       ),
-      child:  Row(
+      child: Row(
         mainAxisAlignment: MainAxisAlignment.center,
         children: [
-          Icon(text == 'Logout' ? Icons.logout_rounded: null, color: Color(0xFFE24B4A), size: 20),
-           SizedBox(width: 8),
+          Icon(
+            text == 'Logout' ? Icons.logout_rounded : null,
+            color: Color(0xFFE24B4A),
+            size: 20,
+          ),
+          SizedBox(width: 8),
           Text(
             text,
             style: TextStyle(

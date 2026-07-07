@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
+import '../auth/controller/auth_controller.dart';
 import '../bz_pad/screens/bz_pad_splash_screen.dart';
 import '../bz_wallet/screens/bz_wallet_splash_screen.dart';
 import '../daily_mission/screens/daily_mission_splash_screen.dart';

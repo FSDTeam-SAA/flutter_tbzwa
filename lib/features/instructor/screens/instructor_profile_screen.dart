@@ -11,7 +11,7 @@ class InstructorProfileScreen extends StatelessWidget {
       appBar: AppBar(
         backgroundColor: const Color(0xFFF9FAFC),
         elevation: 0,
-        automaticallyImplyLeading: false, 
+        automaticallyImplyLeading: false,
         title: const Text(
           "TALK/'BZ/",
           style: TextStyle(
@@ -83,7 +83,9 @@ class InstructorProfileScreen extends StatelessWidget {
                             ),
                             child: const CircleAvatar(
                               radius: 40,
-                              backgroundImage: NetworkImage("https://i.pravatar.cc/150?u=a042581f4e29026024d"),
+                              backgroundImage: NetworkImage(
+                                "https://i.pravatar.cc/150?u=a042581f4e29026024d",
+                              ),
                             ),
                           ),
                           Positioned(
@@ -92,10 +94,14 @@ class InstructorProfileScreen extends StatelessWidget {
                             child: Container(
                               padding: const EdgeInsets.all(4),
                               decoration: const BoxDecoration(
-                                color: Color(0xFF6366F1), 
+                                color: Color(0xFF6366F1),
                                 shape: BoxShape.circle,
                               ),
-                              child: const Icon(Icons.school, color: Colors.white, size: 14),
+                              child: const Icon(
+                                Icons.school,
+                                color: Colors.white,
+                                size: 14,
+                              ),
                             ),
                           ),
                         ],
@@ -106,16 +112,32 @@ class InstructorProfileScreen extends StatelessWidget {
                         Navigator.push(
                           context,
                           MaterialPageRoute(
-                            builder: (context) => const InstructorEditProfileScreen(),
+                            builder: (context) =>
+                                const InstructorEditProfileScreen(),
                           ),
                         );
                       },
-                      icon: const Icon(Icons.edit, size: 14, color: Color(0xFF4B5563)),
-                      label: const Text("Edit", style: TextStyle(color: Color(0xFF4B5563), fontSize: 13)),
+                      icon: const Icon(
+                        Icons.edit,
+                        size: 14,
+                        color: Color(0xFF4B5563),
+                      ),
+                      label: const Text(
+                        "Edit",
+                        style: TextStyle(
+                          color: Color(0xFF4B5563),
+                          fontSize: 13,
+                        ),
+                      ),
                       style: OutlinedButton.styleFrom(
-                        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
+                        shape: RoundedRectangleBorder(
+                          borderRadius: BorderRadius.circular(20),
+                        ),
                         side: const BorderSide(color: Color(0xFFE5E7EB)),
-                        padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+                        padding: const EdgeInsets.symmetric(
+                          horizontal: 16,
+                          vertical: 8,
+                        ),
                       ),
                     ),
                   ],
@@ -126,18 +148,29 @@ class InstructorProfileScreen extends StatelessWidget {
                     children: [
                       const Text(
                         "Dr. Sarah Jenkins",
-                        style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold, color: Color(0xFF1F2937)),
+                        style: TextStyle(
+                          fontSize: 20,
+                          fontWeight: FontWeight.bold,
+                          color: Color(0xFF1F2937),
+                        ),
                       ),
                       const SizedBox(width: 8),
                       Container(
-                        padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+                        padding: const EdgeInsets.symmetric(
+                          horizontal: 8,
+                          vertical: 4,
+                        ),
                         decoration: BoxDecoration(
                           color: const Color(0xFFEEF2FF),
                           borderRadius: BorderRadius.circular(12),
                         ),
                         child: const Text(
                           "Instructor",
-                          style: TextStyle(color: Color(0xFF4F46E5), fontSize: 10, fontWeight: FontWeight.bold),
+                          style: TextStyle(
+                            color: Color(0xFF4F46E5),
+                            fontSize: 10,
+                            fontWeight: FontWeight.bold,
+                          ),
                         ),
                       ),
                     ],
@@ -146,22 +179,40 @@ class InstructorProfileScreen extends StatelessWidget {
                 const SizedBox(height: 4),
                 const Text(
                   "Senior Instructor specializing in Advanced Mathematics and Physics. 10+ years of teaching experience.",
-                  style: TextStyle(color: Color(0xFF6B7280), fontSize: 13, height: 1.5),
+                  style: TextStyle(
+                    color: Color(0xFF6B7280),
+                    fontSize: 13,
+                    height: 1.5,
+                  ),
                 ),
                 const SizedBox(height: 20),
                 Row(
                   children: const [
-                    Icon(Icons.mail_outline, size: 16, color: Color(0xFF9CA3AF)),
+                    Icon(
+                      Icons.mail_outline,
+                      size: 16,
+                      color: Color(0xFF9CA3AF),
+                    ),
                     SizedBox(width: 8),
-                    Text("sarah.jenkins@edu.com", style: TextStyle(color: Color(0xFF6B7280), fontSize: 13)),
+                    Text(
+                      "sarah.jenkins@edu.com",
+                      style: TextStyle(color: Color(0xFF6B7280), fontSize: 13),
+                    ),
                   ],
                 ),
                 const SizedBox(height: 12),
                 Row(
                   children: const [
-                    Icon(Icons.phone_outlined, size: 16, color: Color(0xFF9CA3AF)),
+                    Icon(
+                      Icons.phone_outlined,
+                      size: 16,
+                      color: Color(0xFF9CA3AF),
+                    ),
                     SizedBox(width: 8),
-                    Text("+1 (555) 123-4567", style: TextStyle(color: Color(0xFF6B7280), fontSize: 13)),
+                    Text(
+                      "+1 (555) 123-4567",
+                      style: TextStyle(color: Color(0xFF6B7280), fontSize: 13),
+                    ),
                   ],
                 ),
               ],
@@ -185,20 +236,44 @@ class InstructorProfileScreen extends StatelessWidget {
         children: [
           const Text(
             "Assigned Groups",
-            style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold, color: Color(0xFF1F2937)),
+            style: TextStyle(
+              fontSize: 16,
+              fontWeight: FontWeight.bold,
+              color: Color(0xFF1F2937),
+            ),
           ),
           const SizedBox(height: 20),
-          _buildGroupItem(letter: "A", title: "Advanced Calculus 101", students: "35 Students", color: const Color(0xFF5151EF)),
+          _buildGroupItem(
+            letter: "A",
+            title: "Advanced Calculus 101",
+            students: "35 Students",
+            color: const Color(0xFF5151EF),
+          ),
           const SizedBox(height: 16),
-          _buildGroupItem(letter: "P", title: "Physics Fundamentals", students: "42 Students", color: const Color(0xFF10B981)),
+          _buildGroupItem(
+            letter: "P",
+            title: "Physics Fundamentals",
+            students: "42 Students",
+            color: const Color(0xFF10B981),
+          ),
           const SizedBox(height: 16),
-          _buildGroupItem(letter: "L", title: "Linear Algebra", students: "28 Students", color: const Color(0xFFF59E0B)),
+          _buildGroupItem(
+            letter: "L",
+            title: "Linear Algebra",
+            students: "28 Students",
+            color: const Color(0xFFF59E0B),
+          ),
         ],
       ),
     );
   }
 
-  Widget _buildGroupItem({required String letter, required String title, required String students, required Color color}) {
+  Widget _buildGroupItem({
+    required String letter,
+    required String title,
+    required String students,
+    required Color color,
+  }) {
     return Container(
       padding: const EdgeInsets.all(12),
       decoration: BoxDecoration(
@@ -215,17 +290,34 @@ class InstructorProfileScreen extends StatelessWidget {
               borderRadius: BorderRadius.circular(8),
             ),
             alignment: Alignment.center,
-            child: Text(letter, style: const TextStyle(color: Colors.white, fontWeight: FontWeight.bold, fontSize: 16)),
+            child: Text(
+              letter,
+              style: const TextStyle(
+                color: Colors.white,
+                fontWeight: FontWeight.bold,
+                fontSize: 16,
+              ),
+            ),
           ),
           const SizedBox(width: 12),
           Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              Text(title, style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 14, color: Color(0xFF1F2937))),
+              Text(
+                title,
+                style: const TextStyle(
+                  fontWeight: FontWeight.bold,
+                  fontSize: 14,
+                  color: Color(0xFF1F2937),
+                ),
+              ),
               const SizedBox(height: 4),
-              Text(students, style: const TextStyle(color: Color(0xFF9CA3AF), fontSize: 12)),
+              Text(
+                students,
+                style: const TextStyle(color: Color(0xFF9CA3AF), fontSize: 12),
+              ),
             ],
-          )
+          ),
         ],
       ),
     );
@@ -244,7 +336,11 @@ class InstructorProfileScreen extends StatelessWidget {
         children: [
           const Text(
             "Settings",
-            style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold, color: Color(0xFF1F2937)),
+            style: TextStyle(
+              fontSize: 16,
+              fontWeight: FontWeight.bold,
+              color: Color(0xFF1F2937),
+            ),
           ),
           const SizedBox(height: 24),
           Row(
@@ -255,10 +351,23 @@ class InstructorProfileScreen extends StatelessWidget {
                   color: const Color(0xFFF3F4F6),
                   borderRadius: BorderRadius.circular(8),
                 ),
-                child: const Icon(Icons.notifications_none, size: 18, color: Color(0xFF4B5563)),
+                child: const Icon(
+                  Icons.notifications_none,
+                  size: 18,
+                  color: Color(0xFF4B5563),
+                ),
               ),
               const SizedBox(width: 16),
-              const Expanded(child: Text("Notifications", style: TextStyle(color: Color(0xFF4B5563), fontSize: 14, fontWeight: FontWeight.w500))),
+              const Expanded(
+                child: Text(
+                  "Notifications",
+                  style: TextStyle(
+                    color: Color(0xFF4B5563),
+                    fontSize: 14,
+                    fontWeight: FontWeight.w500,
+                  ),
+                ),
+              ),
               Switch(
                 value: true,
                 onChanged: (val) {},
@@ -276,15 +385,35 @@ class InstructorProfileScreen extends StatelessWidget {
                   color: const Color(0xFFF3F4F6),
                   borderRadius: BorderRadius.circular(8),
                 ),
-                child: const Icon(Icons.security, size: 18, color: Color(0xFF4B5563)),
+                child: const Icon(
+                  Icons.security,
+                  size: 18,
+                  color: Color(0xFF4B5563),
+                ),
               ),
               const SizedBox(width: 16),
-              const Expanded(child: Text("Privacy & Security", style: TextStyle(color: Color(0xFF4B5563), fontSize: 14, fontWeight: FontWeight.w500))),
+              const Expanded(
+                child: Text(
+                  "Privacy & Security",
+                  style: TextStyle(
+                    color: Color(0xFF4B5563),
+                    fontSize: 14,
+                    fontWeight: FontWeight.w500,
+                  ),
+                ),
+              ),
             ],
           ),
           const SizedBox(height: 32),
           const Center(
-            child: Text("Log Out", style: TextStyle(color: Color(0xFFEF4444), fontSize: 14, fontWeight: FontWeight.bold)),
+            child: Text(
+              "Log Out",
+              style: TextStyle(
+                color: Color(0xFFEF4444),
+                fontSize: 14,
+                fontWeight: FontWeight.bold,
+              ),
+            ),
           ),
         ],
       ),

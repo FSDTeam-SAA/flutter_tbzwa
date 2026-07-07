@@ -1,6 +1,6 @@
 class ApiConstants {
   /// [Base Configuration]
-  static const String baseDomain = 'http://localhost:5001'; // Noyon Office
+  static const String baseDomain = 'http://localhost:5001';
   // static const String baseDomain = 'http://192.168.10.243:5006'; // Noyon Office Wifi
   // static const String baseDomain = 'http://192.168.0.218:5006'; // Noyon Home
 

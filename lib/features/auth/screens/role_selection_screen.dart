@@ -32,8 +32,8 @@ class RoleSelectionScreen extends StatelessWidget {
               Center(
                 child: AppLogo(
                   images: 'assets/images/mainLogo.png',
-                  height: 93,
-                  width: 72,
+                  height: 150,
+                  width: 150,
                 ),
               ),
               const SizedBox(height: 24),

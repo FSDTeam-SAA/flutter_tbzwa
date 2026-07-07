@@ -5,11 +5,17 @@ import '../../../core/common/widgets/app_logo.dart';
 import '../../../core/common/widgets/app_scaffold.dart';
 import '../../../core/common/widgets/button_widgets.dart';
 import '../controller/auth_controller.dart';
+import 'login_screen.dart';
 import 'reset_password_screen.dart';
 
 class VerifyCodeScreen extends StatelessWidget {
   final String email;
-  const VerifyCodeScreen({super.key, required this.email});
+  final bool isForForgotPassword;
+  const VerifyCodeScreen({
+    super.key,
+    required this.email,
+    this.isForForgotPassword = false,
+  });
 
   @override
   Widget build(BuildContext context) {
@@ -23,7 +29,11 @@ class VerifyCodeScreen extends StatelessWidget {
         backgroundColor: Colors.transparent,
         elevation: 0,
         leading: IconButton(
-          icon: const Icon(Icons.arrow_back_ios_new, color: Color(0xFF111827), size: 18),
+          icon: const Icon(
+            Icons.arrow_back_ios_new,
+            color: Color(0xFF111827),
+            size: 18,
+          ),
           onPressed: () => Get.back(),
         ),
       ),
@@ -75,7 +85,10 @@ class VerifyCodeScreen extends StatelessWidget {
               ),
               decoration: InputDecoration(
                 hintText: "000000",
-                hintStyle: TextStyle(color: const Color(0xFF9CA3AF).withOpacity(0.5), letterSpacing: 12),
+                hintStyle: TextStyle(
+                  color: const Color(0xFF9CA3AF).withOpacity(0.5),
+                  letterSpacing: 12,
+                ),
                 contentPadding: const EdgeInsets.symmetric(vertical: 16),
                 filled: true,
                 fillColor: const Color(0xFFF9FAFB),
@@ -89,7 +102,10 @@ class VerifyCodeScreen extends StatelessWidget {
                 ),
                 focusedBorder: OutlineInputBorder(
                   borderRadius: BorderRadius.circular(12),
-                  borderSide: const BorderSide(color: Color(0xFF5151EF), width: 1.5),
+                  borderSide: const BorderSide(
+                    color: Color(0xFF5151EF),
+                    width: 1.5,
+                  ),
                 ),
               ),
             ),
@@ -103,7 +119,13 @@ class VerifyCodeScreen extends StatelessWidget {
                   style: TextStyle(color: Color(0xFF6B7280), fontSize: 14),
                 ),
                 GestureDetector(
-                  onTap: () => controller.forgotPassword(), // Resend
+                  onTap: () {
+                    if (isForForgotPassword) {
+                      controller.forgotPassword();
+                    } else {
+                      controller.resendOTP(email);
+                    }
+                  },
                   child: const Text(
                     "Resend",
                     style: TextStyle(
@@ -121,9 +143,18 @@ class VerifyCodeScreen extends StatelessWidget {
             PrimaryButton(
               text: 'Verify Code',
               onApiPressed: () async {
-                final token = await controller.verifyResetOTP(email);
-                if (token != null) {
-                  Get.to(() => ResetPasswordScreen(resetToken: token));
+                if (isForForgotPassword) {
+                  final token = await controller.verifyResetOTP(email);
+                  if (token != null) {
+                    Get.to(() => ResetPasswordScreen(resetToken: token));
+                  }
+                } else {
+                  final success = await controller.verifySignUpOTP(email);
+                  if (success) {
+                    // Manually cleanup before clearing stack to avoid race conditions with disposal
+                    Get.delete<AuthController>();
+                    Get.offAll(() => const LoginScreen());
+                  }
                 }
               },
             ),
