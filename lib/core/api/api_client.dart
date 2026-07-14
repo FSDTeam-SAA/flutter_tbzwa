@@ -99,12 +99,22 @@ class ApiClient {
   }
 
   /// Refresh token method
+  Future<bool> restoreSession() async {
+    await _initCompleter.future;
+    final refreshToken = await _authStorageService.getRefreshToken();
+    if (refreshToken == null || refreshToken.isEmpty) {
+      final accessToken = await _authStorageService.getAccessToken();
+      return accessToken?.isNotEmpty == true;
+    }
+    return _refreshToken();
+  }
+
   Future<bool> _refreshToken() async {
     try {
       final refreshToken = await _authStorageService.getRefreshToken();
       DPrint.info("Refreshing ...");
 
-      if (refreshToken == null) {
+      if (refreshToken == null || refreshToken.isEmpty) {
         return false;
       }
 
@@ -124,7 +134,11 @@ class ApiClient {
 
       if (baseResponse.success && baseResponse.data != null) {
         final newAccessToken = baseResponse.data!['accessToken'] as String;
-        final newRefreshToken = baseResponse.data!['refreshToken'] as String;
+        final returnedRefreshToken =
+            baseResponse.data!['refreshToken'] as String?;
+        final newRefreshToken = returnedRefreshToken?.isNotEmpty == true
+            ? returnedRefreshToken!
+            : refreshToken;
 
         await _authStorageService.storeAccessToken(accessToken: newAccessToken);
         await _authStorageService.storeRefreshToken(
@@ -137,9 +151,14 @@ class ApiClient {
       // Navigate to login screen - you'll need to implement this based on your navigation
       await _logout();
       return false;
+    } on DioException catch (e) {
+      DPrint.log("Refresh token error: $e");
+      if (e.response?.statusCode == 401 || e.response?.statusCode == 403) {
+        await _logout();
+      }
+      return false;
     } catch (e) {
       DPrint.log("Refresh token error: $e");
-      await _logout();
       return false;
     }
   }

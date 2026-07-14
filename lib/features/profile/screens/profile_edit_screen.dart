@@ -2,9 +2,13 @@ import 'dart:io';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:image_picker/image_picker.dart';
+import '../../home/models/learner_api_models.dart';
+import '../../home/services/learner_api_service.dart';
 
 class ProfileEditScreen extends StatefulWidget {
-  const ProfileEditScreen({super.key});
+  final LearnerProfile? profile;
+
+  const ProfileEditScreen({super.key, this.profile});
 
   @override
   State<ProfileEditScreen> createState() => _ProfileEditScreenState();
@@ -14,12 +18,76 @@ class _ProfileEditScreenState extends State<ProfileEditScreen> {
   final _formKey = GlobalKey<FormState>();
   File? _imageFile;
   final ImagePicker _picker = ImagePicker();
-  
+  final LearnerApiService _api = LearnerApiService();
+  LearnerProfile? _profile;
+  bool _isSaving = false;
+
   // Controllers
-  final TextEditingController _nameController = TextEditingController(text: "Sarah Jenkins");
-  final TextEditingController _emailController = TextEditingController(text: "sarah.jenkins@example.com");
-  final TextEditingController _phoneController = TextEditingController(text: "+1 234 567 890");
-  final TextEditingController _bioController = TextEditingController(text: "Passionate English instructor with 5+ years of experience in helping students achieve fluency.");
+  final TextEditingController _nameController = TextEditingController();
+
+  @override
+  void initState() {
+    super.initState();
+    _profile = widget.profile;
+    _nameController.text = widget.profile?.fullName ?? '';
+    if (widget.profile == null) _loadProfile();
+  }
+
+  Future<void> _loadProfile() async {
+    try {
+      final profile = await _api.getProfile();
+      if (!mounted) return;
+      setState(() {
+        _profile = profile;
+        _nameController.text = profile.fullName;
+      });
+    } catch (error) {
+      if (mounted) {
+        Get.snackbar(
+          'Unable to load profile',
+          error.toString().replaceFirst('Exception: ', ''),
+        );
+      }
+    }
+  }
+
+  Future<void> _saveProfile() async {
+    if (_isSaving || !_formKey.currentState!.validate()) return;
+    setState(() => _isSaving = true);
+    try {
+      final updated = await _api.updateProfile(
+        fullName: _nameController.text.trim(),
+        profileImage: _imageFile,
+      );
+      if (!mounted) return;
+      Get.back(result: updated);
+      Get.snackbar(
+        'Success',
+        'Profile updated successfully',
+        backgroundColor: const Color(0xFF22A892),
+        colorText: Colors.white,
+        snackPosition: SnackPosition.BOTTOM,
+      );
+    } catch (error) {
+      if (mounted) {
+        Get.snackbar(
+          'Update failed',
+          error.toString().replaceFirst('Exception: ', ''),
+          backgroundColor: Colors.red,
+          colorText: Colors.white,
+          snackPosition: SnackPosition.BOTTOM,
+        );
+      }
+    } finally {
+      if (mounted) setState(() => _isSaving = false);
+    }
+  }
+
+  @override
+  void dispose() {
+    _nameController.dispose();
+    super.dispose();
+  }
 
   Future<void> _pickImage(ImageSource source) async {
     try {
@@ -35,7 +103,11 @@ class _ProfileEditScreenState extends State<ProfileEditScreen> {
         });
       }
     } catch (e) {
-      Get.snackbar("Error", "Failed to pick image: $e", snackPosition: SnackPosition.BOTTOM);
+      Get.snackbar(
+        "Error",
+        "Failed to pick image: $e",
+        snackPosition: SnackPosition.BOTTOM,
+      );
     }
   }
 
@@ -51,16 +123,24 @@ class _ProfileEditScreenState extends State<ProfileEditScreen> {
           child: Wrap(
             children: <Widget>[
               ListTile(
-                leading: const Icon(Icons.photo_library, color: Color(0xFF22A892)),
-                title: const Text('Photo Library'),
+                leading: const Icon(
+                  Icons.photo_library,
+                  color: Color(0xFF22A892),
+                ),
+                title: const Text('Photo Library',
+                    style: TextStyle(color: Colors.black)),
                 onTap: () {
                   _pickImage(ImageSource.gallery);
                   Navigator.of(context).pop();
                 },
               ),
               ListTile(
-                leading: const Icon(Icons.photo_camera, color: Color(0xFF22A892)),
-                title: const Text('Camera'),
+                leading: const Icon(
+                  Icons.photo_camera,
+                  color: Color(0xFF22A892),
+                ),
+                title: const Text('Camera',
+                    style: TextStyle(color: Colors.black)),
                 onTap: () {
                   _pickImage(ImageSource.camera);
                   Navigator.of(context).pop();
@@ -82,7 +162,11 @@ class _ProfileEditScreenState extends State<ProfileEditScreen> {
         elevation: 0,
         centerTitle: true,
         leading: IconButton(
-          icon: const Icon(Icons.arrow_back_ios_new_rounded, color: Color(0xFF1E293B), size: 20),
+          icon: const Icon(
+            Icons.arrow_back_ios_new_rounded,
+            color: Color(0xFF1E293B),
+            size: 20,
+          ),
           onPressed: () => Get.back(),
         ),
         title: const Text(
@@ -95,21 +179,10 @@ class _ProfileEditScreenState extends State<ProfileEditScreen> {
         ),
         actions: [
           TextButton(
-            onPressed: () {
-              if (_formKey.currentState!.validate()) {
-                Get.back();
-                Get.snackbar(
-                  "Success", 
-                  "Profile updated successfully",
-                  backgroundColor: const Color(0xFF22A892),
-                  colorText: Colors.white,
-                  snackPosition: SnackPosition.BOTTOM,
-                );
-              }
-            },
-            child: const Text(
-              "Save",
-              style: TextStyle(
+            onPressed: _isSaving ? null : _saveProfile,
+            child: Text(
+              _isSaving ? "Saving..." : "Save",
+              style: const TextStyle(
                 color: Color(0xFF22A892),
                 fontWeight: FontWeight.bold,
                 fontSize: 16,
@@ -135,7 +208,10 @@ class _ProfileEditScreenState extends State<ProfileEditScreen> {
                       height: 120,
                       decoration: BoxDecoration(
                         shape: BoxShape.circle,
-                        border: Border.all(color: const Color(0xFFF1F5F9), width: 4),
+                        border: Border.all(
+                          color: const Color(0xFFF1F5F9),
+                          width: 4,
+                        ),
                         boxShadow: [
                           BoxShadow(
                             color: Colors.black.withOpacity(0.05),
@@ -150,8 +226,13 @@ class _ProfileEditScreenState extends State<ProfileEditScreen> {
                           radius: 60,
                           backgroundColor: const Color(0xFFF1F5F9),
                           backgroundImage: _imageFile != null
-                            ? FileImage(_imageFile!) as ImageProvider
-                            : const NetworkImage("https://i.pravatar.cc/150?u=sarah"),
+                              ? FileImage(_imageFile!) as ImageProvider
+                              : _profile?.profileImageUrl?.isNotEmpty == true
+                              ? NetworkImage(_profile!.profileImageUrl!)
+                              : const AssetImage(
+                                      'assets/images/default_user_avatar.png',
+                                    )
+                                    as ImageProvider,
                         ),
                       ),
                     ),
@@ -167,7 +248,11 @@ class _ProfileEditScreenState extends State<ProfileEditScreen> {
                             shape: BoxShape.circle,
                             border: Border.all(color: Colors.white, width: 3),
                           ),
-                          child: const Icon(Icons.camera_alt_rounded, color: Colors.white, size: 18),
+                          child: const Icon(
+                            Icons.camera_alt_rounded,
+                            color: Colors.white,
+                            size: 18,
+                          ),
                         ),
                       ),
                     ),
@@ -175,7 +260,7 @@ class _ProfileEditScreenState extends State<ProfileEditScreen> {
                 ),
               ),
             ),
-            
+
             // Form Fields
             Padding(
               padding: const EdgeInsets.all(24.0),
@@ -190,7 +275,8 @@ class _ProfileEditScreenState extends State<ProfileEditScreen> {
                       label: "Full Name",
                       controller: _nameController,
                       icon: Icons.person_outline_rounded,
-                      validator: (value) => value!.isEmpty ? "Please enter your name" : null,
+                      validator: (value) =>
+                          value!.isEmpty ? "Please enter your name" : null,
                     ),
                     const SizedBox(height: 40),
                   ],
@@ -240,10 +326,18 @@ class _ProfileEditScreenState extends State<ProfileEditScreen> {
         maxLines: maxLines,
         keyboardType: keyboardType,
         validator: validator,
-        style: const TextStyle(fontSize: 15, color: Color(0xFF1E293B), fontWeight: FontWeight.w600),
+        style: const TextStyle(
+          fontSize: 15,
+          color: Color(0xFF1E293B),
+          fontWeight: FontWeight.w600,
+        ),
         decoration: InputDecoration(
           labelText: label,
-          labelStyle: const TextStyle(color: Color(0xFF94A3B8), fontSize: 13, fontWeight: FontWeight.w500),
+          labelStyle: const TextStyle(
+            color: Color(0xFF94A3B8),
+            fontSize: 13,
+            fontWeight: FontWeight.w500,
+          ),
           prefixIcon: Icon(icon, color: const Color(0xFF22A892), size: 22),
           border: OutlineInputBorder(
             borderRadius: BorderRadius.circular(16),

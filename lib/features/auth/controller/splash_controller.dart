@@ -1,12 +1,13 @@
-import 'package:flutter/material.dart';
+import 'package:flutx_core/core/debug_print.dart';
 import 'package:flutter_tbzwa/features/auth/screens/login_screen.dart';
-import 'package:flutter_tbzwa/features/auth/screens/role_selection_screen.dart';
 import 'package:flutter_tbzwa/navigation_menu.dart';
 import 'package:get/get.dart';
 import 'package:video_player/video_player.dart';
 
+import '../../../core/api/api_client.dart';
 import '../../../core/services/auth_storage_service.dart';
 import '../../../core/services/secure_store_services.dart';
+import '../../navigation/instructor_nav_menu.dart' as instructor_navigation;
 import '../../onboarding/screens/onboarding_screen.dart';
 
 class SplashController extends GetxController {
@@ -29,40 +30,41 @@ class SplashController extends GetxController {
   }
 
   Future<void> _startSplashFlow() async {
-    print("SplashController: Starting splash flow...");
+    DPrint.log("SplashController: Starting splash flow...");
 
     const videoPath = 'assets/images/splash_video.mp4';
-    print("SplashController: Initializing video: $videoPath");
+    DPrint.log("SplashController: Initializing video: $videoPath");
 
     // Initialize video controller
     videoController = VideoPlayerController.asset(videoPath);
 
     try {
       await videoController!.initialize();
-      print("SplashController: Video initialized successfully.");
-      
+      DPrint.log("SplashController: Video initialized successfully.");
+
       isVideoInitialized.value = true;
-      
+
       await videoController!.play();
-      print("SplashController: Video playing...");
+      DPrint.log("SplashController: Video playing...");
 
       // Wait for video to complete (with a fallback if duration is zero)
       final duration = videoController!.value.duration;
       if (duration.inMilliseconds > 0) {
-        print("SplashController: Waiting for video duration: $duration");
+        DPrint.log("SplashController: Waiting for video duration: $duration");
         await Future.delayed(duration);
       } else {
-        print("SplashController: Video duration is zero, waiting for 5 seconds fallback.");
+        DPrint.log(
+          "SplashController: Video duration is zero, waiting for 5 seconds fallback.",
+        );
         await Future.delayed(const Duration(seconds: 0));
       }
     } catch (e) {
-
-      print("SplashController: Error initializing video: $e");
+      DPrint.error("SplashController: Error initializing video: $e");
       // If video fails, maybe show something else or just proceed
       await Future.delayed(const Duration(seconds: 3));
     }
 
-    print("SplashController: Navigating to next screen...");
+    DPrint.log("SplashController: Navigating to next screen...");
     _navigateToNext();
   }
 
@@ -71,14 +73,21 @@ class SplashController extends GetxController {
     final savedEmail = await secureStore.retrieveData("email");
     final savedPassword = await secureStore.retrieveData("password");
 
+    final hasStoredSession = await _authStorageService.isAuthenticated();
+
+    if (hasStoredSession) {
+      await ApiClient().restoreSession();
+    }
+
     final isAuth = await _authStorageService.isAuthenticated();
 
     if (isAuth) {
-      //Get.to(() => LoginScreen());
-      Get.offAll(() => RoleSelectionScreen());
-      // For now, if no navigation target is defined for Auth, go to Onboarding or similar
-      // Or uncomment the above if NavigationMenu exists.
-    
+      final role = await _authStorageService.getRole();
+      if (role == 'instructor') {
+        Get.offAll(() => const instructor_navigation.NavigationMenu());
+      } else {
+        Get.offAll(() => const NavigationMenu());
+      }
     } else if (savedEmail != null && savedPassword != null) {
       Get.offAll(() => LoginScreen());
     } else {
@@ -86,4 +95,3 @@ class SplashController extends GetxController {
     }
   }
 }
-

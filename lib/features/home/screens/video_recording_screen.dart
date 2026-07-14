@@ -1,7 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:camera/camera.dart';
-import 'dart:io';
 import '../controllers/video_recording_controller.dart';
 
 class VideoRecordingScreen extends StatefulWidget {
@@ -12,7 +11,9 @@ class VideoRecordingScreen extends StatefulWidget {
 }
 
 class _VideoRecordingScreenState extends State<VideoRecordingScreen> {
-  final VideoRecordingController controller = Get.put(VideoRecordingController());
+  final VideoRecordingController controller = Get.put(
+    VideoRecordingController(),
+  );
 
   @override
   Widget build(BuildContext context) {
@@ -20,7 +21,9 @@ class _VideoRecordingScreenState extends State<VideoRecordingScreen> {
       backgroundColor: Colors.black,
       body: Obx(() {
         if (!controller.isInitialized.value) {
-          return const Center(child: CircularProgressIndicator(color: Color(0xFF26A69A)));
+          return const Center(
+            child: CircularProgressIndicator(color: Color(0xFF26A69A)),
+          );
         }
 
         if (controller.videoState.value == VideoState.review) {
@@ -33,6 +36,7 @@ class _VideoRecordingScreenState extends State<VideoRecordingScreen> {
   }
 
   Widget _buildRecordingScreen() {
+    final cameraController = controller.cameraController!;
     return Stack(
       children: [
         // Camera Preview
@@ -46,8 +50,8 @@ class _VideoRecordingScreenState extends State<VideoRecordingScreen> {
               ),
               clipBehavior: Clip.antiAlias,
               child: AspectRatio(
-                aspectRatio: controller.cameraController.value.aspectRatio,
-                child: CameraPreview(controller.cameraController),
+                aspectRatio: cameraController.value.aspectRatio,
+                child: CameraPreview(cameraController),
               ),
             ),
           ),
@@ -76,7 +80,10 @@ class _VideoRecordingScreenState extends State<VideoRecordingScreen> {
                 const SizedBox(width: 8),
                 const Text(
                   "REC",
-                  style: TextStyle(color: Colors.white, fontWeight: FontWeight.bold),
+                  style: TextStyle(
+                    color: Colors.white,
+                    fontWeight: FontWeight.bold,
+                  ),
                 ),
               ],
             ),
@@ -134,13 +141,17 @@ class _VideoRecordingScreenState extends State<VideoRecordingScreen> {
                   ),
                   child: Container(
                     decoration: BoxDecoration(
-                      color: controller.videoState.value == VideoState.recording 
-                          ? Colors.white 
+                      color: controller.videoState.value == VideoState.recording
+                          ? Colors.white
                           : Colors.red,
                       shape: BoxShape.circle,
                     ),
-                    child: controller.videoState.value == VideoState.recording 
-                        ? const Icon(Icons.stop_rounded, color: Colors.red, size: 40)
+                    child: controller.videoState.value == VideoState.recording
+                        ? const Icon(
+                            Icons.stop_rounded,
+                            color: Colors.red,
+                            size: 40,
+                          )
                         : null,
                   ),
                 ),
@@ -191,7 +202,7 @@ class _VideoRecordingScreenState extends State<VideoRecordingScreen> {
             ),
           ),
           const SizedBox(height: 40),
-          
+
           // Video Preview Placeholder (Matches Figma Teal Box)
           Padding(
             padding: const EdgeInsets.symmetric(horizontal: 18),
@@ -202,7 +213,11 @@ class _VideoRecordingScreenState extends State<VideoRecordingScreen> {
                   color: const Color(0xFF26A69A).withOpacity(0.8),
                   borderRadius: BorderRadius.circular(24),
                 ),
-                child: const Icon(Icons.play_circle_filled_rounded, color: Colors.white, size: 80),
+                child: const Icon(
+                  Icons.play_circle_filled_rounded,
+                  color: Colors.white,
+                  size: 80,
+                ),
               ),
             ),
           ),
@@ -224,10 +239,17 @@ class _VideoRecordingScreenState extends State<VideoRecordingScreen> {
                       borderRadius: BorderRadius.circular(8),
                     ),
                     alignment: Alignment.center,
-                    child: Obx(() => Text(
-                      controller.clipName.value.isEmpty ? "Name or tag this clip" : controller.clipName.value,
-                      style: const TextStyle(color: Color(0xFF374151), fontWeight: FontWeight.w500),
-                    )),
+                    child: Obx(
+                      () => Text(
+                        controller.clipName.value.isEmpty
+                            ? "Name or tag this clip"
+                            : controller.clipName.value,
+                        style: const TextStyle(
+                          color: Color(0xFF374151),
+                          fontWeight: FontWeight.w500,
+                        ),
+                      ),
+                    ),
                   ),
                 ),
                 const SizedBox(height: 16),
@@ -257,7 +279,10 @@ class _VideoRecordingScreenState extends State<VideoRecordingScreen> {
                   onPressed: () => controller.resetRecording(),
                   child: const Text(
                     "Delete",
-                    style: TextStyle(color: Colors.red, fontWeight: FontWeight.bold),
+                    style: TextStyle(
+                      color: Colors.red,
+                      fontWeight: FontWeight.bold,
+                    ),
                   ),
                 ),
               ],
@@ -283,7 +308,12 @@ class _VideoRecordingScreenState extends State<VideoRecordingScreen> {
     );
   }
 
-  Widget _buildActionBtn(String label, Color bg, Color text, {required VoidCallback onTap}) {
+  Widget _buildActionBtn(
+    String label,
+    Color bg,
+    Color text, {
+    required VoidCallback onTap,
+  }) {
     return ElevatedButton(
       onPressed: onTap,
       style: ElevatedButton.styleFrom(
@@ -313,7 +343,11 @@ class _VideoRecordingScreenState extends State<VideoRecordingScreen> {
                   color: Color(0xFF26A69A),
                   shape: BoxShape.circle,
                 ),
-                child: const Icon(Icons.workspace_premium_rounded, color: Colors.white, size: 40),
+                child: const Icon(
+                  Icons.workspace_premium_rounded,
+                  color: Colors.white,
+                  size: 40,
+                ),
               ),
               const SizedBox(height: 24),
               const Text(
@@ -345,10 +379,15 @@ class _VideoRecordingScreenState extends State<VideoRecordingScreen> {
                   backgroundColor: const Color(0xFF26A69A),
                   foregroundColor: Colors.white,
                   minimumSize: const Size(double.infinity, 52),
-                  shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+                  shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(12),
+                  ),
                   elevation: 0,
                 ),
-                child: const Text("Continue", style: TextStyle(fontWeight: FontWeight.bold)),
+                child: const Text(
+                  "Continue",
+                  style: TextStyle(fontWeight: FontWeight.bold),
+                ),
               ),
             ],
           ),
@@ -359,11 +398,16 @@ class _VideoRecordingScreenState extends State<VideoRecordingScreen> {
   }
 
   void _showNameDialog() {
-    final TextEditingController nameController = TextEditingController(text: controller.clipName.value);
+    final TextEditingController nameController = TextEditingController(
+      text: controller.clipName.value,
+    );
     Get.defaultDialog(
       backgroundColor: Colors.white,
       title: "Name your clip",
-      titleStyle: const TextStyle(color: Color(0xFF374151), fontWeight: FontWeight.bold),
+      titleStyle: const TextStyle(
+        color: Color(0xFF374151),
+        fontWeight: FontWeight.bold,
+      ),
       content: Padding(
         padding: const EdgeInsets.symmetric(horizontal: 16),
         child: TextField(
@@ -372,7 +416,9 @@ class _VideoRecordingScreenState extends State<VideoRecordingScreen> {
           autofocus: true,
           decoration: const InputDecoration(
             hintText: "Enter clip name",
-            focusedBorder: UnderlineInputBorder(borderSide: BorderSide(color: Color(0xFF26A69A))),
+            focusedBorder: UnderlineInputBorder(
+              borderSide: BorderSide(color: Color(0xFF26A69A)),
+            ),
           ),
         ),
       ),
@@ -381,7 +427,13 @@ class _VideoRecordingScreenState extends State<VideoRecordingScreen> {
           controller.clipName.value = nameController.text;
           Get.back();
         },
-        child: const Text("Save", style: TextStyle(color: Color(0xFF26A69A), fontWeight: FontWeight.bold)),
+        child: const Text(
+          "Save",
+          style: TextStyle(
+            color: Color(0xFF26A69A),
+            fontWeight: FontWeight.bold,
+          ),
+        ),
       ),
       cancel: TextButton(
         onPressed: () => Get.back(),

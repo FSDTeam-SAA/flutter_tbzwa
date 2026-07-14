@@ -1,14 +1,64 @@
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 
+import '../services/learner_api_service.dart';
+
 class ImmersionEntryScreen extends StatefulWidget {
-  const ImmersionEntryScreen({super.key});
+  final String? learnerName;
+
+  const ImmersionEntryScreen({super.key, this.learnerName});
 
   @override
   State<ImmersionEntryScreen> createState() => _ImmersionEntryScreenState();
 }
 
 class _ImmersionEntryScreenState extends State<ImmersionEntryScreen> {
+  final LearnerApiService _learnerApiService = LearnerApiService();
+  final TextEditingController _titleController = TextEditingController();
+  final TextEditingController _summaryController = TextEditingController();
+  bool _isSaving = false;
+
+  @override
+  void dispose() {
+    _titleController.dispose();
+    _summaryController.dispose();
+    super.dispose();
+  }
+
+  Future<void> _saveImmersion() async {
+    final title = _titleController.text.trim();
+    final summary = _summaryController.text.trim();
+    if (title.isEmpty || summary.isEmpty) {
+      Get.snackbar(
+        "English Immersion",
+        "Title and writing are required.",
+        snackPosition: SnackPosition.BOTTOM,
+      );
+      return;
+    }
+
+    setState(() => _isSaving = true);
+    try {
+      await _learnerApiService.saveImmersionLog(title: title, summary: summary);
+      if (!mounted) return;
+      _showSuccessDialog();
+    } catch (error) {
+      if (!mounted) return;
+      Get.snackbar(
+        "English Immersion",
+        error.toString().replaceFirst('Exception: ', ''),
+        snackPosition: SnackPosition.BOTTOM,
+      );
+    } finally {
+      if (mounted) setState(() => _isSaving = false);
+    }
+  }
+
+  void _clearInputs() {
+    _titleController.clear();
+    _summaryController.clear();
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -17,7 +67,11 @@ class _ImmersionEntryScreenState extends State<ImmersionEntryScreen> {
         backgroundColor: Colors.white,
         elevation: 0,
         leading: IconButton(
-          icon: const Icon(Icons.arrow_back_ios_new_rounded, color: Color(0xFF374151), size: 20),
+          icon: const Icon(
+            Icons.arrow_back_ios_new_rounded,
+            color: Color(0xFF374151),
+            size: 20,
+          ),
           onPressed: () => Get.back(),
         ),
         title: const Text(
@@ -31,11 +85,7 @@ class _ImmersionEntryScreenState extends State<ImmersionEntryScreen> {
       ),
       body: SingleChildScrollView(
         padding: const EdgeInsets.all(20),
-        child: Column(
-          children: [
-            _buildWritingCard(),
-          ],
-        ),
+        child: Column(children: [_buildWritingCard()]),
       ),
       bottomNavigationBar: Container(
         padding: const EdgeInsets.all(20),
@@ -47,27 +97,40 @@ class _ImmersionEntryScreenState extends State<ImmersionEntryScreen> {
           children: [
             Expanded(
               child: OutlinedButton(
-                onPressed: () => Get.back(),
+                onPressed: _isSaving ? null : _clearInputs,
                 style: OutlinedButton.styleFrom(
                   minimumSize: const Size(double.infinity, 52),
                   side: const BorderSide(color: Color(0xFFE2E8F0)),
-                  shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+                  shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(12),
+                  ),
                 ),
-                child: const Text("Clear", style: TextStyle(color: Colors.red, fontWeight: FontWeight.bold)),
+                child: const Text(
+                  "Clear",
+                  style: TextStyle(
+                    color: Colors.red,
+                    fontWeight: FontWeight.bold,
+                  ),
+                ),
               ),
             ),
             const SizedBox(width: 16),
             Expanded(
               child: ElevatedButton(
-                onPressed: () => _showSuccessDialog(),
+                onPressed: _isSaving ? null : _saveImmersion,
                 style: ElevatedButton.styleFrom(
                   backgroundColor: const Color(0xFF26A69A),
                   foregroundColor: Colors.white,
                   minimumSize: const Size(double.infinity, 52),
-                  shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+                  shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(12),
+                  ),
                   elevation: 0,
                 ),
-                child: const Text("Save", style: TextStyle(fontWeight: FontWeight.bold)),
+                child: Text(
+                  _isSaving ? "Saving..." : "Save",
+                  style: const TextStyle(fontWeight: FontWeight.bold),
+                ),
               ),
             ),
           ],
@@ -80,7 +143,7 @@ class _ImmersionEntryScreenState extends State<ImmersionEntryScreen> {
     return Container(
       padding: const EdgeInsets.all(20),
       decoration: BoxDecoration(
-        color: const Color(0xFFF1F5F9).withOpacity(0.5),
+        color: const Color(0xFFF1F5F9).withValues(alpha: 0.5),
         borderRadius: BorderRadius.circular(24),
         border: Border.all(color: const Color(0xFFE2E8F0)),
       ),
@@ -88,14 +151,20 @@ class _ImmersionEntryScreenState extends State<ImmersionEntryScreen> {
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           _buildFieldLabel("TITLE"),
-          _buildInputField("Prison Break"),
+          _buildInputField(
+            "",
+            hint: "Enter title...",
+            controller: _titleController,
+          ),
 
           const SizedBox(height: 24),
           _buildFieldLabel("WRITE"),
           _buildInputField(
             "",
-            hint: "Write a short summery you have seen today's podcast, movie, youtube...",
+            hint:
+                "Write a short summery you have seen today's podcast, movie, youtube...",
             maxLines: 12,
+            controller: _summaryController,
           ),
         ],
       ),
@@ -117,7 +186,12 @@ class _ImmersionEntryScreenState extends State<ImmersionEntryScreen> {
     );
   }
 
-  Widget _buildInputField(String initialValue, {String hint = "", int maxLines = 1}) {
+  Widget _buildInputField(
+    String initialValue, {
+    String hint = "",
+    int maxLines = 1,
+    TextEditingController? controller,
+  }) {
     return Container(
       width: double.infinity,
       padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 16),
@@ -126,19 +200,41 @@ class _ImmersionEntryScreenState extends State<ImmersionEntryScreen> {
         borderRadius: BorderRadius.circular(12),
         border: Border.all(color: const Color(0xFFE2E8F0)),
       ),
-      child: initialValue.isNotEmpty
+      child: controller != null
+          ? TextField(
+              controller: controller,
+              maxLines: maxLines,
+              cursorColor: const Color(0xFF374151),
+              style: const TextStyle(color: Color(0xFF334155), fontSize: 16),
+              decoration: InputDecoration.collapsed(
+                hintText: hint,
+                hintStyle: const TextStyle(
+                  color: Color(0xFF94A3B8),
+                  fontSize: 14,
+                  height: 1.5,
+                ),
+              ),
+            )
+          : initialValue.isNotEmpty
           ? Text(
               initialValue,
               style: const TextStyle(color: Color(0xFF334155), fontSize: 16),
             )
           : Text(
               hint,
-              style: const TextStyle(color: Color(0xFF94A3B8), fontSize: 14, height: 1.5),
+              style: const TextStyle(
+                color: Color(0xFF94A3B8),
+                fontSize: 14,
+                height: 1.5,
+              ),
             ),
     );
   }
 
   void _showSuccessDialog() {
+    final rawName = widget.learnerName?.trim();
+    final name = rawName == null || rawName.isEmpty ? "Learner" : rawName;
+
     Get.dialog(
       Dialog(
         backgroundColor: const Color(0xFFF0FDFA),
@@ -154,13 +250,17 @@ class _ImmersionEntryScreenState extends State<ImmersionEntryScreen> {
                   color: Color(0xFF26A69A),
                   shape: BoxShape.circle,
                 ),
-                child: const Icon(Icons.workspace_premium_rounded, color: Colors.white, size: 40),
+                child: const Icon(
+                  Icons.workspace_premium_rounded,
+                  color: Colors.white,
+                  size: 40,
+                ),
               ),
               const SizedBox(height: 24),
-              const Text(
-                "Great job, Kathy!",
+              Text(
+                "Great job, $name!",
                 textAlign: TextAlign.center,
-                style: TextStyle(
+                style: const TextStyle(
                   fontSize: 24,
                   fontWeight: FontWeight.bold,
                   color: Color(0xFF374151),
@@ -179,17 +279,22 @@ class _ImmersionEntryScreenState extends State<ImmersionEntryScreen> {
               const SizedBox(height: 32),
               ElevatedButton(
                 onPressed: () {
-                  Get.back(); // Close dialog
-                  Get.back(); // Go back to dashboard
+                  Get.back(result: true);
+                  Get.back(result: true);
                 },
                 style: ElevatedButton.styleFrom(
                   backgroundColor: const Color(0xFF26A69A),
                   foregroundColor: Colors.white,
                   minimumSize: const Size(double.infinity, 52),
-                  shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+                  shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(12),
+                  ),
                   elevation: 0,
                 ),
-                child: const Text("Continue", style: TextStyle(fontWeight: FontWeight.bold)),
+                child: const Text(
+                  "Continue",
+                  style: TextStyle(fontWeight: FontWeight.bold),
+                ),
               ),
             ],
           ),

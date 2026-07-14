@@ -1,6 +1,9 @@
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
+import 'package:intl/intl.dart';
 import 'class_details_screen.dart';
+import '../../home/models/learner_api_models.dart';
+import '../../home/services/learner_api_service.dart';
 
 class LiveClassesScreen extends StatefulWidget {
   const LiveClassesScreen({super.key});
@@ -9,13 +12,41 @@ class LiveClassesScreen extends StatefulWidget {
   State<LiveClassesScreen> createState() => _LiveClassesScreenState();
 }
 
-class _LiveClassesScreenState extends State<LiveClassesScreen> with SingleTickerProviderStateMixin {
+class _LiveClassesScreenState extends State<LiveClassesScreen>
+    with SingleTickerProviderStateMixin {
   late TabController _tabController;
+  final LearnerApiService _api = LearnerApiService();
+  LearnerLiveClasses? _classes;
+  bool _isLoading = true;
 
   @override
   void initState() {
     super.initState();
     _tabController = TabController(length: 3, vsync: this);
+    _loadClasses();
+  }
+
+  Future<void> _loadClasses() async {
+    try {
+      final classes = await _api.getLiveClasses();
+      if (!mounted) return;
+      setState(() => _classes = classes);
+    } catch (error) {
+      if (mounted) {
+        Get.snackbar(
+          'Unable to load classes',
+          error.toString().replaceFirst('Exception: ', ''),
+        );
+      }
+    } finally {
+      if (mounted) setState(() => _isLoading = false);
+    }
+  }
+
+  @override
+  void dispose() {
+    _tabController.dispose();
+    super.dispose();
   }
 
   @override
@@ -27,7 +58,11 @@ class _LiveClassesScreenState extends State<LiveClassesScreen> with SingleTicker
         elevation: 0,
         centerTitle: true,
         leading: IconButton(
-          icon: const Icon(Icons.arrow_back_ios_new_rounded, color: Color(0xFF1E293B), size: 20),
+          icon: const Icon(
+            Icons.arrow_back_ios_new_rounded,
+            color: Color(0xFF1E293B),
+            size: 20,
+          ),
           onPressed: () => Get.back(),
         ),
         title: const Text(
@@ -60,7 +95,10 @@ class _LiveClassesScreenState extends State<LiveClassesScreen> with SingleTicker
               dividerColor: Colors.transparent,
               labelColor: const Color(0xFF22A892),
               unselectedLabelColor: const Color(0xFF94A3B8),
-              labelStyle: const TextStyle(fontWeight: FontWeight.bold, fontSize: 13),
+              labelStyle: const TextStyle(
+                fontWeight: FontWeight.bold,
+                fontSize: 13,
+              ),
               tabs: const [
                 Tab(text: "Today"),
                 Tab(text: "Upcoming"),
@@ -73,9 +111,9 @@ class _LiveClassesScreenState extends State<LiveClassesScreen> with SingleTicker
             child: TabBarView(
               controller: _tabController,
               children: [
-                _buildClassList("Today"),
-                _buildClassList("Upcoming"),
-                _buildClassList("Past"),
+                _buildClassList(_classes?.today ?? const []),
+                _buildClassList(_classes?.upcoming ?? const []),
+                _buildClassList(_classes?.past ?? const []),
               ],
             ),
           ),
@@ -84,22 +122,26 @@ class _LiveClassesScreenState extends State<LiveClassesScreen> with SingleTicker
     );
   }
 
-  Widget _buildClassList(String type) {
-    String dateLabel = "";
-    if (type == "Today") dateLabel = "Today, 09:00 AM";
-    if (type == "Upcoming") dateLabel = "Tomorrow, 09:00 AM";
-    if (type == "Past") dateLabel = "Yesterday, 09:00 AM";
-
+  Widget _buildClassList(List<LiveClassInfo> classes) {
+    if (_isLoading) {
+      return const Center(child: CircularProgressIndicator());
+    }
+    if (classes.isEmpty) {
+      return const Center(child: Text('No classes available'));
+    }
     return ListView.builder(
       padding: const EdgeInsets.symmetric(horizontal: 20),
-      itemCount: 4,
+      itemCount: classes.length,
       itemBuilder: (context, index) {
-        return _buildClassCard(dateLabel);
+        return _buildClassCard(classes[index]);
       },
     );
   }
 
-  Widget _buildClassCard(String dateLabel) {
+  Widget _buildClassCard(LiveClassInfo liveClass) {
+    final dateLabel = DateFormat(
+      'EEE, dd MMM, hh:mm a',
+    ).format(liveClass.scheduledAt);
     return Container(
       margin: const EdgeInsets.only(bottom: 16),
       padding: const EdgeInsets.all(16),
@@ -113,9 +155,9 @@ class _LiveClassesScreenState extends State<LiveClassesScreen> with SingleTicker
           Row(
             mainAxisAlignment: MainAxisAlignment.spaceBetween,
             children: [
-              const Text(
-                "IMMERSION++",
-                style: TextStyle(
+              Text(
+                liveClass.title,
+                style: const TextStyle(
                   color: Color(0xFF22A892),
                   fontSize: 18,
                   fontWeight: FontWeight.bold,
@@ -134,25 +176,31 @@ class _LiveClassesScreenState extends State<LiveClassesScreen> with SingleTicker
           const SizedBox(height: 16),
           Row(
             children: [
-              const CircleAvatar(
+              CircleAvatar(
                 radius: 12,
-                backgroundImage: NetworkImage("https://i.pravatar.cc/150?u=sarah"),
+                backgroundImage:
+                    liveClass.instructorImageUrl?.isNotEmpty == true
+                    ? NetworkImage(liveClass.instructorImageUrl!)
+                    : const AssetImage('assets/images/default_user_avatar.png')
+                          as ImageProvider,
               ),
               const SizedBox(width: 8),
               const Text(
                 "Instructor: ",
                 style: TextStyle(color: Color(0xFF94A3B8), fontSize: 13),
               ),
-              const Text(
-                "Sarah Jenkins",
-                style: TextStyle(color: Color(0xFF1E293B), fontSize: 13, fontWeight: FontWeight.bold),
+              Text(
+                liveClass.instructorName,
+                style: const TextStyle(
+                  color: Color(0xFF1E293B),
+                  fontSize: 13,
+                  fontWeight: FontWeight.bold,
+                ),
               ),
               const Spacer(),
               GestureDetector(
-                onTap: () => Get.to(() => ClassDetailsScreen(
-                  title: "IMMERSION++",
-                  time: dateLabel,
-                )),
+                onTap: () =>
+                    Get.to(() => ClassDetailsScreen(liveClass: liveClass)),
                 child: const Text(
                   "View Details",
                   style: TextStyle(

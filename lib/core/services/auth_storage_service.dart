@@ -19,9 +19,13 @@ class AuthStorageService {
     String? role,
   }) async {
     if (accessToken == null ||
+        accessToken.isEmpty ||
         refreshToken == null ||
+        refreshToken.isEmpty ||
         userId == null ||
-        role == null) {
+        userId.isEmpty ||
+        role == null ||
+        role.isEmpty) {
       // Handle missing data: throw, log, or use defaults
       throw Exception('Missing required auth data');
     }
@@ -53,11 +57,13 @@ class AuthStorageService {
   // Check user authenticater or not
   Future<bool> isAuthenticated() async {
     final accessToken = await getAccessToken();
-    final roleString = await _secureStorage.read(key: KeyConst.role);
-    return accessToken != null &&
-        accessToken.isNotEmpty &&
-        roleString != null &&
-        roleString.isNotEmpty;
+    final refreshToken = await getRefreshToken();
+    final userId = await getUserId();
+    final roleString = await getRole();
+    return (accessToken?.isNotEmpty == true ||
+            refreshToken?.isNotEmpty == true) &&
+        userId?.isNotEmpty == true &&
+        roleString?.isNotEmpty == true;
   }
 
   // Get access token
@@ -87,6 +93,7 @@ class AuthStorageService {
       'accessToken': await getAccessToken(),
       'refreshToken': await getRefreshToken(),
       'userId': await getUserId(),
+      'role': await getRole(),
     };
   }
 
@@ -97,6 +104,7 @@ class AuthStorageService {
       _secureStorage.delete(key: KeyConst.accessToken),
       _secureStorage.delete(key: KeyConst.refreshToken),
       _secureStorage.delete(key: KeyConst.userId),
+      _secureStorage.delete(key: KeyConst.role),
     ]);
   }
 

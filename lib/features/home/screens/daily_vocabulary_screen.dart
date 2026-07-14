@@ -1,10 +1,105 @@
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
+
+import '../models/learner_api_models.dart';
+import '../services/learner_api_service.dart';
 import 'vocabulary_entry_screen.dart';
 
-class DailyVocabularyScreen extends StatelessWidget {
-// ... (omitting middle parts for brevity in replacement search but replace_file_content requires exact match)
+class DailyVocabularyScreen extends StatefulWidget {
   const DailyVocabularyScreen({super.key});
+
+  @override
+  State<DailyVocabularyScreen> createState() => _DailyVocabularyScreenState();
+}
+
+class _DailyVocabularyScreenState extends State<DailyVocabularyScreen> {
+  final LearnerApiService _learnerApiService = LearnerApiService();
+  final TextEditingController _searchController = TextEditingController();
+  List<VocabularyWord> _words = const [];
+  List<VocabularyWord> _todayWords = const [];
+  MissionProgress? _missionProgress;
+  LearnerProfile? _profile;
+  WeeklyProgress? _weeklyProgress;
+  String _selectedFilter = 'all';
+  String _searchQuery = '';
+  String? _errorMessage;
+  bool _isLoading = true;
+
+  @override
+  void initState() {
+    super.initState();
+    _loadVocabulary();
+  }
+
+  @override
+  void dispose() {
+    _searchController.dispose();
+    super.dispose();
+  }
+
+  Future<void> _loadVocabulary() async {
+    setState(() {
+      _isLoading = true;
+      _errorMessage = null;
+    });
+    try {
+      final results = await Future.wait<dynamic>([
+        _learnerApiService.getTodayVocabulary(),
+        _learnerApiService.getVocabularyWords(),
+        _learnerApiService.getProfile(),
+        _learnerApiService.getWeeklyProgress(),
+      ]);
+      if (!mounted) return;
+      final todayVocabulary = results[0] as TodayVocabulary;
+      setState(() {
+        _todayWords = todayVocabulary.words;
+        _words = _selectedFilter == 'daily'
+            ? todayVocabulary.words
+            : results[1] as List<VocabularyWord>;
+        _missionProgress = todayVocabulary.progress;
+        _profile = results[2] as LearnerProfile;
+        _weeklyProgress = results[3] as WeeklyProgress;
+      });
+    } catch (error) {
+      if (!mounted) return;
+      setState(
+        () => _errorMessage = error.toString().replaceFirst('Exception: ', ''),
+      );
+    } finally {
+      if (mounted) setState(() => _isLoading = false);
+    }
+  }
+
+  int get _completed {
+    final apiCompleted = _missionProgress?.completed ?? 0;
+    return apiCompleted > _todayWords.length
+        ? apiCompleted
+        : _todayWords.length;
+  }
+
+  int get _target => _missionProgress?.target ?? 2;
+  int get _currentStreak => _profile?.currentStreak ?? 0;
+  int get _averageScore => _weeklyProgress?.average ?? 0;
+
+  List<WeeklyDayProgress> get _weeklyDays {
+    final apiDays = _weeklyProgress?.days ?? const [];
+    if (apiDays.length == 7) return apiDays;
+    return List.generate(7, (index) {
+      final date = DateTime.now().subtract(Duration(days: 6 - index));
+      return WeeklyDayProgress(date: date, score: 0, hasActivity: false);
+    });
+  }
+
+  List<VocabularyWord> get _filteredWords {
+    if (_searchQuery.isEmpty) return _words;
+    return _words
+        .where(
+          (word) =>
+              word.word.toLowerCase().contains(_searchQuery) ||
+              word.definition.toLowerCase().contains(_searchQuery),
+        )
+        .toList();
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -14,7 +109,11 @@ class DailyVocabularyScreen extends StatelessWidget {
         backgroundColor: Colors.transparent,
         elevation: 0,
         leading: IconButton(
-          icon: const Icon(Icons.arrow_back_ios_new_rounded, color: Color(0xFF374151), size: 20),
+          icon: const Icon(
+            Icons.arrow_back_ios_new_rounded,
+            color: Color(0xFF374151),
+            size: 20,
+          ),
           onPressed: () => Get.back(),
         ),
         title: const Text(
@@ -39,8 +138,13 @@ class DailyVocabularyScreen extends StatelessWidget {
                 borderRadius: BorderRadius.circular(16),
                 border: Border.all(color: const Color(0xFFF1F5F9)),
               ),
-              child: const TextField(
-                decoration: InputDecoration(
+              child: TextField(
+                controller: _searchController,
+                onChanged: (value) =>
+                    setState(() => _searchQuery = value.trim().toLowerCase()),
+                cursorColor: const Color(0xFF374151),
+                style: const TextStyle(color: Color(0xFF000000)),
+                decoration: const InputDecoration(
                   icon: Icon(Icons.search, color: Color(0xFF94A3B8)),
                   hintText: "Search word...",
                   hintStyle: TextStyle(color: Color(0xFF94A3B8), fontSize: 14),
@@ -68,7 +172,10 @@ class DailyVocabularyScreen extends StatelessWidget {
                         crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
                           Container(
-                            padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
+                            padding: const EdgeInsets.symmetric(
+                              horizontal: 12,
+                              vertical: 6,
+                            ),
                             decoration: BoxDecoration(
                               color: const Color(0xFFE0F2F1),
                               borderRadius: BorderRadius.circular(8),
@@ -112,27 +219,37 @@ class DailyVocabularyScreen extends StatelessWidget {
                     ],
                   ),
                   const SizedBox(height: 32),
-                  const Row(
+                  Row(
                     mainAxisAlignment: MainAxisAlignment.spaceBetween,
                     children: [
-                      Text(
+                      const Text(
                         "Progress to Mastery",
-                        style: TextStyle(color: Color(0xFF64748B), fontSize: 14),
+                        style: TextStyle(
+                          color: Color(0xFF64748B),
+                          fontSize: 14,
+                        ),
                       ),
                       Text(
-                        "1/2",
-                        style: TextStyle(color: Color(0xFF374151), fontWeight: FontWeight.bold),
+                        "$_completed/$_target",
+                        style: const TextStyle(
+                          color: Color(0xFF374151),
+                          fontWeight: FontWeight.bold,
+                        ),
                       ),
                     ],
                   ),
                   const SizedBox(height: 12),
                   ClipRRect(
                     borderRadius: BorderRadius.circular(10),
-                    child: const LinearProgressIndicator(
-                      value: 0.5,
+                    child: LinearProgressIndicator(
+                      value: _target == 0
+                          ? 0
+                          : (_completed / _target).clamp(0.0, 1.0),
                       minHeight: 10,
-                      backgroundColor: Color(0xFFE0F2F1),
-                      valueColor: AlwaysStoppedAnimation<Color>(Color(0xFF26A69A)),
+                      backgroundColor: const Color(0xFFE0F2F1),
+                      valueColor: const AlwaysStoppedAnimation<Color>(
+                        Color(0xFF26A69A),
+                      ),
                     ),
                   ),
                 ],
@@ -142,12 +259,19 @@ class DailyVocabularyScreen extends StatelessWidget {
 
             // Start Vocabulary Button
             ElevatedButton(
-              onPressed: () => Get.to(() => const VocabularyEntryScreen()),
+              onPressed: () async {
+                await Get.to(
+                  () => VocabularyEntryScreen(learnerName: _profile?.fullName),
+                );
+                await _loadVocabulary();
+              },
               style: ElevatedButton.styleFrom(
                 backgroundColor: const Color(0xFF26A69A),
                 foregroundColor: Colors.white,
                 minimumSize: const Size(double.infinity, 56),
-                shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+                shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(16),
+                ),
                 elevation: 0,
               ),
               child: const Text(
@@ -170,20 +294,25 @@ class DailyVocabularyScreen extends StatelessWidget {
                 children: [
                   const Text(
                     "Weekly Consistency",
-                    style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold, color: Color(0xFF374151)),
+                    style: TextStyle(
+                      fontSize: 16,
+                      fontWeight: FontWeight.bold,
+                      color: Color(0xFF374151),
+                    ),
                   ),
                   const SizedBox(height: 20),
                   Row(
                     mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                    children: [
-                      _buildDayItem("M", 1.0, isActive: true),
-                      _buildDayItem("T", 0.6),
-                      _buildDayItem("W", 0.8),
-                      _buildDayItem("T", 0.5),
-                      _buildDayItem("F", 0.9),
-                      _buildDayItem("S", 0.2),
-                      _buildDayItem("S", 1.0, isSpecial: true),
-                    ],
+                    children: _weeklyDays
+                        .map(
+                          (day) => _buildDayItem(
+                            day.dayLabel,
+                            day.score / 100,
+                            isActive: day.hasActivity,
+                            isSpecial: day.isToday,
+                          ),
+                        )
+                        .toList(),
                   ),
                 ],
               ),
@@ -193,9 +322,19 @@ class DailyVocabularyScreen extends StatelessWidget {
             // Stats row
             Row(
               children: [
-                 _buildSmallStatCard("Current Streak", "12 Days", Icons.bolt, const Color(0xFF26A69A)),
-                 const SizedBox(width: 16),
-                 _buildSmallStatCard("Average Score", "70%", Icons.percent, const Color(0xFF26A69A)),
+                _buildSmallStatCard(
+                  "Current Streak",
+                  "$_currentStreak Days",
+                  Icons.bolt,
+                  const Color(0xFF26A69A),
+                ),
+                const SizedBox(width: 16),
+                _buildSmallStatCard(
+                  "Average Score",
+                  "$_averageScore%",
+                  Icons.percent,
+                  const Color(0xFF26A69A),
+                ),
               ],
             ),
             const SizedBox(height: 32),
@@ -205,33 +344,81 @@ class DailyVocabularyScreen extends StatelessWidget {
               scrollDirection: Axis.horizontal,
               child: Row(
                 children: [
-                  _buildFilterChip("All Words", isActive: true),
-                  _buildFilterChip("Daily"),
+                  _buildFilterChip(
+                    "All Words",
+                    isActive: _selectedFilter == 'all',
+                    onTap: () => _changeFilter('all'),
+                  ),
+                  _buildFilterChip(
+                    "Daily",
+                    isActive: _selectedFilter == 'daily',
+                    onTap: () => _changeFilter('daily'),
+                  ),
                 ],
               ),
             ),
             const SizedBox(height: 24),
 
             // Daily Words Section
-             Row(
+            Row(
               mainAxisAlignment: MainAxisAlignment.spaceBetween,
               children: [
                 const Text(
                   "Daily Words",
-                  style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold, color: Color(0xFF374151)),
+                  style: TextStyle(
+                    fontSize: 18,
+                    fontWeight: FontWeight.bold,
+                    color: Color(0xFF374151),
+                  ),
                 ),
                 TextButton(
                   onPressed: () {},
-                  child: const Text("View All", style: TextStyle(color: Color(0xFF94A3B8))),
+                  child: const Text(
+                    "View All",
+                    style: TextStyle(color: Color(0xFF94A3B8)),
+                  ),
                 ),
               ],
             ),
             const SizedBox(height: 8),
 
-            // Word Items
-            _buildWordItem("1.", "Ephemeral", "\"Lasting for a very short time.\""),
-            _buildWordItem("2.", "Mellifluous", "\"A sound that is sweet and smooth, pleasing to hear.\""),
-            
+            if (_isLoading)
+              const Padding(
+                padding: EdgeInsets.symmetric(vertical: 24),
+                child: CircularProgressIndicator(color: Color(0xFF26A69A)),
+              )
+            else if (_errorMessage != null)
+              Padding(
+                padding: const EdgeInsets.symmetric(vertical: 24),
+                child: Text(
+                  _errorMessage!,
+                  textAlign: TextAlign.center,
+                  style: const TextStyle(color: Colors.red, fontSize: 13),
+                ),
+              )
+            else
+              ..._filteredWords.asMap().entries.map((entry) {
+                final word = entry.value;
+                return GestureDetector(
+                  onTap: () async {
+                    await Get.to(
+                      () => VocabularyEntryScreen(
+                        existingWords: _todayWords,
+                        selectedWord: word,
+                        learnerName: _profile?.fullName,
+                      ),
+                    );
+                    await _loadVocabulary();
+                  },
+                  child: _buildWordItem(
+                    "${entry.key + 1}.",
+                    word.word,
+                    "\"${word.definition}\"",
+                    onDelete: () => _deleteVocabularyWord(word),
+                  ),
+                );
+              }),
+
             const SizedBox(height: 40),
           ],
         ),
@@ -239,32 +426,55 @@ class DailyVocabularyScreen extends StatelessWidget {
     );
   }
 
-  Widget _buildDayItem(String day, double heightFactor, {bool isActive = false, bool isSpecial = false}) {
+  Widget _buildDayItem(
+    String day,
+    double heightFactor, {
+    bool isActive = false,
+    bool isSpecial = false,
+  }) {
     return Column(
       children: [
         Container(
           width: 36,
           height: 48,
           decoration: BoxDecoration(
-            color: isSpecial ? const Color(0xFF26A69A) : const Color(0xFFE0F2F1),
+            color: isSpecial
+                ? const Color(0xFF26A69A)
+                : const Color(0xFFE0F2F1),
             borderRadius: BorderRadius.circular(8),
           ),
           alignment: Alignment.bottomCenter,
-          child: isActive ? Container(
-            height: 48 * heightFactor,
-            decoration: BoxDecoration(
-              color: isSpecial ? const Color(0xFF26A69A) : const Color(0xFF26A69A).withOpacity(0.3),
-              borderRadius: BorderRadius.circular(8),
-            ),
-          ) : null,
+          child: isActive
+              ? Container(
+                  height: 48 * heightFactor.clamp(0.0, 1.0),
+                  decoration: BoxDecoration(
+                    color: isSpecial
+                        ? const Color(0xFF26A69A)
+                        : const Color(0xFF26A69A).withValues(alpha: 0.3),
+                    borderRadius: BorderRadius.circular(8),
+                  ),
+                )
+              : null,
         ),
         const SizedBox(height: 8),
-        Text(day, style: const TextStyle(fontSize: 10, color: Color(0xFF94A3B8), fontWeight: FontWeight.bold)),
+        Text(
+          day,
+          style: const TextStyle(
+            fontSize: 10,
+            color: Color(0xFF94A3B8),
+            fontWeight: FontWeight.bold,
+          ),
+        ),
       ],
     );
   }
 
-  Widget _buildSmallStatCard(String label, String value, IconData icon, Color color) {
+  Widget _buildSmallStatCard(
+    String label,
+    String value,
+    IconData icon,
+    Color color,
+  ) {
     return Expanded(
       child: Container(
         padding: const EdgeInsets.all(16),
@@ -285,36 +495,60 @@ class DailyVocabularyScreen extends StatelessWidget {
               child: Icon(icon, color: color, size: 20),
             ),
             const SizedBox(height: 12),
-            Text(label, style: const TextStyle(fontSize: 10, color: Color(0xFF64748B))),
+            Text(
+              label,
+              style: const TextStyle(fontSize: 10, color: Color(0xFF64748B)),
+            ),
             const SizedBox(height: 4),
-            Text(value, style: const TextStyle(fontSize: 18, fontWeight: FontWeight.bold, color: Color(0xFF374151))),
+            Text(
+              value,
+              style: const TextStyle(
+                fontSize: 18,
+                fontWeight: FontWeight.bold,
+                color: Color(0xFF374151),
+              ),
+            ),
           ],
         ),
       ),
     );
   }
 
-  Widget _buildFilterChip(String label, {bool isActive = false}) {
-    return Container(
-      margin: const EdgeInsets.only(right: 12),
-      padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 12),
-      decoration: BoxDecoration(
-        color: isActive ? const Color(0xFF26A69A) : Colors.white,
-        borderRadius: BorderRadius.circular(20),
-        border: Border.all(color: isActive ? Colors.transparent : const Color(0xFFF1F5F9)),
-      ),
-      child: Text(
-        label,
-        style: TextStyle(
-          color: isActive ? Colors.white : const Color(0xFF64748B),
-          fontWeight: FontWeight.bold,
-          fontSize: 14,
+  Widget _buildFilterChip(
+    String label, {
+    bool isActive = false,
+    VoidCallback? onTap,
+  }) {
+    return GestureDetector(
+      onTap: onTap,
+      child: Container(
+        margin: const EdgeInsets.only(right: 12),
+        padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 12),
+        decoration: BoxDecoration(
+          color: isActive ? const Color(0xFF26A69A) : Colors.white,
+          borderRadius: BorderRadius.circular(20),
+          border: Border.all(
+            color: isActive ? Colors.transparent : const Color(0xFFF1F5F9),
+          ),
+        ),
+        child: Text(
+          label,
+          style: TextStyle(
+            color: isActive ? Colors.white : const Color(0xFF64748B),
+            fontWeight: FontWeight.bold,
+            fontSize: 14,
+          ),
         ),
       ),
     );
   }
 
-  Widget _buildWordItem(String number, String title, String subtitle) {
+  Widget _buildWordItem(
+    String number,
+    String title,
+    String subtitle, {
+    VoidCallback? onDelete,
+  }) {
     return Container(
       margin: const EdgeInsets.only(bottom: 16),
       padding: const EdgeInsets.all(16),
@@ -357,6 +591,8 @@ class DailyVocabularyScreen extends StatelessWidget {
                 const SizedBox(height: 4),
                 Text(
                   subtitle,
+                  maxLines: 1,
+                  overflow: TextOverflow.ellipsis,
                   style: const TextStyle(
                     fontSize: 12,
                     color: Color(0xFF94A3B8),
@@ -365,9 +601,66 @@ class DailyVocabularyScreen extends StatelessWidget {
               ],
             ),
           ),
-          const Icon(Icons.more_vert, color: Color(0xFF94A3B8)),
+          if (onDelete == null)
+            const Icon(Icons.more_vert, color: Color(0xFF94A3B8))
+          else
+            PopupMenuButton<String>(
+              padding: EdgeInsets.zero,
+              color: Colors.white,
+              icon: const Icon(Icons.more_vert, color: Color(0xFF94A3B8)),
+              onSelected: (value) {
+                if (value == 'delete') onDelete();
+              },
+              itemBuilder: (context) => const [
+                PopupMenuItem<String>(
+                  value: 'delete',
+                  child: Row(
+                    children: [
+                      Icon(Icons.delete_outline, color: Colors.red),
+                      SizedBox(width: 8),
+                      Text('Delete', style: TextStyle(color: Colors.red)),
+                    ],
+                  ),
+                ),
+              ],
+            ),
         ],
       ),
     );
+  }
+
+  Future<void> _changeFilter(String filter) async {
+    if (_selectedFilter == filter) return;
+    setState(() {
+      _selectedFilter = filter;
+      _isLoading = true;
+      _errorMessage = null;
+    });
+    try {
+      final words = filter == 'daily'
+          ? _todayWords
+          : await _learnerApiService.getVocabularyWords();
+      if (!mounted) return;
+      setState(() => _words = words);
+    } catch (error) {
+      if (!mounted) return;
+      setState(
+        () => _errorMessage = error.toString().replaceFirst('Exception: ', ''),
+      );
+    } finally {
+      if (mounted) setState(() => _isLoading = false);
+    }
+  }
+
+  Future<void> _deleteVocabularyWord(VocabularyWord word) async {
+    try {
+      await _learnerApiService.deleteVocabularyWord(word.id);
+      await _loadVocabulary();
+    } catch (error) {
+      Get.snackbar(
+        'Unable to delete word',
+        error.toString().replaceFirst('Exception: ', ''),
+      );
+    }
   }
 }

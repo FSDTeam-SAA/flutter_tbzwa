@@ -1,9 +1,10 @@
 import 'package:flutter/material.dart';
-import 'package:flutter_tbzwa/core/constants/assest_const.dart';
 import 'package:flutter_tbzwa/features/auth/controller/auth_controller.dart';
 import 'package:flutter_tbzwa/features/profile/screens/profile_edit_screen.dart';
 import 'package:get/get.dart';
 import '../../subcribers_flow/subscriber_menu_drawer.dart';
+import '../../home/models/learner_api_models.dart';
+import '../../home/services/learner_api_service.dart';
 
 class ProfileScreen extends StatefulWidget {
   const ProfileScreen({super.key});
@@ -13,6 +14,42 @@ class ProfileScreen extends StatefulWidget {
 }
 
 class _ProfileScreenState extends State<ProfileScreen> {
+  final LearnerApiService _api = LearnerApiService();
+  LearnerProfile? _profile;
+  WeeklyProgress? _weekly;
+
+  @override
+  void initState() {
+    super.initState();
+    _loadProfile();
+  }
+
+  Future<void> _loadProfile() async {
+    try {
+      final values = await Future.wait([
+        _api.getProfile(),
+        _api.getWeeklyProgress(),
+      ]);
+      if (!mounted) return;
+      setState(() {
+        _profile = values[0] as LearnerProfile;
+        _weekly = values[1] as WeeklyProgress;
+      });
+    } catch (_) {
+      // Keep the screen usable while a transient network error is resolved.
+    }
+  }
+
+  String get _planLabel {
+    final value = _profile?.plan ?? 'none';
+    if (value == 'none') return 'NO ACTIVE PLAN';
+    return value
+        .replaceAll('_plus_plus', '++')
+        .replaceAll('_plus', '+')
+        .replaceAll('_', ' ')
+        .toUpperCase();
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -64,7 +101,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
                       padding: const EdgeInsets.only(left: 18.0),
                       child: _buildAnalyticsCard(
                         'Current Streak',
-                        '12 Days',
+                        '${_profile?.currentStreak ?? 0} Days',
                         Icons.bolt_rounded,
                       ),
                     ),
@@ -75,7 +112,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
                       padding: const EdgeInsets.only(right: 18.0),
                       child: _buildAnalyticsCard(
                         'Average Score',
-                        '70%',
+                        '${_weekly?.average ?? 0}%',
                         Icons.percent_rounded,
                       ),
                     ),
@@ -183,18 +220,21 @@ class _ProfileScreenState extends State<ProfileScreen> {
             children: [
               CircleAvatar(
                 radius: 35,
-                backgroundImage: AssetImage(
-                  'assets/images/20b88955d6e91b0f9cbf6e8b1d6959045013c348.jpg',
-                ),
+                backgroundImage: _profile?.profileImageUrl?.isNotEmpty == true
+                    ? NetworkImage(_profile!.profileImageUrl!)
+                    : const AssetImage('assets/images/default_user_avatar.png')
+                          as ImageProvider,
               ),
               const SizedBox(width: 16),
               Expanded(
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    const Text(
-                      'Kathy Onana',
-                      style: TextStyle(
+                    Text(
+                      _profile?.fullName.isNotEmpty == true
+                          ? _profile!.fullName
+                          : 'Kathy Onana',
+                      style: const TextStyle(
                         fontSize: 24,
                         fontWeight: FontWeight.w800,
                         color: Color(0xFF374151),
@@ -202,7 +242,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
                     ),
                     const SizedBox(height: 4),
                     Text(
-                      'User ID : BZ234567',
+                      'User ID : ${_profile?.userId.isNotEmpty == true ? _profile!.userId : 'BZ234567'}',
                       style: TextStyle(
                         fontSize: 14,
                         color: const Color(0xFF94A3B8),
@@ -216,8 +256,13 @@ class _ProfileScreenState extends State<ProfileScreen> {
               Padding(
                 padding: const EdgeInsets.only(left: 18.0),
                 child: IconButton(
-                  onPressed: () {
-                    Get.to(() => ProfileEditScreen());
+                  onPressed: () async {
+                    final updated = await Get.to<LearnerProfile>(
+                      () => ProfileEditScreen(profile: _profile),
+                    );
+                    if (updated != null && mounted) {
+                      setState(() => _profile = updated);
+                    }
                   },
                   icon: Icon(Icons.mode_edit_outlined, color: Colors.black54),
                 ),
@@ -231,9 +276,9 @@ class _ProfileScreenState extends State<ProfileScreen> {
               color: const Color(0xFFBFF9F0),
               borderRadius: BorderRadius.circular(10),
             ),
-            child: const Text(
-              'IMMERSION++',
-              style: TextStyle(
+            child: Text(
+              _planLabel,
+              style: const TextStyle(
                 color: Color(0xFF22A892),
                 fontSize: 12,
                 fontWeight: FontWeight.w700,
@@ -302,7 +347,12 @@ class _ProfileScreenState extends State<ProfileScreen> {
 
   Widget _buildConsistencyChart() {
     final days = ['M', 'T', 'W', 'T', 'F', 'S', 'S'];
-    final values = [0.8, 0.6, 0.8, 0.6, 0.9, 0.1, 0.6];
+    final scores = _weekly?.scores ?? const <int>[];
+    final values = List<double>.generate(
+      7,
+      (index) =>
+          index < scores.length ? (scores[index] / 100).clamp(0.0, 1.0) : 0.0,
+    );
 
     return Container(
       padding: const EdgeInsets.all(24),

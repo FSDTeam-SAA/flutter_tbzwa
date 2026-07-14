@@ -5,9 +5,46 @@ import 'daily_voice_recording_screen.dart';
 import 'daily_vocabulary_screen.dart';
 import 'daily_summary_screen.dart';
 import 'daily_immersion_screen.dart';
+import '../models/learner_api_models.dart';
+import '../services/learner_api_service.dart';
 
-class DailyMissionsScreen extends StatelessWidget {
+class DailyMissionsScreen extends StatefulWidget {
   const DailyMissionsScreen({super.key});
+
+  @override
+  State<DailyMissionsScreen> createState() => _DailyMissionsScreenState();
+}
+
+class _DailyMissionsScreenState extends State<DailyMissionsScreen> {
+  final LearnerApiService _learnerApiService = LearnerApiService();
+  DailyMissionSummary? _missions;
+
+  @override
+  void initState() {
+    super.initState();
+    _loadMissions();
+  }
+
+  Future<void> _loadMissions() async {
+    try {
+      final missions = await _learnerApiService.getDailyMissions();
+      if (mounted) setState(() => _missions = missions);
+    } catch (_) {}
+  }
+
+  MissionProgress? _mission(String key) => _missions?.missions[key];
+
+  String _missionStatus(String key, int fallbackTarget) {
+    final mission = _mission(key);
+    final completed = mission?.completed ?? 0;
+    final target = mission?.target ?? fallbackTarget;
+    return '$completed/$target ${completed >= target ? 'complete' : 'in progress'}';
+  }
+
+  bool _missionDone(String key) {
+    final mission = _mission(key);
+    return mission != null && mission.completed >= mission.target;
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -47,54 +84,67 @@ class DailyMissionsScreen extends StatelessWidget {
               //childAspectRatio: 1.12,
               children: [
                 GestureDetector(
-                  onTap: () => Get.to(() => const DailyVoiceRecordingScreen()),
+                  onTap: () async {
+                    await Get.to(() => const DailyVoiceRecordingScreen());
+                    await _loadMissions();
+                  },
                   child: _buildMissionCard(
                     "Daily Voice",
-                    "3/3 complete",
+                    _missionStatus('voiceRecordings', 3),
                     "assets/images/voice.png",
-                    statusColor: Colors.green,
-                    isDone: true,
+                    statusColor: _missionDone('voiceRecordings')
+                        ? Colors.green
+                        : Colors.orange,
+                    isDone: _missionDone('voiceRecordings'),
                   ),
                 ),
                 GestureDetector(
-                  onTap: ()=> Get.to(() => DailyVideoRecordingScreen()),
+                  onTap: () => Get.to(() => DailyVideoRecordingScreen()),
                   child: _buildMissionCard(
                     "Daily Video",
-                    "1/3 in progress",
+                    _missionStatus('videoRecordings', 3),
                     'assets/images/video.png',
-                    statusColor: Colors.orange,
-                    isDone: false,
+                    statusColor: _missionDone('videoRecordings')
+                        ? Colors.green
+                        : Colors.orange,
+                    isDone: _missionDone('videoRecordings'),
                   ),
                 ),
                 GestureDetector(
                   onTap: () => Get.to(() => const DailyVocabularyScreen()),
                   child: _buildMissionCard(
                     "Daily Vocabulary",
-                    "3/3 complete",
+                    _missionStatus('vocabulary', 2),
                     'assets/images/vocabulary.png',
                     label: "Aa",
-                    statusColor: Colors.green,
-                    isDone: true,
+                    statusColor: _missionDone('vocabulary')
+                        ? Colors.green
+                        : Colors.orange,
+                    isDone: _missionDone('vocabulary'),
                   ),
                 ),
                 GestureDetector(
                   onTap: () => Get.to(() => const DailySummaryScreen()),
                   child: _buildMissionCard(
                     "Daily Summary",
-                    "1/3 in progress",
+                    _missionStatus('summary', 2),
                     'assets/images/summary.png',
-                    statusColor: Colors.orange,
-                    isDone: false,
+                    statusColor: _missionDone('summary')
+                        ? Colors.green
+                        : Colors.orange,
+                    isDone: _missionDone('summary'),
                   ),
                 ),
                 GestureDetector(
                   onTap: () => Get.to(() => const DailyImmersionScreen()),
                   child: _buildMissionCard(
                     "Daily English Imrs.",
-                    "3/3 complete",
+                    _missionStatus('immersion', 3),
                     "assets/images/eng_immerce.png",
-                    statusColor: Colors.green,
-                    isDone: true,
+                    statusColor: _missionDone('immersion')
+                        ? Colors.green
+                        : Colors.orange,
+                    isDone: _missionDone('immersion'),
                   ),
                 ),
                 // _buildMissionCard(
@@ -203,7 +253,7 @@ class DailyMissionsScreen extends StatelessWidget {
         borderRadius: BorderRadius.circular(24),
         boxShadow: [
           BoxShadow(
-            color: Colors.black.withOpacity(0.02),
+            color: Colors.black.withValues(alpha: 0.02),
             blurRadius: 10,
             offset: const Offset(0, 4),
           ),

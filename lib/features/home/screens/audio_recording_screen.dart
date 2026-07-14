@@ -10,7 +10,9 @@ class AudioRecordingScreen extends StatefulWidget {
 }
 
 class _AudioRecordingScreenState extends State<AudioRecordingScreen> {
-  final AudioRecordingController controller = Get.put(AudioRecordingController());
+  final AudioRecordingController controller = Get.put(
+    AudioRecordingController(),
+  );
 
   @override
   Widget build(BuildContext context) {
@@ -60,7 +62,9 @@ class _AudioRecordingScreenState extends State<AudioRecordingScreen> {
               Padding(
                 padding: const EdgeInsets.only(top: 8),
                 child: Text(
-                  state == RecordingState.recording ? "TAP MIC TO PAUSE" : "TAP MIC TO START",
+                  state == RecordingState.recording
+                      ? "TAP MIC TO PAUSE"
+                      : "TAP MIC TO START",
                   style: const TextStyle(
                     fontSize: 12,
                     fontWeight: FontWeight.bold,
@@ -126,16 +130,21 @@ class _AudioRecordingScreenState extends State<AudioRecordingScreen> {
                 width: double.infinity,
                 padding: const EdgeInsets.symmetric(vertical: 16),
                 decoration: BoxDecoration(
-                  color: const Color(0xFFEBECEE).withOpacity(0.5),
+                  color: const Color(0xFFEBECEE).withValues(alpha: 0.5),
                   borderRadius: BorderRadius.circular(8),
                 ),
                 alignment: Alignment.center,
-                child: Obx(() => Text(
-                  controller.clipName.value.isEmpty 
-                      ? "Name or tag this clip" 
-                      : controller.clipName.value,
-                  style: const TextStyle(color: Color(0xFF374151), fontWeight: FontWeight.w500),
-                )),
+                child: Obx(
+                  () => Text(
+                    controller.clipName.value.isEmpty
+                        ? "Name or tag this clip"
+                        : controller.clipName.value,
+                    style: const TextStyle(
+                      color: Color(0xFF374151),
+                      fontWeight: FontWeight.w500,
+                    ),
+                  ),
+                ),
               ),
             ),
             const SizedBox(height: 16),
@@ -155,8 +164,10 @@ class _AudioRecordingScreenState extends State<AudioRecordingScreen> {
                     "Save Clip",
                     const Color(0xFF26A69A),
                     Colors.white,
-                    onTap: () {
-                       _showSuccessDialog();
+                    onTap: () async {
+                      if (await controller.saveRecording()) {
+                        _showSuccessDialog();
+                      }
                     },
                   ),
                 ),
@@ -167,7 +178,10 @@ class _AudioRecordingScreenState extends State<AudioRecordingScreen> {
               onPressed: () => controller.resetRecording(),
               child: const Text(
                 "Delete",
-                style: TextStyle(color: Colors.red, fontWeight: FontWeight.bold),
+                style: TextStyle(
+                  color: Colors.red,
+                  fontWeight: FontWeight.bold,
+                ),
               ),
             ),
           ],
@@ -184,8 +198,8 @@ class _AudioRecordingScreenState extends State<AudioRecordingScreen> {
           color: const Color(0xFFF1F5F9),
           iconColor: const Color(0xFF94A3B8),
           onTap: () {
-             controller.resetRecording();
-             Get.back();
+            controller.resetRecording();
+            Get.back();
           },
         ),
         const SizedBox(width: 24),
@@ -209,7 +223,9 @@ class _AudioRecordingScreenState extends State<AudioRecordingScreen> {
               shape: BoxShape.circle,
             ),
             child: Icon(
-              state == RecordingState.recording ? Icons.pause_rounded : Icons.mic_rounded,
+              state == RecordingState.recording
+                  ? Icons.pause_rounded
+                  : Icons.mic_rounded,
               color: Colors.white,
               size: 40,
             ),
@@ -245,16 +261,24 @@ class _AudioRecordingScreenState extends State<AudioRecordingScreen> {
                   color: Color(0xFF26A69A),
                   shape: BoxShape.circle,
                 ),
-                child: const Icon(Icons.workspace_premium_rounded, color: Colors.white, size: 40),
+                child: const Icon(
+                  Icons.workspace_premium_rounded,
+                  color: Colors.white,
+                  size: 40,
+                ),
               ),
               const SizedBox(height: 24),
-              const Text(
-                "Great job, Kathy!",
-                textAlign: TextAlign.center,
-                style: TextStyle(
-                  fontSize: 24,
-                  fontWeight: FontWeight.bold,
-                  color: Color(0xFF374151),
+              Obx(
+                () => Text(
+                  controller.profileName.value.isEmpty
+                      ? "Great job!"
+                      : "Great job, ${controller.profileName.value}!",
+                  textAlign: TextAlign.center,
+                  style: const TextStyle(
+                    fontSize: 24,
+                    fontWeight: FontWeight.bold,
+                    color: Color(0xFF374151),
+                  ),
                 ),
               ),
               const SizedBox(height: 16),
@@ -271,16 +295,21 @@ class _AudioRecordingScreenState extends State<AudioRecordingScreen> {
               ElevatedButton(
                 onPressed: () {
                   Get.back(); // Close dialog
-                  Get.back(); // Go back to previous screen
+                  Get.back(result: true); // Return and refresh the daily list
                 },
                 style: ElevatedButton.styleFrom(
                   backgroundColor: const Color(0xFF26A69A),
                   foregroundColor: Colors.white,
                   minimumSize: const Size(double.infinity, 52),
-                  shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+                  shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(12),
+                  ),
                   elevation: 0,
                 ),
-                child: const Text("Continue", style: TextStyle(fontWeight: FontWeight.bold)),
+                child: const Text(
+                  "Continue",
+                  style: TextStyle(fontWeight: FontWeight.bold),
+                ),
               ),
             ],
           ),
@@ -291,12 +320,17 @@ class _AudioRecordingScreenState extends State<AudioRecordingScreen> {
   }
 
   void _showNameDialog() {
-    final TextEditingController nameController = TextEditingController(text: controller.clipName.value);
-    
+    final TextEditingController nameController = TextEditingController(
+      text: controller.clipName.value,
+    );
+
     Get.defaultDialog(
       backgroundColor: Colors.white,
       title: "Name your clip",
-      titleStyle: const TextStyle(color: Color(0xFF374151), fontWeight: FontWeight.bold),
+      titleStyle: const TextStyle(
+        color: Color(0xFF374151),
+        fontWeight: FontWeight.bold,
+      ),
       content: Padding(
         padding: const EdgeInsets.symmetric(horizontal: 16),
         child: TextField(
@@ -305,7 +339,9 @@ class _AudioRecordingScreenState extends State<AudioRecordingScreen> {
           autofocus: true,
           decoration: const InputDecoration(
             hintText: "Enter clip name",
-            focusedBorder: UnderlineInputBorder(borderSide: BorderSide(color: Color(0xFF26A69A))),
+            focusedBorder: UnderlineInputBorder(
+              borderSide: BorderSide(color: Color(0xFF26A69A)),
+            ),
           ),
         ),
       ),
@@ -314,7 +350,13 @@ class _AudioRecordingScreenState extends State<AudioRecordingScreen> {
           controller.clipName.value = nameController.text;
           Get.back();
         },
-        child: const Text("Save", style: TextStyle(color: Color(0xFF26A69A), fontWeight: FontWeight.bold)),
+        child: const Text(
+          "Save",
+          style: TextStyle(
+            color: Color(0xFF26A69A),
+            fontWeight: FontWeight.bold,
+          ),
+        ),
       ),
       cancel: TextButton(
         onPressed: () => Get.back(),
@@ -335,16 +377,18 @@ class _AudioRecordingScreenState extends State<AudioRecordingScreen> {
       child: Container(
         width: size,
         height: size,
-        decoration: BoxDecoration(
-          color: color,
-          shape: BoxShape.circle,
-        ),
+        decoration: BoxDecoration(color: color, shape: BoxShape.circle),
         child: Icon(icon, color: iconColor, size: size * 0.45),
       ),
     );
   }
 
-  Widget _buildActionBtn(String label, Color bg, Color text, {required VoidCallback onTap}) {
+  Widget _buildActionBtn(
+    String label,
+    Color bg,
+    Color text, {
+    required VoidCallback onTap,
+  }) {
     return ElevatedButton(
       onPressed: onTap,
       style: ElevatedButton.styleFrom(
@@ -365,9 +409,7 @@ class WaveformWidget extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return CustomPaint(
-      painter: WaveformPainter(amplitudes),
-    );
+    return CustomPaint(painter: WaveformPainter(amplitudes));
   }
 }
 

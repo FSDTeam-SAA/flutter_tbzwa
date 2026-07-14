@@ -1,6 +1,6 @@
 class ApiConstants {
   /// [Base Configuration]
-  static const String baseDomain = 'http://localhost:5001';
+  static const String baseDomain = 'http://10.10.26.122:5008';
   // static const String baseDomain = 'http://192.168.10.243:5006'; // Noyon Office Wifi
   // static const String baseDomain = 'http://192.168.0.218:5006'; // Noyon Home
 
@@ -42,6 +42,13 @@ class ApiConstants {
   /// [Endpoint Groups
   static AuthEndpoints get auth => AuthEndpoints();
   static UserEndpoints get user => UserEndpoints();
+  static ProgressEndpoints get progress => ProgressEndpoints();
+  static LiveClassEndpoints get liveClass => LiveClassEndpoints();
+  static BZPadEndpoints get bzPad => BZPadEndpoints();
+  static LibraryEndpoints get library => LibraryEndpoints();
+  static RecordingEndpoints get recording => RecordingEndpoints();
+  static VocabularyEndpoints get vocabulary => VocabularyEndpoints();
+  static ImmersionEndpoints get immersion => ImmersionEndpoints();
   static GroupEndpoints get group => GroupEndpoints();
   static CommentEndpoints get comment => CommentEndpoints();
   static PostEndpoints get post => PostEndpoints();
@@ -145,7 +152,7 @@ class UserEndpoints {
 
   // final String updatePersonalInfo = '$_base/update-profile';
 
-  final String profile = '$_base/profile';
+  final String profile = '$_base/me';
   final String deleteAccount = '$_base/delete-account';
 
   String followUser(String id) => '$_base/follow/$id';
@@ -153,6 +160,67 @@ class UserEndpoints {
 
   /// [Search]
   final String searchUsers = '$_base/search/list';
+}
+
+class ProgressEndpoints {
+  static const String _base = '${ApiConstants.baseUrl}/progress';
+
+  final String my = '$_base/my';
+  final String dailyMissions = '$_base/daily-missions';
+  final String weekly = '$_base/weekly';
+}
+
+class LiveClassEndpoints {
+  static const String _base = '${ApiConstants.baseUrl}/live-classes';
+
+  final String learner = '$_base/learner';
+  String details(String id) => '$_base/$id';
+  String rsvp(String id) => '$_base/$id/rsvp';
+  String zoomLink(String id) => '$_base/$id/zoom-link';
+}
+
+class BZPadEndpoints {
+  static const String _base = '${ApiConstants.baseUrl}/bzpad';
+
+  final String notes = _base;
+  final String search = '$_base/search';
+  String note(String id) => '$_base/$id';
+  String versions(String id) => '$_base/$id/versions';
+  String restore(String id) => '$_base/$id/restore';
+}
+
+class LibraryEndpoints {
+  static const String _base = '${ApiConstants.baseUrl}/library';
+
+  final String home = _base;
+  final String categories = '$_base/categories';
+  final String items = '$_base/items';
+}
+
+class RecordingEndpoints {
+  static const String _base = '${ApiConstants.baseUrl}/recordings';
+
+  final String voice = '$_base/voice';
+  final String my = '$_base/my';
+  String byDate(String date) => '$_base/date/$date';
+  String recording(String id) => '$_base/$id';
+}
+
+class VocabularyEndpoints {
+  static const String _base = '${ApiConstants.baseUrl}/vocabulary';
+
+  final String today = '$_base/today';
+  final String words = _base;
+  String word(String id) => '$_base/$id';
+}
+
+class ImmersionEndpoints {
+  static const String _base = '${ApiConstants.baseUrl}/immersion';
+
+  final String today = '$_base/today';
+  final String logs = _base;
+  final String history = '$_base/history';
+  String log(String id) => '$_base/$id';
 }
 
 class GroupEndpoints {
