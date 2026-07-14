@@ -71,6 +71,28 @@ class ApiConstants {
 }
 
 class SocketEndpoint {
+  final String userOnline = "user:online";
+  final String userOffline = "user:offline";
+  final String userStatus = "user:status";
+  final String joinRoom = "join:room";
+  final String leaveRoom = "leave:room";
+  final String roomJoined = "room:joined";
+  final String roomError = "room:error";
+  final String messageSend = "message:send";
+  final String messageReceive = "message:receive";
+  final String messageRead = "message:read";
+  final String messagesRead = "messages:read";
+  final String groupMessage = "group:message";
+  final String voiceRoomJoin = "voiceroom:join";
+  final String voiceRoomLeave = "voiceroom:leave";
+  final String voiceRoomParticipantsUpdated = "voiceroom:participants_updated";
+  final String voiceRoomStageInvite = "voiceroom:stage_invite";
+  final String voiceRoomStageChanged = "voiceroom:stage_changed";
+  final String voiceRoomGift = "voiceroom:gift";
+  final String roomClosed = "room:closed";
+  final String classStarted = "class:started";
+  final String classEnded = "class:ended";
+
   final String joinChatRoom = "joinChatRoom";
   final String registerUser = "registerUser";
   final String heartbeat = "heartbeat";
@@ -145,6 +167,7 @@ class AuthEndpoints {
   final String resetPassword = '$_base/reset-password';
   final String changePassword = '$_base/change-password';
   final String refreshToken = '$_base/refresh-token';
+  final String selectRole = '$_base/select-role';
   final String logout = '$_base/logout';
 }
 
@@ -177,10 +200,13 @@ class ProgressEndpoints {
 class LiveClassEndpoints {
   static const String _base = '${ApiConstants.baseUrl}/live-classes';
 
+  final String root = _base;
   final String learner = '$_base/learner';
+  String byGroup(String groupId) => '$_base/group/$groupId';
   String details(String id) => '$_base/$id';
   String rsvp(String id) => '$_base/$id/rsvp';
   String start(String id) => '$_base/$id/start';
+  String end(String id) => '$_base/$id/end';
   String zoomLink(String id) => '$_base/$id/zoom-link';
 }
 
@@ -237,6 +263,7 @@ class ImmersionEndpoints {
 class GroupEndpoints {
   static const String _base = '${ApiConstants.baseUrl}/groups';
   final String root = _base;
+  final String instructorMine = '$_base/my';
 
   String manageGroup(String groupId) => '$root/$groupId/manage';
 
@@ -245,6 +272,7 @@ class GroupEndpoints {
   final String adminMe = '$_base/admin/me';
 
   String groupByID(String id) => '$_base/$id';
+  String discussion(String id) => '$_base/$id/discussion';
 
   String joinGroup(String id) => '$_base/$id/join';
   String inviteFriendToGroup(String groupId, String friendId) =>
@@ -326,8 +354,12 @@ class VoiceRoomEndpoints {
   static const String _base = '${ApiConstants.baseUrl}/voicerooms';
   final String root = _base;
 
+  String details(String id) => '$_base/$id';
   String join(String id) => '$_base/$id/join';
   String leave(String id) => '$_base/$id/leave';
+  String close(String id) => '$_base/$id';
+  String stageInvite(String id) => '$_base/$id/stage-invite';
+  String gift(String id) => '$_base/$id/gift';
 }
 
 class StoryEndpoints {
@@ -351,13 +383,12 @@ class ChatEndpoints {
 
   String get getMyConversations => conversations;
 
-  String get createDirectConversation => '$conversations/direct';
+  String get createDirectConversation => conversations;
 
   String getConversationByID(String conversationId) =>
       '$conversations/$conversationId';
 
-  String sendDirectMessage(String conversationId) =>
-      '$conversations/$conversationId/messages';
+  String sendDirectMessage(String conversationId) => _base;
 
   String getChatMessages(String conversationId) =>
       '$conversations/$conversationId/messages';
@@ -371,7 +402,10 @@ class ChatEndpoints {
       '$conversations/$conversationId/messages/$messageId/pin';
 
   String markConversationSeen(String conversationId) =>
-      '$conversations/$conversationId/seen';
+      '$conversations/$conversationId/read';
+
+  String markConversationRead(String conversationId) =>
+      '$conversations/$conversationId/read';
 
   String deleteMessage(String messageId) => '$_base/$messageId';
 

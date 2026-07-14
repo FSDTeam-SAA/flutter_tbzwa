@@ -1,4 +1,8 @@
 import 'package:flutter/material.dart';
+import 'package:get/get.dart';
+
+import '../controllers/instructor_profile_controller.dart';
+import '../models/instructor_profile_model.dart';
 import 'instructor_edit_profile_screen.dart';
 
 class InstructorProfileScreen extends StatelessWidget {
@@ -6,6 +10,10 @@ class InstructorProfileScreen extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final controller = Get.isRegistered<InstructorProfileController>()
+        ? Get.find<InstructorProfileController>()
+        : Get.put(InstructorProfileController());
+
     return Scaffold(
       backgroundColor: const Color(0xFFF9FAFC),
       appBar: AppBar(
@@ -22,23 +30,72 @@ class InstructorProfileScreen extends StatelessWidget {
         ),
         centerTitle: true,
       ),
-      body: SingleChildScrollView(
-        padding: const EdgeInsets.all(20),
+      body: Obx(
+        () => RefreshIndicator(
+          onRefresh: controller.refreshProfile,
+          child: SingleChildScrollView(
+            physics: const AlwaysScrollableScrollPhysics(),
+            padding: const EdgeInsets.all(20),
+            child: Column(
+              children: [
+                if (controller.isLoading.value &&
+                    controller.profile.value == null)
+                  const SizedBox(
+                    height: 180,
+                    child: Center(
+                      child: CircularProgressIndicator(
+                        color: Color(0xFF5151EF),
+                      ),
+                    ),
+                  )
+                else if (controller.errorMessage.value.isNotEmpty &&
+                    controller.profile.value == null)
+                  _buildErrorState(controller)
+                else ...[
+                  _buildProfileCard(context, controller),
+                  const SizedBox(height: 20),
+                  _buildAssignedGroupsCard(controller),
+                  const SizedBox(height: 20),
+                  _buildSettingsCard(controller),
+                ],
+                const SizedBox(height: 30),
+              ],
+            ),
+          ),
+        ),
+      ),
+    );
+  }
+
+  Widget _buildErrorState(InstructorProfileController controller) {
+    return SizedBox(
+      height: 180,
+      child: Center(
         child: Column(
+          mainAxisSize: MainAxisSize.min,
           children: [
-            _buildProfileCard(context),
-            const SizedBox(height: 20),
-            _buildAssignedGroupsCard(),
-            const SizedBox(height: 20),
-            _buildSettingsCard(),
-            const SizedBox(height: 30),
+            Text(
+              controller.errorMessage.value,
+              textAlign: TextAlign.center,
+              style: const TextStyle(color: Color(0xFF6B7280), fontSize: 13),
+            ),
+            const SizedBox(height: 12),
+            TextButton(
+              onPressed: controller.refreshProfile,
+              child: const Text("Retry"),
+            ),
           ],
         ),
       ),
     );
   }
 
-  Widget _buildProfileCard(BuildContext context) {
+  Widget _buildProfileCard(
+    BuildContext context,
+    InstructorProfileController controller,
+  ) {
+    final profile = controller.profile.value;
+    final avatar = controller.avatarImageProvider();
     return Container(
       decoration: BoxDecoration(
         color: Colors.white,
@@ -79,13 +136,25 @@ class InstructorProfileScreen extends StatelessWidget {
                             padding: const EdgeInsets.all(4),
                             decoration: const BoxDecoration(
                               color: Colors.white,
-                              shape: BoxShape.circle,
-                            ),
-                            child: const CircleAvatar(
-                              radius: 40,
-                              backgroundImage: NetworkImage(
-                                "https://i.pravatar.cc/150?u=a042581f4e29026024d",
+                              shape: BoxShape.rectangle,
+                              borderRadius: BorderRadius.all(
+                                Radius.circular(50),
                               ),
+                            ),
+                            child: CircleAvatar(
+                              radius: 40,
+                              backgroundColor: const Color(0xFFE5E7EB),
+                              backgroundImage: avatar,
+                              child: avatar == null
+                                  ? Text(
+                                      profile?.initials ?? 'I',
+                                      style: const TextStyle(
+                                        color: Color(0xFF4B5563),
+                                        fontWeight: FontWeight.bold,
+                                        fontSize: 20,
+                                      ),
+                                    )
+                                  : null,
                             ),
                           ),
                           Positioned(
@@ -146,12 +215,16 @@ class InstructorProfileScreen extends StatelessWidget {
                   offset: const Offset(0, -10),
                   child: Row(
                     children: [
-                      const Text(
-                        "Dr. Sarah Jenkins",
-                        style: TextStyle(
-                          fontSize: 20,
-                          fontWeight: FontWeight.bold,
-                          color: Color(0xFF1F2937),
+                      Flexible(
+                        child: Text(
+                          profile?.displayName ?? 'Instructor',
+                          maxLines: 1,
+                          overflow: TextOverflow.ellipsis,
+                          style: const TextStyle(
+                            fontSize: 20,
+                            fontWeight: FontWeight.bold,
+                            color: Color(0xFF1F2937),
+                          ),
                         ),
                       ),
                       const SizedBox(width: 8),
@@ -177,8 +250,8 @@ class InstructorProfileScreen extends StatelessWidget {
                   ),
                 ),
                 const SizedBox(height: 4),
-                const Text(
-                  "Senior Instructor specializing in Advanced Mathematics and Physics. 10+ years of teaching experience.",
+                Text(
+                  profile?.displayBio ?? 'No bio added yet.',
                   style: TextStyle(
                     color: Color(0xFF6B7280),
                     fontSize: 13,
@@ -187,31 +260,45 @@ class InstructorProfileScreen extends StatelessWidget {
                 ),
                 const SizedBox(height: 20),
                 Row(
-                  children: const [
-                    Icon(
+                  children: [
+                    const Icon(
                       Icons.mail_outline,
                       size: 16,
                       color: Color(0xFF9CA3AF),
                     ),
-                    SizedBox(width: 8),
-                    Text(
-                      "sarah.jenkins@edu.com",
-                      style: TextStyle(color: Color(0xFF6B7280), fontSize: 13),
+                    const SizedBox(width: 8),
+                    Expanded(
+                      child: Text(
+                        profile?.displayEmail ?? 'Email unavailable',
+                        maxLines: 1,
+                        overflow: TextOverflow.ellipsis,
+                        style: const TextStyle(
+                          color: Color(0xFF6B7280),
+                          fontSize: 13,
+                        ),
+                      ),
                     ),
                   ],
                 ),
                 const SizedBox(height: 12),
                 Row(
-                  children: const [
-                    Icon(
+                  children: [
+                    const Icon(
                       Icons.phone_outlined,
                       size: 16,
                       color: Color(0xFF9CA3AF),
                     ),
-                    SizedBox(width: 8),
-                    Text(
-                      "+1 (555) 123-4567",
-                      style: TextStyle(color: Color(0xFF6B7280), fontSize: 13),
+                    const SizedBox(width: 8),
+                    Expanded(
+                      child: Text(
+                        profile?.displayPhone ?? 'Phone unavailable',
+                        maxLines: 1,
+                        overflow: TextOverflow.ellipsis,
+                        style: const TextStyle(
+                          color: Color(0xFF6B7280),
+                          fontSize: 13,
+                        ),
+                      ),
                     ),
                   ],
                 ),
@@ -223,7 +310,7 @@ class InstructorProfileScreen extends StatelessWidget {
     );
   }
 
-  Widget _buildAssignedGroupsCard() {
+  Widget _buildAssignedGroupsCard(InstructorProfileController controller) {
     return Container(
       padding: const EdgeInsets.all(20),
       decoration: BoxDecoration(
@@ -243,34 +330,54 @@ class InstructorProfileScreen extends StatelessWidget {
             ),
           ),
           const SizedBox(height: 20),
-          _buildGroupItem(
-            letter: "A",
-            title: "Advanced Calculus 101",
-            students: "35 Students",
-            color: const Color(0xFF5151EF),
-          ),
-          const SizedBox(height: 16),
-          _buildGroupItem(
-            letter: "P",
-            title: "Physics Fundamentals",
-            students: "42 Students",
-            color: const Color(0xFF10B981),
-          ),
-          const SizedBox(height: 16),
-          _buildGroupItem(
-            letter: "L",
-            title: "Linear Algebra",
-            students: "28 Students",
-            color: const Color(0xFFF59E0B),
-          ),
+          if (controller.isGroupsLoading.value)
+            const Center(
+              child: CircularProgressIndicator(color: Color(0xFF5151EF)),
+            )
+          else if (controller.groupsErrorMessage.value.isNotEmpty)
+            Column(
+              children: [
+                Text(
+                  controller.groupsErrorMessage.value,
+                  textAlign: TextAlign.center,
+                  style: const TextStyle(
+                    color: Color(0xFF6B7280),
+                    fontSize: 13,
+                  ),
+                ),
+                const SizedBox(height: 8),
+                TextButton(
+                  onPressed: controller.refreshProfile,
+                  child: const Text("Retry"),
+                ),
+              ],
+            )
+          else if (controller.groups.isEmpty)
+            const Text(
+              "No assigned groups yet.",
+              style: TextStyle(color: Color(0xFF9CA3AF), fontSize: 12),
+            )
+          else
+            ...controller.groups.asMap().entries.map((entry) {
+              final group = entry.value;
+              return Padding(
+                padding: EdgeInsets.only(
+                  bottom: entry.key == controller.groups.length - 1 ? 0 : 16,
+                ),
+                child: _buildGroupItem(
+                  group: group,
+                  students: controller.groupStudentsText(group),
+                  color: controller.groupColor(group, entry.key),
+                ),
+              );
+            }),
         ],
       ),
     );
   }
 
   Widget _buildGroupItem({
-    required String letter,
-    required String title,
+    required InstructorProfileGroup group,
     required String students,
     required Color color,
   }) {
@@ -291,7 +398,7 @@ class InstructorProfileScreen extends StatelessWidget {
             ),
             alignment: Alignment.center,
             child: Text(
-              letter,
+              group.letter,
               style: const TextStyle(
                 color: Colors.white,
                 fontWeight: FontWeight.bold,
@@ -300,30 +407,39 @@ class InstructorProfileScreen extends StatelessWidget {
             ),
           ),
           const SizedBox(width: 12),
-          Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              Text(
-                title,
-                style: const TextStyle(
-                  fontWeight: FontWeight.bold,
-                  fontSize: 14,
-                  color: Color(0xFF1F2937),
+          Expanded(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text(
+                  group.displayName,
+                  maxLines: 1,
+                  overflow: TextOverflow.ellipsis,
+                  style: const TextStyle(
+                    fontWeight: FontWeight.bold,
+                    fontSize: 14,
+                    color: Color(0xFF1F2937),
+                  ),
                 ),
-              ),
-              const SizedBox(height: 4),
-              Text(
-                students,
-                style: const TextStyle(color: Color(0xFF9CA3AF), fontSize: 12),
-              ),
-            ],
+                const SizedBox(height: 4),
+                Text(
+                  students,
+                  style: const TextStyle(
+                    color: Color(0xFF9CA3AF),
+                    fontSize: 12,
+                  ),
+                ),
+              ],
+            ),
           ),
         ],
       ),
     );
   }
 
-  Widget _buildSettingsCard() {
+  Widget _buildSettingsCard(InstructorProfileController controller) {
+    final notificationsEnabled =
+        controller.profile.value?.notificationsEnabled ?? true;
     return Container(
       padding: const EdgeInsets.all(20),
       decoration: BoxDecoration(
@@ -369,49 +485,57 @@ class InstructorProfileScreen extends StatelessWidget {
                 ),
               ),
               Switch(
-                value: true,
-                onChanged: (val) {},
-                activeColor: Colors.white,
+                value: notificationsEnabled,
+                onChanged: controller.isUpdatingNotifications.value
+                    ? null
+                    : controller.updateNotifications,
+                activeThumbColor: Colors.white,
                 activeTrackColor: const Color(0xFF5151EF),
               ),
             ],
           ),
           const SizedBox(height: 24),
-          Row(
-            children: [
-              Container(
-                padding: const EdgeInsets.all(8),
-                decoration: BoxDecoration(
-                  color: const Color(0xFFF3F4F6),
-                  borderRadius: BorderRadius.circular(8),
-                ),
-                child: const Icon(
-                  Icons.security,
-                  size: 18,
-                  color: Color(0xFF4B5563),
-                ),
-              ),
-              const SizedBox(width: 16),
-              const Expanded(
-                child: Text(
-                  "Privacy & Security",
-                  style: TextStyle(
+          InkWell(
+            onTap: controller.showPrivacySecurityUnavailable,
+            child: Row(
+              children: [
+                Container(
+                  padding: const EdgeInsets.all(8),
+                  decoration: BoxDecoration(
+                    color: const Color(0xFFF3F4F6),
+                    borderRadius: BorderRadius.circular(8),
+                  ),
+                  child: const Icon(
+                    Icons.security,
+                    size: 18,
                     color: Color(0xFF4B5563),
-                    fontSize: 14,
-                    fontWeight: FontWeight.w500,
                   ),
                 ),
-              ),
-            ],
+                const SizedBox(width: 16),
+                const Expanded(
+                  child: Text(
+                    "Privacy & Security",
+                    style: TextStyle(
+                      color: Color(0xFF4B5563),
+                      fontSize: 14,
+                      fontWeight: FontWeight.w500,
+                    ),
+                  ),
+                ),
+              ],
+            ),
           ),
           const SizedBox(height: 32),
-          const Center(
-            child: Text(
-              "Log Out",
-              style: TextStyle(
-                color: Color(0xFFEF4444),
-                fontSize: 14,
-                fontWeight: FontWeight.bold,
+          Center(
+            child: InkWell(
+              onTap: controller.isLoggingOut.value ? null : controller.logout,
+              child: Text(
+                controller.isLoggingOut.value ? "Logging Out..." : "Log Out",
+                style: const TextStyle(
+                  color: Color(0xFFEF4444),
+                  fontSize: 14,
+                  fontWeight: FontWeight.bold,
+                ),
               ),
             ),
           ),

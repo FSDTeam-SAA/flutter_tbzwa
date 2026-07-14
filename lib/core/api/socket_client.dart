@@ -5,7 +5,6 @@ import 'package:flutter/foundation.dart';
 import 'package:socket_io_client/socket_io_client.dart' as io;
 import 'package:get/get.dart';
 
-
 import 'package:flutx_core/core/debug_print.dart';
 import '../constants/api_constants.dart';
 import '../services/auth_storage_service.dart';
@@ -83,7 +82,9 @@ class SocketClient {
 
     if (kDebugMode) {
       DPrint.log("Socket.IO Connecting to: $_wsUrl");
-      DPrint.log("Headers: $allHeaders | Query: $query");
+      DPrint.log(
+        "Headers: ${allHeaders.keys.toList()} | Query keys: ${query?.keys.toList() ?? const []}",
+      );
     }
 
     _socket = io.io(_wsUrl, options);
@@ -191,7 +192,7 @@ class SocketClient {
     _socket?.dispose();
     _socket = null;
     if (!_ready.isCompleted) {
-      _ready.completeError('Disconnected');
+      _ready.complete();
     }
     DPrint.warn("Socket.IO Disconnected Manually");
   }

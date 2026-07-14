@@ -5,6 +5,7 @@ import 'package:url_launcher/url_launcher.dart';
 
 import '../models/instructor_home_model.dart';
 import '../screens/instructor_groups_screen.dart';
+import '../screens/instructor_schedule_screen.dart';
 import '../screens/instructor_messages_screen.dart';
 import '../services/instructor_home_service.dart';
 
@@ -16,6 +17,8 @@ class InstructorHomeController extends GetxController {
   final isRefreshing = false.obs;
   final errorMessage = ''.obs;
   final startingClassIds = <String>{}.obs;
+  bool _isOpeningSchedule = false;
+  bool _isOpeningGroups = false;
 
   @override
   void onInit() {
@@ -154,18 +157,21 @@ class InstructorHomeController extends GetxController {
   }
 
   void openSchedule() {
-    final count = todayClasses.length + upcomingSessions.length;
-    Get.snackbar(
-      'Schedule',
-      count == 0
-          ? 'No scheduled classes found.'
-          : '$count scheduled classes loaded.',
-      snackPosition: SnackPosition.BOTTOM,
-    );
+    if (_isOpeningSchedule) return;
+    _isOpeningSchedule = true;
+    Get.to(() => const InstructorScheduleScreen())?.whenComplete(() {
+      _isOpeningSchedule = false;
+    });
   }
 
   void openGroups() {
-    Get.to(() => const InstructorGroupsScreen());
+    if (_isOpeningGroups) return;
+    _isOpeningGroups = true;
+    Get.to(
+      () => const InstructorGroupsScreen(showBackButton: true),
+    )?.whenComplete(() {
+      _isOpeningGroups = false;
+    });
   }
 
   void openNotifications() {

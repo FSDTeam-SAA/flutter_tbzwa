@@ -2,11 +2,41 @@ import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import '../../../core/common/widgets/button_widgets.dart';
 import '../controllers/instructor_home_controller.dart';
+import '../controllers/instructor_rooms_controller.dart';
+
+typedef CreateRoomHandler =
+    Future<void> Function({
+      required String name,
+      required String groupId,
+      required String privacy,
+    });
+
+class CreateRoomGroupOption {
+  final String id;
+  final String name;
+
+  const CreateRoomGroupOption({required this.id, required this.name});
+}
 
 class CreateRoomDialog extends StatefulWidget {
-  final InstructorHomeController controller;
+  final List<CreateRoomGroupOption> groups;
+  final CreateRoomHandler onCreateRoom;
 
-  const CreateRoomDialog({super.key, required this.controller});
+  CreateRoomDialog({super.key, required InstructorHomeController controller})
+    : groups = controller.assignedGroups
+          .map((group) => CreateRoomGroupOption(id: group.id, name: group.name))
+          .toList(),
+      onCreateRoom = controller.createRoom;
+
+  CreateRoomDialog.forRooms({
+    super.key,
+    required InstructorRoomsController controller,
+  }) : groups = controller.assignedGroups
+           .map(
+             (group) => CreateRoomGroupOption(id: group.id, name: group.name),
+           )
+           .toList(),
+       onCreateRoom = controller.createRoom;
 
   @override
   State<CreateRoomDialog> createState() => _CreateRoomDialogState();
@@ -25,7 +55,7 @@ class _CreateRoomDialogState extends State<CreateRoomDialog> {
 
   @override
   Widget build(BuildContext context) {
-    final groups = widget.controller.assignedGroups;
+    final groups = widget.groups;
 
     return Dialog(
       shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
@@ -51,6 +81,7 @@ class _CreateRoomDialogState extends State<CreateRoomDialog> {
             const SizedBox(height: 8),
             TextField(
               controller: _roomNameController,
+              style: const TextStyle(color: Colors.black),
               decoration: InputDecoration(
                 hintText: "e.g. Math Study Group",
                 hintStyle: const TextStyle(color: Color(0xFF9CA3AF)),
@@ -76,7 +107,7 @@ class _CreateRoomDialogState extends State<CreateRoomDialog> {
             _buildLabel("Assign to Group"),
             const SizedBox(height: 8),
             DropdownButtonFormField<String>(
-              value: _selectedGroup,
+              initialValue: _selectedGroup,
               hint: const Text(
                 "Select a group",
                 style: TextStyle(color: Color(0xFF9CA3AF), fontSize: 14),
@@ -161,7 +192,7 @@ class _CreateRoomDialogState extends State<CreateRoomDialog> {
                 Expanded(
                   child: PrimaryButton(
                     text: "Create Room",
-                    onApiPressed: () => widget.controller.createRoom(
+                    onApiPressed: () => widget.onCreateRoom(
                       name: _roomNameController.text,
                       groupId: _selectedGroup ?? '',
                       privacy: _privacy,

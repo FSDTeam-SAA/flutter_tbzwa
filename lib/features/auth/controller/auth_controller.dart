@@ -3,9 +3,14 @@ import 'package:flutter_tbzwa/navbar_menu.dart' as subscriber_navigation;
 import 'package:flutter_tbzwa/navigation_menu.dart' as learner_navigation;
 import 'package:get/get.dart';
 
+import '../../../core/api/socket_client.dart';
 import '../../../core/base/base_controller.dart';
 import '../../../core/services/auth_storage_service.dart';
+import '../../instructor/controllers/instructor_groups_controller.dart';
 import '../../instructor/controllers/instructor_home_controller.dart';
+import '../../instructor/controllers/instructor_messages_controller.dart';
+import '../../instructor/controllers/instructor_profile_controller.dart';
+import '../../instructor/controllers/instructor_rooms_controller.dart';
 import '../../navigation/instructor_nav_menu.dart' as instructor_navigation;
 import '../../auth/model/request/login_request.dart';
 import '../../auth/model/request/register_request.dart';
@@ -369,6 +374,7 @@ class AuthController extends BaseController {
 
   // --- Logout ---
   Future<void> logout() async {
+    SocketClient().disconnect();
     await _authRepo.logout(); // Best effort backend logout
     await _authStorageService.clearAuthData();
     _resetRoleNavigationState();
@@ -388,6 +394,18 @@ class AuthController extends BaseController {
     }
     if (Get.isRegistered<InstructorHomeController>()) {
       Get.delete<InstructorHomeController>(force: true);
+    }
+    if (Get.isRegistered<InstructorGroupsController>()) {
+      Get.delete<InstructorGroupsController>(force: true);
+    }
+    if (Get.isRegistered<InstructorMessagesController>()) {
+      Get.delete<InstructorMessagesController>(force: true);
+    }
+    if (Get.isRegistered<InstructorRoomsController>()) {
+      Get.delete<InstructorRoomsController>(force: true);
+    }
+    if (Get.isRegistered<InstructorProfileController>()) {
+      Get.delete<InstructorProfileController>(force: true);
     }
     if (Get.isRegistered<RoleSelectionController>()) {
       Get.delete<RoleSelectionController>(force: true);

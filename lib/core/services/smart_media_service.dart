@@ -1,6 +1,5 @@
 import 'dart:io';
 import 'package:device_info_plus/device_info_plus.dart';
-import 'package:dio/dio.dart';
 import 'package:file_picker/file_picker.dart';
 import 'package:flutter/material.dart';
 import 'package:geolocator/geolocator.dart';
@@ -13,7 +12,11 @@ class LocationResult {
   final double lat;
   final double lon;
 
-  LocationResult({required this.displayName, required this.lat, required this.lon});
+  LocationResult({
+    required this.displayName,
+    required this.lat,
+    required this.lon,
+  });
 
   factory LocationResult.fromJson(Map<String, dynamic> json) {
     return LocationResult(
@@ -27,15 +30,20 @@ class LocationResult {
 class SmartMediaService extends GetxService {
   final ImagePicker _imagePicker = ImagePicker();
   final DeviceInfoPlugin _deviceInfo = DeviceInfoPlugin();
-  final Dio _dio = Dio(BaseOptions(
-    headers: {
-      'User-Agent': 'KarimApp/1.0',
-    },
-  ));
 
   /// [Pick Single Image]
   /// Handles permissions smartly based on source (Camera/Gallery)
   Future<XFile?> pickImage({required ImageSource source}) async {
+    if (source == ImageSource.gallery) {
+      try {
+        return await _imagePicker.pickImage(source: source, imageQuality: 70);
+      } catch (e) {
+        debugPrint("Error picking image: $e");
+        _showErrorSnackbar("Failed to pick image");
+        return null;
+      }
+    }
+
     final permission = source == ImageSource.camera
         ? Permission.camera
         : await _getGalleryPermission();
@@ -57,15 +65,11 @@ class SmartMediaService extends GetxService {
   /// [Pick Multiple Images]
   /// Gallery only
   Future<List<XFile>?> pickMultipleImages() async {
-    final permission = await _getGalleryPermission();
-
-    if (await _handlePermission(permission, "Gallery")) {
-      try {
-        return await _imagePicker.pickMultiImage(imageQuality: 70);
-      } catch (e) {
-        debugPrint("Error picking multiple images: $e");
-        _showErrorSnackbar("Failed to pick images");
-      }
+    try {
+      return await _imagePicker.pickMultiImage(imageQuality: 70);
+    } catch (e) {
+      debugPrint("Error picking multiple images: $e");
+      _showErrorSnackbar("Failed to pick images");
     }
     return null;
   }
@@ -79,8 +83,13 @@ class SmartMediaService extends GetxService {
         return null;
       }
     } else {
-      final permission = await _getGalleryPermission();
-      if (!await _handlePermission(permission, "Gallery")) return null;
+      try {
+        return await _imagePicker.pickVideo(source: source);
+      } catch (e) {
+        debugPrint("Error picking video: $e");
+        _showErrorSnackbar("Failed to pick video");
+      }
+      return null;
     }
 
     try {
@@ -201,7 +210,7 @@ class SmartMediaService extends GetxService {
       "Error",
       message,
       snackPosition: SnackPosition.BOTTOM,
-      backgroundColor: Colors.red.withOpacity(0.8),
+      backgroundColor: Colors.red.withValues(alpha: 0.8),
       colorText: Colors.white,
     );
   }

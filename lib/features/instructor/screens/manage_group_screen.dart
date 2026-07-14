@@ -1,6 +1,11 @@
 import 'package:flutter/material.dart';
+import 'package:get/get.dart';
+
+import '../controllers/instructor_groups_controller.dart';
+import '../models/instructor_group_model.dart';
 
 class ManageGroupScreen extends StatefulWidget {
+  final String groupId;
   final String groupName;
   final String studentCount;
   final String instructorName;
@@ -8,6 +13,7 @@ class ManageGroupScreen extends StatefulWidget {
 
   const ManageGroupScreen({
     super.key,
+    this.groupId = '',
     required this.groupName,
     required this.studentCount,
     required this.instructorName,
@@ -20,6 +26,35 @@ class ManageGroupScreen extends StatefulWidget {
 
 class _ManageGroupScreenState extends State<ManageGroupScreen> {
   int _selectedTabIndex = 0;
+  late final InstructorGroupsController _controller;
+
+  String get _groupName =>
+      _controller.selectedGroup.value?.name ?? widget.groupName;
+  String get _studentCount {
+    final group = _controller.selectedGroup.value;
+    if (group == null) return widget.studentCount;
+    return _controller.groupStudentsText(group);
+  }
+
+  String get _instructorName =>
+      _controller.selectedGroup.value?.instructor?.fullName ??
+      widget.instructorName;
+
+  String _initial(String value) {
+    final trimmed = value.trim();
+    return trimmed.isEmpty ? "?" : trimmed[0].toUpperCase();
+  }
+
+  @override
+  void initState() {
+    super.initState();
+    _controller = Get.isRegistered<InstructorGroupsController>()
+        ? Get.find<InstructorGroupsController>()
+        : Get.put(InstructorGroupsController());
+    if (widget.groupId.isNotEmpty) {
+      _controller.loadGroupDetails(widget.groupId);
+    }
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -29,7 +64,11 @@ class _ManageGroupScreenState extends State<ManageGroupScreen> {
         backgroundColor: Colors.white,
         elevation: 0,
         leading: IconButton(
-          icon: const Icon(Icons.chevron_left, color: Color(0xFF5151EF), size: 30),
+          icon: const Icon(
+            Icons.chevron_left,
+            color: Color(0xFF5151EF),
+            size: 30,
+          ),
           onPressed: () => Navigator.pop(context),
         ),
         title: const Text(
@@ -41,24 +80,28 @@ class _ManageGroupScreenState extends State<ManageGroupScreen> {
         ),
         centerTitle: true,
       ),
-      body: Column(
-        children: [
-          Expanded(
-            child: SingleChildScrollView(
-              child: Column(
-                children: [
-                  _buildHeaderCard(),
-                  const SizedBox(height: 10),
-                  if (_selectedTabIndex == 0) _buildMembersSection(),
-                  if (_selectedTabIndex == 1) _buildChatSection(),
-                  if (_selectedTabIndex == 2) _buildVoiceRoomsSection(),
-                  if (_selectedTabIndex == 3) _buildVideoClassSection(),
-                ],
+      body: Obx(
+        () => Column(
+          children: [
+            Expanded(
+              child: SingleChildScrollView(
+                child: Column(
+                  children: [
+                    _buildHeaderCard(),
+                    if (_controller.detailErrorMessage.value.isNotEmpty)
+                      _buildDetailError(),
+                    const SizedBox(height: 10),
+                    if (_selectedTabIndex == 0) _buildMembersSection(),
+                    if (_selectedTabIndex == 1) _buildChatSection(),
+                    if (_selectedTabIndex == 2) _buildVoiceRoomsSection(),
+                    if (_selectedTabIndex == 3) _buildVideoClassSection(),
+                  ],
+                ),
               ),
             ),
-          ),
-          if (_selectedTabIndex == 1) _buildChatInput(),
-        ],
+            if (_selectedTabIndex == 1) _buildChatInput(),
+          ],
+        ),
       ),
     );
   }
@@ -99,7 +142,7 @@ class _ManageGroupScreenState extends State<ManageGroupScreen> {
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
                     Text(
-                      widget.groupName,
+                      _groupName,
                       style: const TextStyle(
                         fontSize: 22,
                         fontWeight: FontWeight.bold,
@@ -113,22 +156,35 @@ class _ManageGroupScreenState extends State<ManageGroupScreen> {
                       scrollDirection: Axis.horizontal,
                       child: Row(
                         children: [
-                          const Icon(Icons.people_outline, size: 18, color: Color(0xFF6B7280)),
+                          const Icon(
+                            Icons.people_outline,
+                            size: 18,
+                            color: Color(0xFF6B7280),
+                          ),
                           const SizedBox(width: 6),
                           Text(
-                            widget.studentCount,
-                            style: const TextStyle(fontSize: 14, color: Color(0xFF6B7280)),
+                            _studentCount,
+                            style: const TextStyle(
+                              fontSize: 14,
+                              color: Color(0xFF6B7280),
+                            ),
                           ),
                           const SizedBox(width: 12),
-                          const Text("•", style: TextStyle(color: Color(0xFF6B7280))),
+                          const Text(
+                            "•",
+                            style: TextStyle(color: Color(0xFF6B7280)),
+                          ),
                           const SizedBox(width: 12),
                           const Text(
                             "Managed by",
-                            style: TextStyle(fontSize: 14, color: Color(0xFF9CA3AF)),
+                            style: TextStyle(
+                              fontSize: 14,
+                              color: Color(0xFF9CA3AF),
+                            ),
                           ),
                           const SizedBox(width: 8),
                           Text(
-                            widget.instructorName,
+                            _instructorName,
                             style: const TextStyle(
                               fontSize: 14,
                               color: Color(0xFF4B5563),
@@ -142,8 +198,11 @@ class _ManageGroupScreenState extends State<ManageGroupScreen> {
                     SizedBox(
                       width: double.infinity,
                       child: ElevatedButton.icon(
-                        onPressed: () {},
-                        icon: const Icon(Icons.play_arrow_rounded, color: Colors.white),
+                        onPressed: _controller.startNextClass,
+                        icon: const Icon(
+                          Icons.play_arrow_rounded,
+                          color: Colors.white,
+                        ),
                         label: const Text(
                           "Start Class",
                           style: TextStyle(
@@ -202,7 +261,7 @@ class _ManageGroupScreenState extends State<ManageGroupScreen> {
                     ),
                     alignment: Alignment.center,
                     child: Text(
-                      widget.groupName.isNotEmpty ? widget.groupName[0] : "G",
+                      _groupName.isNotEmpty ? _groupName[0] : "G",
                       style: const TextStyle(
                         color: Colors.white,
                         fontSize: 32,
@@ -215,6 +274,20 @@ class _ManageGroupScreenState extends State<ManageGroupScreen> {
             ],
           ),
         ],
+      ),
+    );
+  }
+
+  Widget _buildDetailError() {
+    return Padding(
+      padding: const EdgeInsets.symmetric(horizontal: 20),
+      child: TextButton(
+        onPressed: () => _controller.loadGroupDetails(widget.groupId),
+        child: Text(
+          _controller.detailErrorMessage.value,
+          textAlign: TextAlign.center,
+          style: const TextStyle(color: Color(0xFFB91C1C)),
+        ),
       ),
     );
   }
@@ -276,8 +349,10 @@ class _ManageGroupScreenState extends State<ManageGroupScreen> {
               border: Border.all(color: const Color(0xFFE5E7EB)),
             ),
             padding: const EdgeInsets.symmetric(horizontal: 16),
-            child: const TextField(
-              decoration: InputDecoration(
+            child: TextField(
+              controller: _controller.memberSearchController,
+              onChanged: (value) => _controller.memberSearchQuery.value = value,
+              decoration: const InputDecoration(
                 hintText: "Search members...",
                 hintStyle: TextStyle(color: Color(0xFF9CA3AF)),
                 border: InputBorder.none,
@@ -285,38 +360,42 @@ class _ManageGroupScreenState extends State<ManageGroupScreen> {
             ),
           ),
           const SizedBox(height: 24),
-          _buildMemberItem(
-            name: "Alex Johnson",
-            status: "Active",
-            statusColor: const Color(0xFF10B981),
-            rsvp: "Going",
-            rsvpColor: const Color(0xFFDCFCE7),
-            rsvpTextColor: const Color(0xFF15803D),
-          ),
-          _buildMemberItem(
-            name: "Maria Garcia",
-            status: "Active",
-            statusColor: const Color(0xFF10B981),
-            rsvp: "Maybe",
-            rsvpColor: const Color(0xFFFEF3C7),
-            rsvpTextColor: const Color(0xFFB45309),
-          ),
-          _buildMemberItem(
-            name: "James Smith",
-            status: "Expired",
-            statusColor: const Color(0xFF9CA3AF),
-            rsvp: "Not Going",
-            rsvpColor: const Color(0xFFFEE2E2),
-            rsvpTextColor: const Color(0xFFB91C1C),
-          ),
-          _buildMemberItem(
-            name: "Linda Chen",
-            status: "Active",
-            statusColor: const Color(0xFF10B981),
-            rsvp: "Going",
-            rsvpColor: const Color(0xFFDCFCE7),
-            rsvpTextColor: const Color(0xFF15803D),
-          ),
+          Obx(() {
+            if (_controller.isDetailLoading.value &&
+                _controller.members.isEmpty) {
+              return const Center(
+                child: Padding(
+                  padding: EdgeInsets.symmetric(vertical: 24),
+                  child: CircularProgressIndicator(color: Color(0xFF5151EF)),
+                ),
+              );
+            }
+            final members = _controller.filteredMembers;
+            if (members.isEmpty) {
+              return const Padding(
+                padding: EdgeInsets.symmetric(vertical: 24),
+                child: Center(
+                  child: Text(
+                    "No members found.",
+                    style: TextStyle(color: Color(0xFF6B7280)),
+                  ),
+                ),
+              );
+            }
+            return Column(
+              children: [
+                for (final member in members)
+                  _buildMemberItem(
+                    name: member.name,
+                    status: _controller.memberStatusLabel(member.status),
+                    statusColor: _controller.memberStatusColor(member.status),
+                    rsvp: _controller.rsvpLabel(member.rsvp),
+                    rsvpColor: _controller.rsvpColor(member.rsvp),
+                    rsvpTextColor: _controller.rsvpTextColor(member.rsvp),
+                  ),
+              ],
+            );
+          }),
           const SizedBox(height: 30),
         ],
       ),
@@ -348,30 +427,42 @@ class _ManageGroupScreenState extends State<ManageGroupScreen> {
           const SizedBox(height: 4),
           const Text(
             "Instructor has moderation controls",
-            style: TextStyle(
-              fontSize: 13,
-              color: Color(0xFF9CA3AF),
-            ),
+            style: TextStyle(fontSize: 13, color: Color(0xFF9CA3AF)),
           ),
           const SizedBox(height: 32),
-          _buildChatMessage(
-            name: "Alex Johnson",
-            time: "09:15 AM",
-            message: "Will we cover chapter 4 today?",
-            isInstructor: false,
-          ),
-          _buildChatMessage(
-            name: "Dr. Sarah Jenkins",
-            time: "09:20 AM",
-            message: "Yes, we will start with chapter 4 and if time permits, move to chapter 5.",
-            isInstructor: true,
-          ),
-          _buildChatMessage(
-            name: "Maria Garcia",
-            time: "09:25 AM",
-            message: "Great, thanks!",
-            isInstructor: false,
-          ),
+          Obx(() {
+            if (_controller.isDetailLoading.value &&
+                _controller.messages.isEmpty) {
+              return const Center(
+                child: Padding(
+                  padding: EdgeInsets.symmetric(vertical: 24),
+                  child: CircularProgressIndicator(color: Color(0xFF5151EF)),
+                ),
+              );
+            }
+            if (_controller.messages.isEmpty) {
+              return const Padding(
+                padding: EdgeInsets.symmetric(vertical: 24),
+                child: Center(
+                  child: Text(
+                    "No discussion yet.",
+                    style: TextStyle(color: Color(0xFF6B7280)),
+                  ),
+                ),
+              );
+            }
+            return Column(
+              children: [
+                for (final message in _controller.messages)
+                  _buildChatMessage(
+                    name: message.senderName,
+                    time: _controller.messageTime(message),
+                    message: message.content,
+                    isInstructor: message.isInstructor,
+                  ),
+              ],
+            );
+          }),
           const SizedBox(height: 20),
         ],
       ),
@@ -388,18 +479,25 @@ class _ManageGroupScreenState extends State<ManageGroupScreen> {
       padding: const EdgeInsets.only(bottom: 32),
       child: Row(
         crossAxisAlignment: CrossAxisAlignment.start,
-        mainAxisAlignment: isInstructor ? MainAxisAlignment.end : MainAxisAlignment.start,
+        mainAxisAlignment: isInstructor
+            ? MainAxisAlignment.end
+            : MainAxisAlignment.start,
         children: [
           if (!isInstructor)
             CircleAvatar(
               radius: 18,
               backgroundColor: const Color(0xFFE5E7EB),
-              child: Text(name[0], style: const TextStyle(fontSize: 12, color: Color(0xFF6B7280))),
+              child: Text(
+                _initial(name),
+                style: const TextStyle(fontSize: 12, color: Color(0xFF6B7280)),
+              ),
             ),
           if (!isInstructor) const SizedBox(width: 12),
           Expanded(
             child: Column(
-              crossAxisAlignment: isInstructor ? CrossAxisAlignment.end : CrossAxisAlignment.start,
+              crossAxisAlignment: isInstructor
+                  ? CrossAxisAlignment.end
+                  : CrossAxisAlignment.start,
               children: [
                 Row(
                   mainAxisSize: MainAxisSize.min,
@@ -407,7 +505,10 @@ class _ManageGroupScreenState extends State<ManageGroupScreen> {
                     if (isInstructor) ...[
                       Text(
                         time,
-                        style: const TextStyle(fontSize: 10, color: Color(0xFF9CA3AF)),
+                        style: const TextStyle(
+                          fontSize: 10,
+                          color: Color(0xFF9CA3AF),
+                        ),
                       ),
                       const SizedBox(width: 8),
                     ],
@@ -423,13 +524,19 @@ class _ManageGroupScreenState extends State<ManageGroupScreen> {
                       const SizedBox(width: 8),
                       Text(
                         time,
-                        style: const TextStyle(fontSize: 10, color: Color(0xFF9CA3AF)),
+                        style: const TextStyle(
+                          fontSize: 10,
+                          color: Color(0xFF9CA3AF),
+                        ),
                       ),
                     ],
                     if (isInstructor) ...[
                       const SizedBox(width: 8),
                       Container(
-                        padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
+                        padding: const EdgeInsets.symmetric(
+                          horizontal: 6,
+                          vertical: 2,
+                        ),
                         decoration: BoxDecoration(
                           color: const Color(0xFFE0E7FF),
                           borderRadius: BorderRadius.circular(4),
@@ -448,7 +555,10 @@ class _ManageGroupScreenState extends State<ManageGroupScreen> {
                 ),
                 const SizedBox(height: 8),
                 Container(
-                  padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 16),
+                  padding: const EdgeInsets.symmetric(
+                    horizontal: 20,
+                    vertical: 16,
+                  ),
                   decoration: BoxDecoration(
                     color: isInstructor ? widget.primaryColor : Colors.white,
                     borderRadius: BorderRadius.only(
@@ -457,13 +567,17 @@ class _ManageGroupScreenState extends State<ManageGroupScreen> {
                       bottomLeft: Radius.circular(isInstructor ? 16 : 0),
                       bottomRight: Radius.circular(isInstructor ? 0 : 16),
                     ),
-                    border: isInstructor ? null : Border.all(color: const Color(0xFFE5E7EB)),
+                    border: isInstructor
+                        ? null
+                        : Border.all(color: const Color(0xFFE5E7EB)),
                   ),
                   child: Text(
                     message,
                     style: TextStyle(
                       fontSize: 14,
-                      color: isInstructor ? Colors.white : const Color(0xFF4B5563),
+                      color: isInstructor
+                          ? Colors.white
+                          : const Color(0xFF4B5563),
                       height: 1.5,
                     ),
                   ),
@@ -476,7 +590,10 @@ class _ManageGroupScreenState extends State<ManageGroupScreen> {
             CircleAvatar(
               radius: 18,
               backgroundColor: const Color(0xFFE5E7EB),
-              child: Text(name[0], style: const TextStyle(fontSize: 12, color: Color(0xFF6B7280))),
+              child: Text(
+                _initial(name),
+                style: const TextStyle(fontSize: 12, color: Color(0xFF6B7280)),
+              ),
             ),
         ],
       ),
@@ -507,8 +624,10 @@ class _ManageGroupScreenState extends State<ManageGroupScreen> {
                 color: const Color(0xFFF3F4F6),
                 borderRadius: BorderRadius.circular(24),
               ),
-              child: const TextField(
-                decoration: InputDecoration(
+              child: TextField(
+                controller: _controller.messageController,
+                style: const TextStyle(color: Colors.black),
+                decoration: const InputDecoration(
                   hintText: "Type a message to the group...",
                   hintStyle: TextStyle(color: Color(0xFF9CA3AF), fontSize: 14),
                   border: InputBorder.none,
@@ -517,13 +636,21 @@ class _ManageGroupScreenState extends State<ManageGroupScreen> {
             ),
           ),
           const SizedBox(width: 12),
-          Container(
-            padding: const EdgeInsets.all(10),
-            decoration: BoxDecoration(
-              color: widget.primaryColor,
-              shape: BoxShape.circle,
+          InkWell(
+            onTap: () => _controller.sendMessage(widget.groupId),
+            customBorder: const CircleBorder(),
+            child: Container(
+              padding: const EdgeInsets.all(10),
+              decoration: BoxDecoration(
+                color: widget.primaryColor,
+                shape: BoxShape.circle,
+              ),
+              child: const Icon(
+                Icons.send_rounded,
+                color: Colors.white,
+                size: 20,
+              ),
             ),
-            child: const Icon(Icons.send_rounded, color: Colors.white, size: 20),
           ),
         ],
       ),
@@ -572,57 +699,81 @@ class _ManageGroupScreenState extends State<ManageGroupScreen> {
                   ],
                 ),
               ),
-              Container(
-                padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
-                decoration: BoxDecoration(
-                  color: const Color(0xFFEEF2FF),
-                  borderRadius: BorderRadius.circular(8),
-                ),
-                child: Row(
-                  children: [
-                    Icon(Icons.mic_none, size: 16, color: widget.primaryColor),
-                    const SizedBox(width: 6),
-                    Text(
-                      "Create Room",
-                      style: TextStyle(
+              InkWell(
+                onTap: _showCreateRoomDialog,
+                borderRadius: BorderRadius.circular(8),
+                child: Container(
+                  padding: const EdgeInsets.symmetric(
+                    horizontal: 12,
+                    vertical: 8,
+                  ),
+                  decoration: BoxDecoration(
+                    color: const Color(0xFFEEF2FF),
+                    borderRadius: BorderRadius.circular(8),
+                  ),
+                  child: Row(
+                    children: [
+                      Icon(
+                        Icons.mic_none,
+                        size: 16,
                         color: widget.primaryColor,
-                        fontSize: 13,
-                        fontWeight: FontWeight.w600,
                       ),
-                    ),
-                  ],
+                      const SizedBox(width: 6),
+                      Text(
+                        "Create Room",
+                        style: TextStyle(
+                          color: widget.primaryColor,
+                          fontSize: 13,
+                          fontWeight: FontWeight.w600,
+                        ),
+                      ),
+                    ],
+                  ),
                 ),
               ),
             ],
           ),
           const SizedBox(height: 24),
-          _buildRoomCard(
-            title: "Math Study Group",
-            isPublic: true,
-            host: "Alex Johnson",
-            avatars: ["A", "B", "C", "D"],
-            extraCount: "+4",
-          ),
-          const SizedBox(height: 16),
-          _buildRoomCard(
-            title: "Physics Q&A",
-            isPublic: false,
-            host: "Dr. Sarah Jenkins",
-            avatars: ["A", "B", "C"],
-          ),
+          Obx(() {
+            if (_controller.isDetailLoading.value &&
+                _controller.rooms.isEmpty) {
+              return const Center(
+                child: Padding(
+                  padding: EdgeInsets.symmetric(vertical: 24),
+                  child: CircularProgressIndicator(color: Color(0xFF5151EF)),
+                ),
+              );
+            }
+            if (_controller.rooms.isEmpty) {
+              return const Padding(
+                padding: EdgeInsets.symmetric(vertical: 24),
+                child: Center(
+                  child: Text(
+                    "No active rooms.",
+                    style: TextStyle(color: Color(0xFF6B7280)),
+                  ),
+                ),
+              );
+            }
+            return Column(
+              children: [
+                for (int i = 0; i < _controller.rooms.length; i++) ...[
+                  _buildRoomCard(room: _controller.rooms[i]),
+                  if (i != _controller.rooms.length - 1)
+                    const SizedBox(height: 16),
+                ],
+              ],
+            );
+          }),
           const SizedBox(height: 30),
         ],
       ),
     );
   }
 
-  Widget _buildRoomCard({
-    required String title,
-    required bool isPublic,
-    required String host,
-    required List<String> avatars,
-    String? extraCount,
-  }) {
+  Widget _buildRoomCard({required InstructorGroupRoom room}) {
+    final extra = room.participantCount - room.participantInitials.length;
+
     return Container(
       padding: const EdgeInsets.all(16),
       decoration: BoxDecoration(
@@ -637,7 +788,7 @@ class _ManageGroupScreenState extends State<ManageGroupScreen> {
             mainAxisAlignment: MainAxisAlignment.spaceBetween,
             children: [
               Text(
-                title,
+                room.title,
                 style: const TextStyle(
                   fontSize: 16,
                   fontWeight: FontWeight.bold,
@@ -645,17 +796,24 @@ class _ManageGroupScreenState extends State<ManageGroupScreen> {
                 ),
               ),
               Container(
-                padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
+                padding: const EdgeInsets.symmetric(
+                  horizontal: 10,
+                  vertical: 4,
+                ),
                 decoration: BoxDecoration(
-                  color: isPublic ? const Color(0xFFDCFCE7) : const Color(0xFFFEF3C7),
+                  color: room.isPublic
+                      ? const Color(0xFFDCFCE7)
+                      : const Color(0xFFFEF3C7),
                   borderRadius: BorderRadius.circular(20),
                 ),
                 child: Text(
-                  isPublic ? "Public" : "Private",
+                  room.isPublic ? "Public" : "Private",
                   style: TextStyle(
                     fontSize: 12,
                     fontWeight: FontWeight.bold,
-                    color: isPublic ? const Color(0xFF15803D) : const Color(0xFFB45309),
+                    color: room.isPublic
+                        ? const Color(0xFF15803D)
+                        : const Color(0xFFB45309),
                   ),
                 ),
               ),
@@ -670,7 +828,7 @@ class _ManageGroupScreenState extends State<ManageGroupScreen> {
               ),
               const SizedBox(width: 6),
               Text(
-                host,
+                room.hostName,
                 style: const TextStyle(fontSize: 12, color: Color(0xFF6B7280)),
               ),
             ],
@@ -681,7 +839,7 @@ class _ManageGroupScreenState extends State<ManageGroupScreen> {
             children: [
               Row(
                 children: [
-                  for (int i = 0; i < avatars.length; i++)
+                  for (int i = 0; i < room.participantInitials.length; i++)
                     Align(
                       widthFactor: 0.7,
                       child: Container(
@@ -693,13 +851,17 @@ class _ManageGroupScreenState extends State<ManageGroupScreen> {
                           radius: 12,
                           backgroundColor: const Color(0xFFE5E7EB),
                           child: Text(
-                            avatars[i],
-                            style: const TextStyle(fontSize: 10, color: Color(0xFF6B7280), fontWeight: FontWeight.bold),
+                            room.participantInitials[i],
+                            style: const TextStyle(
+                              fontSize: 10,
+                              color: Color(0xFF6B7280),
+                              fontWeight: FontWeight.bold,
+                            ),
                           ),
                         ),
                       ),
                     ),
-                  if (extraCount != null)
+                  if (extra > 0)
                     Align(
                       widthFactor: 0.7,
                       child: Container(
@@ -711,24 +873,45 @@ class _ManageGroupScreenState extends State<ManageGroupScreen> {
                           radius: 12,
                           backgroundColor: const Color(0xFFF3F4F6),
                           child: Text(
-                            extraCount,
-                            style: const TextStyle(fontSize: 9, color: Color(0xFF6B7280), fontWeight: FontWeight.bold),
+                            "+$extra",
+                            style: const TextStyle(
+                              fontSize: 9,
+                              color: Color(0xFF6B7280),
+                              fontWeight: FontWeight.bold,
+                            ),
                           ),
                         ),
                       ),
                     ),
                 ],
               ),
-              ElevatedButton(
-                onPressed: () {},
-                style: ElevatedButton.styleFrom(
-                  backgroundColor: const Color(0xFF111827),
-                  foregroundColor: Colors.white,
-                  shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
-                  padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 0),
-                  minimumSize: const Size(60, 32),
+              Obx(
+                () => ElevatedButton(
+                  onPressed: _controller.joiningRoomIds.contains(room.id)
+                      ? null
+                      : () => _controller.joinRoom(room),
+                  style: ElevatedButton.styleFrom(
+                    backgroundColor: const Color(0xFF111827),
+                    foregroundColor: Colors.white,
+                    shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(8),
+                    ),
+                    padding: const EdgeInsets.symmetric(
+                      horizontal: 24,
+                      vertical: 0,
+                    ),
+                    minimumSize: const Size(60, 32),
+                  ),
+                  child: Text(
+                    _controller.joiningRoomIds.contains(room.id)
+                        ? "..."
+                        : "Join",
+                    style: const TextStyle(
+                      fontSize: 13,
+                      fontWeight: FontWeight.bold,
+                    ),
+                  ),
                 ),
-                child: const Text("Join", style: TextStyle(fontSize: 13, fontWeight: FontWeight.bold)),
               ),
             ],
           ),
@@ -738,6 +921,8 @@ class _ManageGroupScreenState extends State<ManageGroupScreen> {
   }
 
   Widget _buildVideoClassSection() {
+    final liveClass = _controller.nextClass;
+
     return Container(
       width: double.infinity,
       decoration: const BoxDecoration(
@@ -759,7 +944,11 @@ class _ManageGroupScreenState extends State<ManageGroupScreen> {
               color: const Color(0xFFEEF2FF),
               borderRadius: BorderRadius.circular(20),
             ),
-            child: Icon(Icons.videocam_outlined, size: 40, color: widget.primaryColor),
+            child: Icon(
+              Icons.videocam_outlined,
+              size: 40,
+              color: widget.primaryColor,
+            ),
           ),
           const SizedBox(height: 24),
           const Text(
@@ -771,12 +960,9 @@ class _ManageGroupScreenState extends State<ManageGroupScreen> {
             ),
           ),
           const SizedBox(height: 8),
-          const Text(
-            "Derivatives & Integrals",
-            style: TextStyle(
-              fontSize: 14,
-              color: Color(0xFF6B7280),
-            ),
+          Text(
+            liveClass?.title ?? "No upcoming class",
+            style: const TextStyle(fontSize: 14, color: Color(0xFF6B7280)),
           ),
           const SizedBox(height: 32),
           Container(
@@ -795,12 +981,32 @@ class _ManageGroupScreenState extends State<ManageGroupScreen> {
                     Expanded(
                       child: Column(
                         crossAxisAlignment: CrossAxisAlignment.start,
-                        children: const [
-                          Text("Time", style: TextStyle(fontSize: 12, color: Color(0xFF9CA3AF))),
-                          SizedBox(height: 6),
-                          Text("10:00 AM -", style: TextStyle(fontSize: 14, fontWeight: FontWeight.bold, color: Color(0xFF1F2937))),
-                          SizedBox(height: 2),
-                          Text("11:30 AM", style: TextStyle(fontSize: 14, fontWeight: FontWeight.bold, color: Color(0xFF1F2937))),
+                        children: [
+                          const Text(
+                            "Time",
+                            style: TextStyle(
+                              fontSize: 12,
+                              color: Color(0xFF9CA3AF),
+                            ),
+                          ),
+                          const SizedBox(height: 6),
+                          Text(
+                            "${_controller.classTimeStart(liveClass)} -",
+                            style: const TextStyle(
+                              fontSize: 14,
+                              fontWeight: FontWeight.bold,
+                              color: Color(0xFF1F2937),
+                            ),
+                          ),
+                          const SizedBox(height: 2),
+                          Text(
+                            _controller.classTimeEnd(liveClass),
+                            style: const TextStyle(
+                              fontSize: 14,
+                              fontWeight: FontWeight.bold,
+                              color: Color(0xFF1F2937),
+                            ),
+                          ),
                         ],
                       ),
                     ),
@@ -808,13 +1014,30 @@ class _ManageGroupScreenState extends State<ManageGroupScreen> {
                       child: Column(
                         crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
-                          const Text("Platform", style: TextStyle(fontSize: 12, color: Color(0xFF9CA3AF))),
+                          const Text(
+                            "Platform",
+                            style: TextStyle(
+                              fontSize: 12,
+                              color: Color(0xFF9CA3AF),
+                            ),
+                          ),
                           const SizedBox(height: 6),
                           Row(
                             children: const [
-                              Icon(Icons.videocam, size: 16, color: Color(0xFF2563EB)),
+                              Icon(
+                                Icons.videocam,
+                                size: 16,
+                                color: Color(0xFF2563EB),
+                              ),
                               SizedBox(width: 6),
-                              Text("Zoom", style: TextStyle(fontSize: 14, fontWeight: FontWeight.bold, color: Color(0xFF1F2937))),
+                              Text(
+                                "Zoom",
+                                style: TextStyle(
+                                  fontSize: 14,
+                                  fontWeight: FontWeight.bold,
+                                  color: Color(0xFF1F2937),
+                                ),
+                              ),
                             ],
                           ),
                         ],
@@ -825,14 +1048,29 @@ class _ManageGroupScreenState extends State<ManageGroupScreen> {
                 const SizedBox(height: 20),
                 const Divider(height: 1, color: Color(0xFFF3F4F6)),
                 const SizedBox(height: 16),
-                const Text("RSVP Status", style: TextStyle(fontSize: 12, color: Color(0xFF9CA3AF))),
+                const Text(
+                  "RSVP Status",
+                  style: TextStyle(fontSize: 12, color: Color(0xFF9CA3AF)),
+                ),
                 const SizedBox(height: 12),
                 Row(
                   mainAxisAlignment: MainAxisAlignment.spaceBetween,
                   children: [
-                    _buildRsvpInfo(const Color(0xFF10B981), "24", "Going"),
-                    _buildRsvpInfo(const Color(0xFFF59E0B), "5", "Maybe"),
-                    _buildRsvpInfo(const Color(0xFFEF4444), "2", "Not"),
+                    _buildRsvpInfo(
+                      const Color(0xFF10B981),
+                      "${liveClass?.goingCount ?? 0}",
+                      "Going",
+                    ),
+                    _buildRsvpInfo(
+                      const Color(0xFFF59E0B),
+                      "${liveClass?.maybeCount ?? 0}",
+                      "Maybe",
+                    ),
+                    _buildRsvpInfo(
+                      const Color(0xFFEF4444),
+                      "${liveClass?.notGoingCount ?? 0}",
+                      "Not",
+                    ),
                   ],
                 ),
               ],
@@ -842,7 +1080,9 @@ class _ManageGroupScreenState extends State<ManageGroupScreen> {
           SizedBox(
             width: double.infinity,
             child: ElevatedButton.icon(
-              onPressed: () {},
+              onPressed: liveClass == null
+                  ? null
+                  : () => _controller.startClass(liveClass),
               icon: const Icon(Icons.play_arrow_rounded, color: Colors.white),
               label: const Text(
                 "Start Class as Host",
@@ -866,7 +1106,7 @@ class _ManageGroupScreenState extends State<ManageGroupScreen> {
           SizedBox(
             width: double.infinity,
             child: OutlinedButton(
-              onPressed: () {},
+              onPressed: _controller.showEditDetailsUnavailable,
               style: OutlinedButton.styleFrom(
                 side: const BorderSide(color: Color(0xFFE5E7EB)),
                 padding: const EdgeInsets.symmetric(vertical: 16),
@@ -901,15 +1141,168 @@ class _ManageGroupScreenState extends State<ManageGroupScreen> {
         const SizedBox(width: 6),
         Row(
           children: [
-            Text(count, style: const TextStyle(fontSize: 12, fontWeight: FontWeight.bold, color: Color(0xFF374151))),
+            Text(
+              count,
+              style: const TextStyle(
+                fontSize: 12,
+                fontWeight: FontWeight.bold,
+                color: Color(0xFF374151),
+              ),
+            ),
             const SizedBox(width: 4),
-            Text(label, style: const TextStyle(fontSize: 12, color: Color(0xFF4B5563))),
+            Text(
+              label,
+              style: const TextStyle(fontSize: 12, color: Color(0xFF4B5563)),
+            ),
           ],
         ),
       ],
     );
   }
 
+  void _showCreateRoomDialog() {
+    final roomNameController = TextEditingController();
+    var privacy = 'Public';
+
+    Get.dialog(
+      StatefulBuilder(
+        builder: (context, setDialogState) => Dialog(
+          shape: RoundedRectangleBorder(
+            borderRadius: BorderRadius.circular(16),
+          ),
+          backgroundColor: Colors.white,
+          child: Padding(
+            padding: const EdgeInsets.all(24),
+            child: Column(
+              mainAxisSize: MainAxisSize.min,
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                const Text(
+                  "Create New Room",
+                  style: TextStyle(
+                    fontSize: 20,
+                    fontWeight: FontWeight.bold,
+                    color: Color(0xFF1F2937),
+                  ),
+                ),
+                const SizedBox(height: 24),
+                TextField(
+                  controller: roomNameController,
+                  decoration: InputDecoration(
+                    hintText: "e.g. Math Study Group",
+                    hintStyle: const TextStyle(color: Color(0xFF9CA3AF)),
+                    border: OutlineInputBorder(
+                      borderRadius: BorderRadius.circular(12),
+                      borderSide: const BorderSide(color: Color(0xFFE5E7EB)),
+                    ),
+                    enabledBorder: OutlineInputBorder(
+                      borderRadius: BorderRadius.circular(12),
+                      borderSide: const BorderSide(color: Color(0xFFE5E7EB)),
+                    ),
+                  ),
+                ),
+                const SizedBox(height: 20),
+                Row(
+                  children: [
+                    Expanded(
+                      child: InkWell(
+                        onTap: () => setDialogState(() => privacy = 'Public'),
+                        borderRadius: BorderRadius.circular(8),
+                        child: Row(
+                          children: [
+                            Icon(
+                              privacy == 'Public'
+                                  ? Icons.radio_button_checked
+                                  : Icons.radio_button_unchecked,
+                              color: const Color(0xFF5151EF),
+                            ),
+                            const SizedBox(width: 8),
+                            const Text(
+                              "Public",
+                              style: TextStyle(fontSize: 12),
+                            ),
+                          ],
+                        ),
+                      ),
+                    ),
+                    Expanded(
+                      child: InkWell(
+                        onTap: () => setDialogState(() => privacy = 'Private'),
+                        borderRadius: BorderRadius.circular(8),
+                        child: Row(
+                          children: [
+                            Icon(
+                              privacy == 'Private'
+                                  ? Icons.radio_button_checked
+                                  : Icons.radio_button_unchecked,
+                              color: const Color(0xFF5151EF),
+                            ),
+                            const SizedBox(width: 8),
+                            const Text(
+                              "Private",
+                              style: TextStyle(fontSize: 12),
+                            ),
+                          ],
+                        ),
+                      ),
+                    ),
+                  ],
+                ),
+                const SizedBox(height: 24),
+                Row(
+                  children: [
+                    Expanded(
+                      child: OutlinedButton(
+                        onPressed: () => Get.back(),
+                        style: OutlinedButton.styleFrom(
+                          side: const BorderSide(color: Color(0xFFE5E7EB)),
+                          shape: RoundedRectangleBorder(
+                            borderRadius: BorderRadius.circular(12),
+                          ),
+                          padding: const EdgeInsets.symmetric(vertical: 14),
+                        ),
+                        child: const Text(
+                          "Cancel",
+                          style: TextStyle(color: Color(0xFF4B5563)),
+                        ),
+                      ),
+                    ),
+                    const SizedBox(width: 16),
+                    Expanded(
+                      child: Obx(
+                        () => ElevatedButton(
+                          onPressed: _controller.isCreatingRoom.value
+                              ? null
+                              : () => _controller.createRoom(
+                                  groupId: widget.groupId,
+                                  name: roomNameController.text,
+                                  privacy: privacy,
+                                ),
+                          style: ElevatedButton.styleFrom(
+                            backgroundColor: widget.primaryColor,
+                            padding: const EdgeInsets.symmetric(vertical: 14),
+                            shape: RoundedRectangleBorder(
+                              borderRadius: BorderRadius.circular(12),
+                            ),
+                          ),
+                          child: Text(
+                            _controller.isCreatingRoom.value
+                                ? "Creating"
+                                : "Create",
+                            style: const TextStyle(color: Colors.white),
+                          ),
+                        ),
+                      ),
+                    ),
+                  ],
+                ),
+              ],
+            ),
+          ),
+        ),
+      ),
+    ).whenComplete(() => roomNameController.dispose());
+  }
 
   Widget _buildMemberItem({
     required String name,
@@ -935,8 +1328,11 @@ class _ManageGroupScreenState extends State<ManageGroupScreen> {
                 radius: 24,
                 backgroundColor: const Color(0xFFE5E7EB),
                 child: Text(
-                  name[0],
-                  style: const TextStyle(color: Color(0xFF6B7280), fontWeight: FontWeight.bold),
+                  _initial(name),
+                  style: const TextStyle(
+                    color: Color(0xFF6B7280),
+                    fontWeight: FontWeight.bold,
+                  ),
                 ),
               ),
               const SizedBox(width: 16),
@@ -954,7 +1350,10 @@ class _ManageGroupScreenState extends State<ManageGroupScreen> {
                     ),
                     const SizedBox(height: 4),
                     Container(
-                      padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 2),
+                      padding: const EdgeInsets.symmetric(
+                        horizontal: 8,
+                        vertical: 2,
+                      ),
                       decoration: BoxDecoration(
                         color: statusColor.withAlpha(20),
                         borderRadius: BorderRadius.circular(4),
@@ -973,7 +1372,11 @@ class _ManageGroupScreenState extends State<ManageGroupScreen> {
               ),
               IconButton(
                 onPressed: () {},
-                icon: const Icon(Icons.chat_bubble_outline, color: Color(0xFF9CA3AF), size: 20),
+                icon: const Icon(
+                  Icons.chat_bubble_outline,
+                  color: Color(0xFF9CA3AF),
+                  size: 20,
+                ),
               ),
             ],
           ),
@@ -988,7 +1391,10 @@ class _ManageGroupScreenState extends State<ManageGroupScreen> {
                 style: TextStyle(fontSize: 13, color: Color(0xFF6B7280)),
               ),
               Container(
-                padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 4),
+                padding: const EdgeInsets.symmetric(
+                  horizontal: 12,
+                  vertical: 4,
+                ),
                 decoration: BoxDecoration(
                   color: rsvpColor,
                   borderRadius: BorderRadius.circular(20),

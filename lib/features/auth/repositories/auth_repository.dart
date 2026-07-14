@@ -9,6 +9,7 @@ abstract class AuthRepository {
   NetworkResult<LoginResponse> login(LoginRequest request);
   NetworkResult<void> register(RegisterRequest request);
   NetworkResult<LoginResponse> verifyEmail(OTPRequest request);
+  NetworkResult<LoginResponse> selectRole(String role);
   NetworkResult<void> resendOTP(String email);
   NetworkResult<void> forgotPassword(String email);
   NetworkResult<String> verifyResetOTP(OTPRequest request);

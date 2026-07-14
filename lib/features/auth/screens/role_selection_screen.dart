@@ -98,24 +98,37 @@ class RoleSelectionScreen extends StatelessWidget {
               /// Continue Action Button
               SizedBox(
                 height: 52,
-                child: ElevatedButton(
-                  onPressed: controller.proceed,
-                  style: ElevatedButton.styleFrom(
-                    backgroundColor: const Color(0xFF5151EF),
-                    shape: RoundedRectangleBorder(
-                      borderRadius: BorderRadius.circular(16),
+                child: Obx(() {
+                  final isSubmitting = controller.isSubmitting.value;
+                  return ElevatedButton(
+                    onPressed: isSubmitting ? null : controller.proceed,
+                    style: ElevatedButton.styleFrom(
+                      backgroundColor: const Color(0xFF5151EF),
+                      disabledBackgroundColor: const Color(0xFF5151EF),
+                      shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(16),
+                      ),
+                      elevation: 0,
                     ),
-                    elevation: 0,
-                  ),
-                  child: const Text(
-                    "Continue",
-                    style: TextStyle(
-                      color: Colors.white,
-                      fontSize: 16,
-                      fontWeight: FontWeight.w700,
-                    ),
-                  ),
-                ),
+                    child: isSubmitting
+                        ? const SizedBox(
+                            width: 20,
+                            height: 20,
+                            child: CircularProgressIndicator(
+                              strokeWidth: 2,
+                              color: Colors.white,
+                            ),
+                          )
+                        : const Text(
+                            "Continue",
+                            style: TextStyle(
+                              color: Colors.white,
+                              fontSize: 16,
+                              fontWeight: FontWeight.w700,
+                            ),
+                          ),
+                  );
+                }),
               ),
             ],
           ),

@@ -145,13 +145,44 @@ class SplashController extends GetxController {
     }
 
     final accountRole = profileRole ?? tokenRole ?? storedRole;
-    final finalRole = activeRole ?? accountRole;
+    final finalRole = await _chooseStartupRole(
+      activeRole: activeRole,
+      accountRole: accountRole,
+    );
 
     DPrint.log(
       "SplashController: resolved roles -> profile=$profileRole token=$tokenRole account=$accountRole final=$finalRole",
     );
 
     return finalRole;
+  }
+
+  Future<String?> _chooseStartupRole({
+    required String? activeRole,
+    required String? accountRole,
+  }) async {
+    if (accountRole == null) return null;
+    if (activeRole == null) return accountRole;
+
+    if (activeRole == 'subscriber') {
+      if (accountRole == 'learner') return activeRole;
+
+      DPrint.warn(
+        "SplashController: stale subscriber active role for account=$accountRole. Clearing active role.",
+      );
+      await _authStorageService.clearActiveRole();
+      return accountRole;
+    }
+
+    if (activeRole != accountRole) {
+      DPrint.warn(
+        "SplashController: stale active role active=$activeRole account=$accountRole. Clearing active role.",
+      );
+      await _authStorageService.clearActiveRole();
+      return accountRole;
+    }
+
+    return activeRole;
   }
 
   Future<String?> _fetchProfileRole() async {
