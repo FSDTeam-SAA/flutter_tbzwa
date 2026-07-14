@@ -1,14 +1,18 @@
-import 'package:dartz/dartz.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter_tbzwa/navbar_menu.dart' as subscriber_navigation;
+import 'package:flutter_tbzwa/navigation_menu.dart' as learner_navigation;
 import 'package:get/get.dart';
 
 import '../../../core/base/base_controller.dart';
 import '../../../core/services/auth_storage_service.dart';
+import '../../instructor/controllers/instructor_home_controller.dart';
+import '../../navigation/instructor_nav_menu.dart' as instructor_navigation;
 import '../../auth/model/request/login_request.dart';
 import '../../auth/model/request/register_request.dart';
 import '../../auth/model/request/otp_request.dart';
 import '../../auth/model/request/reset_password_request.dart';
 import '../../auth/repositories/auth_repository.dart';
+import 'role_selection_controller.dart';
 import '../screens/role_selection_screen.dart';
 import '../screens/login_screen.dart';
 import '../screens/verify_code_screen.dart';
@@ -134,24 +138,24 @@ class AuthController extends BaseController {
       },
       (success) async {
         final data = success.data;
-        if (data != null) {
-          await _authStorageService.storeAuthData(
-            accessToken: data.accessToken,
-            refreshToken: data.refreshToken,
-            userId: data.user.id,
-            role: data.user.role,
-          );
+        _resetRoleNavigationState();
+        await _authStorageService.clearActiveRole();
+        await _authStorageService.storeAuthData(
+          accessToken: data.accessToken,
+          refreshToken: data.refreshToken,
+          userId: data.user.id,
+          role: data.user.role,
+        );
 
-          Get.snackbar(
-            "Success",
-            "Welcome back, ${data.user.fullName}!",
-            snackPosition: SnackPosition.BOTTOM,
-            backgroundColor: Colors.green[600],
-            colorText: Colors.white,
-          );
+        Get.snackbar(
+          "Success",
+          "Welcome back, ${data.user.fullName}!",
+          snackPosition: SnackPosition.BOTTOM,
+          backgroundColor: Colors.green[600],
+          colorText: Colors.white,
+        );
 
-          Get.offAll(() => const RoleSelectionScreen());
-        }
+        Get.offAll(() => const RoleSelectionScreen());
       },
     );
   }
@@ -260,23 +264,22 @@ class AuthController extends BaseController {
       },
       (success) async {
         final data = success.data;
-        if (data != null) {
-          await _authStorageService.storeAuthData(
-            accessToken: data.accessToken,
-            refreshToken: data.refreshToken,
-            userId: data.user.id,
-            role: data.user.role,
-          );
+        _resetRoleNavigationState();
+        await _authStorageService.clearActiveRole();
+        await _authStorageService.storeAuthData(
+          accessToken: data.accessToken,
+          refreshToken: data.refreshToken,
+          userId: data.user.id,
+          role: data.user.role,
+        );
 
-          Get.snackbar(
-            "Success",
-            success.message,
-            backgroundColor: Colors.green[600],
-            colorText: Colors.white,
-          );
-          return true;
-        }
-        return false;
+        Get.snackbar(
+          "Success",
+          success.message,
+          backgroundColor: Colors.green[600],
+          colorText: Colors.white,
+        );
+        return true;
       },
     );
   }
@@ -368,7 +371,26 @@ class AuthController extends BaseController {
   Future<void> logout() async {
     await _authRepo.logout(); // Best effort backend logout
     await _authStorageService.clearAuthData();
+    _resetRoleNavigationState();
     Get.delete<AuthController>();
     Get.offAll(() => const LoginScreen());
+  }
+
+  void _resetRoleNavigationState() {
+    if (Get.isRegistered<learner_navigation.NavigationController>()) {
+      Get.delete<learner_navigation.NavigationController>(force: true);
+    }
+    if (Get.isRegistered<instructor_navigation.NavigationController>()) {
+      Get.delete<instructor_navigation.NavigationController>(force: true);
+    }
+    if (Get.isRegistered<subscriber_navigation.NavbarController>()) {
+      Get.delete<subscriber_navigation.NavbarController>(force: true);
+    }
+    if (Get.isRegistered<InstructorHomeController>()) {
+      Get.delete<InstructorHomeController>(force: true);
+    }
+    if (Get.isRegistered<RoleSelectionController>()) {
+      Get.delete<RoleSelectionController>(force: true);
+    }
   }
 }

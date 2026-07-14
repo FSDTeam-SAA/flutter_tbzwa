@@ -5,6 +5,7 @@ class KeyConst {
   static const String accessToken = 'access_token';
   static const String refreshToken = 'refresh_token';
   static const String role = 'role';
+  static const String activeRole = 'active_role';
   static const String userId = 'user_id';
 
   static const String email = 'email';

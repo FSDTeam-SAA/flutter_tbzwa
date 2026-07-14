@@ -1,12 +1,9 @@
 import 'package:flutter/material.dart';
-import 'package:flutter_tbzwa/navigation_menu.dart';
 import 'package:get/get.dart';
 
 import 'core/config/app_theme.dart';
 import 'core/init/app_initializer.dart';
 import 'features/auth/screens/splash_screen.dart';
-
-
 
 void main() async {
   await AppInitializer.initializeApp();

@@ -54,6 +54,16 @@ class AuthStorageService {
     await _secureStorage.write(key: KeyConst.userId, value: userId);
   }
 
+  // Store just role
+  Future<void> storeRole(String role) async {
+    await _secureStorage.write(key: KeyConst.role, value: role);
+  }
+
+  // Store selected app role/mode
+  Future<void> storeActiveRole(String role) async {
+    await _secureStorage.write(key: KeyConst.activeRole, value: role);
+  }
+
   // Check user authenticater or not
   Future<bool> isAuthenticated() async {
     final accessToken = await getAccessToken();
@@ -87,6 +97,23 @@ class AuthStorageService {
     return await _secureStorage.read(key: KeyConst.role);
   }
 
+  // Get selected app role/mode
+  Future<String?> getActiveRole() async {
+    return await _secureStorage.read(key: KeyConst.activeRole);
+  }
+
+  // Clear selected app role/mode
+  Future<void> clearActiveRole() async {
+    await _secureStorage.delete(key: KeyConst.activeRole);
+  }
+
+  // Check whether any token exists for startup session restoration
+  Future<bool> hasStoredSessionToken() async {
+    final accessToken = await getAccessToken();
+    final refreshToken = await getRefreshToken();
+    return accessToken?.isNotEmpty == true || refreshToken?.isNotEmpty == true;
+  }
+
   // Get all auth data at once
   Future<Map<String, String?>> getAllAuthData() async {
     return {
@@ -94,6 +121,7 @@ class AuthStorageService {
       'refreshToken': await getRefreshToken(),
       'userId': await getUserId(),
       'role': await getRole(),
+      'activeRole': await getActiveRole(),
     };
   }
 
@@ -105,6 +133,7 @@ class AuthStorageService {
       _secureStorage.delete(key: KeyConst.refreshToken),
       _secureStorage.delete(key: KeyConst.userId),
       _secureStorage.delete(key: KeyConst.role),
+      _secureStorage.delete(key: KeyConst.activeRole),
     ]);
   }
 

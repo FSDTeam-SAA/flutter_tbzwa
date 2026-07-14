@@ -1,11 +1,10 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_tbzwa/navbar_menu.dart';
-import 'package:flutter_tbzwa/navigation_menu.dart';
 import 'package:get/get.dart';
 
 import '../../../core/common/widgets/app_scaffold.dart';
+import '../../../core/services/auth_storage_service.dart';
 import '../controller/buy_plan_controller.dart';
-import 'self_learning_system_screen.dart';
 import 'immersion_plans_screen.dart';
 
 class BuyPlanScreen extends StatelessWidget {
@@ -65,9 +64,10 @@ class BuyPlanScreen extends StatelessWidget {
                 title: "Self Learning System",
                 subtitle: null,
                 isSelected: isSelected,
-                onTap: () {
+                onTap: () async {
                   controller.selectPlan(2);
-                  Get.to(() =>  NavbarMenu());
+                  await AuthStorageService().storeActiveRole('subscriber');
+                  Get.to(() => NavbarMenu());
                 },
               );
             }),

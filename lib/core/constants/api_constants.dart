@@ -1,10 +1,12 @@
 class ApiConstants {
   /// [Base Configuration]
-  static const String baseDomain = 'http://10.10.26.122:5008';
+  // static const String baseDomain = 'http://10.10.26.122:5008';
   // static const String baseDomain = 'http://192.168.10.243:5006'; // Noyon Office Wifi
   // static const String baseDomain = 'http://192.168.0.218:5006'; // Noyon Home
 
   // static const String baseDomain = 'http://187.77.187.56:5006'; // Office VPS
+
+  static const String baseDomain = 'http://10.10.26.124:5008'; // soykot
 
   static const String baseUrl = '$baseDomain/api/v1';
   static const String graphqlEndpoint = '$baseDomain/graphql';
@@ -49,11 +51,13 @@ class ApiConstants {
   static RecordingEndpoints get recording => RecordingEndpoints();
   static VocabularyEndpoints get vocabulary => VocabularyEndpoints();
   static ImmersionEndpoints get immersion => ImmersionEndpoints();
+  static InstructorEndpoints get instructor => InstructorEndpoints();
   static GroupEndpoints get group => GroupEndpoints();
   static CommentEndpoints get comment => CommentEndpoints();
   static PostEndpoints get post => PostEndpoints();
   static FriendEndpoints get friend => FriendEndpoints();
   static NotificationEndpoints get notification => NotificationEndpoints();
+  static VoiceRoomEndpoints get voiceRoom => VoiceRoomEndpoints();
   static StoryEndpoints get story => StoryEndpoints();
   static ChatEndpoints get chat => ChatEndpoints();
   static SearchEndpoints get search => SearchEndpoints();
@@ -176,7 +180,14 @@ class LiveClassEndpoints {
   final String learner = '$_base/learner';
   String details(String id) => '$_base/$id';
   String rsvp(String id) => '$_base/$id/rsvp';
+  String start(String id) => '$_base/$id/start';
   String zoomLink(String id) => '$_base/$id/zoom-link';
+}
+
+class InstructorEndpoints {
+  static const String _base = '${ApiConstants.baseUrl}/instructor';
+
+  final String home = '$_base/home';
 }
 
 class BZPadEndpoints {
@@ -309,6 +320,14 @@ class NotificationEndpoints {
   final String readAll = '$_base/read-all';
   String markRead(String id) => '$_base/$id/read';
   String delete(String id) => '$_base/$id';
+}
+
+class VoiceRoomEndpoints {
+  static const String _base = '${ApiConstants.baseUrl}/voicerooms';
+  final String root = _base;
+
+  String join(String id) => '$_base/$id/join';
+  String leave(String id) => '$_base/$id/leave';
 }
 
 class StoryEndpoints {

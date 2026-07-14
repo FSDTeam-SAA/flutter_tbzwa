@@ -1,9 +1,12 @@
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import '../../../core/common/widgets/button_widgets.dart';
+import '../controllers/instructor_home_controller.dart';
 
 class CreateRoomDialog extends StatefulWidget {
-  const CreateRoomDialog({super.key});
+  final InstructorHomeController controller;
+
+  const CreateRoomDialog({super.key, required this.controller});
 
   @override
   State<CreateRoomDialog> createState() => _CreateRoomDialogState();
@@ -14,13 +17,6 @@ class _CreateRoomDialogState extends State<CreateRoomDialog> {
   String? _selectedGroup;
   String _privacy = "Public";
 
-  final List<String> _groups = [
-    "Advanced Calculus 101",
-    "Physics Fundamentals",
-    "Linear Algebra",
-    "Quantum Mechanics Intro",
-  ];
-
   @override
   void dispose() {
     _roomNameController.dispose();
@@ -29,6 +25,8 @@ class _CreateRoomDialogState extends State<CreateRoomDialog> {
 
   @override
   Widget build(BuildContext context) {
+    final groups = widget.controller.assignedGroups;
+
     return Dialog(
       shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
       backgroundColor: Colors.white,
@@ -47,7 +45,7 @@ class _CreateRoomDialogState extends State<CreateRoomDialog> {
               ),
             ),
             const SizedBox(height: 24),
-            
+
             // Room Name
             _buildLabel("Room Name"),
             const SizedBox(height: 8),
@@ -58,7 +56,10 @@ class _CreateRoomDialogState extends State<CreateRoomDialog> {
                 hintStyle: const TextStyle(color: Color(0xFF9CA3AF)),
                 filled: true,
                 fillColor: Colors.white,
-                contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+                contentPadding: const EdgeInsets.symmetric(
+                  horizontal: 16,
+                  vertical: 12,
+                ),
                 border: OutlineInputBorder(
                   borderRadius: BorderRadius.circular(12),
                   borderSide: const BorderSide(color: Color(0xFFE5E7EB)),
@@ -81,13 +82,16 @@ class _CreateRoomDialogState extends State<CreateRoomDialog> {
                 style: TextStyle(color: Color(0xFF9CA3AF), fontSize: 14),
               ),
               dropdownColor: Colors.white,
-              icon: const Icon(Icons.keyboard_arrow_down, color: Color(0xFF6B7280)),
+              icon: const Icon(
+                Icons.keyboard_arrow_down,
+                color: Color(0xFF6B7280),
+              ),
               style: const TextStyle(color: Colors.black, fontSize: 14),
-              items: _groups.map((group) {
+              items: groups.map((group) {
                 return DropdownMenuItem(
-                  value: group,
+                  value: group.id,
                   child: Text(
-                    group,
+                    group.name,
                     style: const TextStyle(color: Colors.black),
                   ),
                 );
@@ -100,7 +104,10 @@ class _CreateRoomDialogState extends State<CreateRoomDialog> {
               decoration: InputDecoration(
                 filled: true,
                 fillColor: Colors.white,
-                contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+                contentPadding: const EdgeInsets.symmetric(
+                  horizontal: 16,
+                  vertical: 12,
+                ),
                 border: OutlineInputBorder(
                   borderRadius: BorderRadius.circular(12),
                   borderSide: const BorderSide(color: Color(0xFFE5E7EB)),
@@ -119,16 +126,10 @@ class _CreateRoomDialogState extends State<CreateRoomDialog> {
             Row(
               children: [
                 Expanded(
-                  child: _buildRadioTile(
-                    "Public (Group members)",
-                    "Public",
-                  ),
+                  child: _buildRadioTile("Public (Group members)", "Public"),
                 ),
                 Expanded(
-                  child: _buildRadioTile(
-                    "Private (Invite only)",
-                    "Private",
-                  ),
+                  child: _buildRadioTile("Private (Invite only)", "Private"),
                 ),
               ],
             ),
@@ -142,12 +143,17 @@ class _CreateRoomDialogState extends State<CreateRoomDialog> {
                     onPressed: () => Get.back(),
                     style: OutlinedButton.styleFrom(
                       side: const BorderSide(color: Color(0xFFE5E7EB)),
-                      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+                      shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(12),
+                      ),
                       padding: const EdgeInsets.symmetric(vertical: 14),
                     ),
                     child: const Text(
                       "Cancel",
-                      style: TextStyle(color: Color(0xFF4B5563), fontWeight: FontWeight.w600),
+                      style: TextStyle(
+                        color: Color(0xFF4B5563),
+                        fontWeight: FontWeight.w600,
+                      ),
                     ),
                   ),
                 ),
@@ -155,10 +161,11 @@ class _CreateRoomDialogState extends State<CreateRoomDialog> {
                 Expanded(
                   child: PrimaryButton(
                     text: "Create Room",
-                    onSimplePressed: () {
-                      // Handle create room
-                      Get.back();
-                    },
+                    onApiPressed: () => widget.controller.createRoom(
+                      name: _roomNameController.text,
+                      groupId: _selectedGroup ?? '',
+                      privacy: _privacy,
+                    ),
                     height: 48,
                     borderRadius: 12,
                   ),
