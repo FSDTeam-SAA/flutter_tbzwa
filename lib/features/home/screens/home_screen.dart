@@ -22,6 +22,7 @@ class _HomeScreenState extends State<HomeScreen> {
   final LearnerApiService _api = LearnerApiService();
   LearnerProfile? _profile;
   DailyMissionSummary? _missions;
+  bool _isLoadingHomeData = false;
 
   @override
   void initState() {
@@ -29,19 +30,30 @@ class _HomeScreenState extends State<HomeScreen> {
     _loadHomeData();
   }
 
-  Future<void> _loadHomeData() async {
+  Future<void> _loadHomeData({bool retryUntilSuccess = false}) async {
+    if (_isLoadingHomeData) return;
+
+    _isLoadingHomeData = true;
     try {
-      final values = await Future.wait([
-        _api.getProfile(),
-        _api.getDailyMissions(),
-      ]);
-      if (!mounted) return;
-      setState(() {
-        _profile = values[0] as LearnerProfile;
-        _missions = values[1] as DailyMissionSummary;
-      });
-    } catch (_) {
-      // Keep the existing placeholders when the API is temporarily unavailable.
+      while (mounted) {
+        try {
+          final values = await Future.wait([
+            _api.getProfile(),
+            _api.getDailyMissions(),
+          ]);
+          if (!mounted) return;
+          setState(() {
+            _profile = values[0] as LearnerProfile;
+            _missions = values[1] as DailyMissionSummary;
+          });
+          return;
+        } catch (_) {
+          if (!retryUntilSuccess) return;
+          await Future.delayed(const Duration(seconds: 2));
+        }
+      }
+    } finally {
+      _isLoadingHomeData = false;
     }
   }
 
@@ -68,7 +80,14 @@ class _HomeScreenState extends State<HomeScreen> {
               _buildSectionHeader(
                 "Daily Missions",
                 "not",
-                onTap: () => Get.to(() => const DailyMissionsScreen()),
+                onTap: () async {
+                  final shouldRefresh = await Get.to(
+                    () => const DailyMissionsScreen(),
+                  );
+                  if (shouldRefresh == true) {
+                    await _loadHomeData(retryUntilSuccess: true);
+                  }
+                },
               ),
               _buildDailyMissions(),
               const SizedBox(height: 30),
@@ -128,7 +147,10 @@ class _HomeScreenState extends State<HomeScreen> {
             color: Colors.white,
             shape: BoxShape.circle,
             boxShadow: [
-              BoxShadow(color: Colors.black.withOpacity(0.05), blurRadius: 10),
+              BoxShadow(
+                color: Colors.black.withValues(alpha: 0.05),
+                blurRadius: 10,
+              ),
             ],
           ),
           child: Stack(
@@ -393,9 +415,13 @@ class _HomeScreenState extends State<HomeScreen> {
                 color: isDone ? Colors.green : Colors.orange,
               ),
               const SizedBox(width: 4),
-              Text(
-                status,
-                style: TextStyle(color: Colors.blueGrey[300], fontSize: 12),
+              Flexible(
+                child: Text(
+                  status,
+                  maxLines: 1,
+                  overflow: TextOverflow.ellipsis,
+                  style: TextStyle(color: Colors.blueGrey[300], fontSize: 12),
+                ),
               ),
             ],
           ),

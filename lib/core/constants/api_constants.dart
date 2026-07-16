@@ -201,6 +201,7 @@ class RecordingEndpoints {
   static const String _base = '${ApiConstants.baseUrl}/recordings';
 
   final String voice = '$_base/voice';
+  final String video = '$_base/video';
   final String my = '$_base/my';
   String byDate(String date) => '$_base/date/$date';
   String recording(String id) => '$_base/$id';

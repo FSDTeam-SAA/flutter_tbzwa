@@ -1,6 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_tbzwa/core/constants/assest_const.dart';
+import 'package:flutter_tbzwa/features/community/models/community_post_model.dart';
 import 'package:flutter_tbzwa/features/community/screens/create_post_screen.dart';
+import 'package:flutter_tbzwa/features/community/services/community_api_service.dart';
 import 'package:get/get.dart';
 import '../../subcribers_flow/subscriber_menu_drawer.dart';
 import 'community_messages_screen.dart';
@@ -13,7 +15,56 @@ class CommunityScreen extends StatefulWidget {
 }
 
 class _CommunityScreenState extends State<CommunityScreen> {
+  final CommunityApiService _communityApiService = CommunityApiService();
   String selectedFilter = 'Recent';
+  String _searchQuery = '';
+  List<CommunityPost> _posts = const [];
+  String? _errorMessage;
+  bool _isLoading = true;
+  bool _isLocked = false;
+
+  @override
+  void initState() {
+    super.initState();
+    _loadPosts();
+  }
+
+  Future<void> _loadPosts() async {
+    setState(() {
+      _isLoading = true;
+      _errorMessage = null;
+    });
+
+    try {
+      final result = await _communityApiService.getCommunityFeed(
+        filter: _apiFilter(selectedFilter),
+      );
+      if (!mounted) return;
+      setState(() {
+        _isLocked = result.isLocked;
+        _errorMessage = result.isLocked ? result.message : null;
+        _posts = result.posts;
+      });
+    } catch (error) {
+      if (!mounted) return;
+      setState(
+        () => _errorMessage = error.toString().replaceFirst('Exception: ', ''),
+      );
+    } finally {
+      if (mounted) setState(() => _isLoading = false);
+    }
+  }
+
+  List<CommunityPost> get _visiblePosts {
+    if (_searchQuery.isEmpty) return _posts;
+    return _posts
+        .where(
+          (post) =>
+              post.content.toLowerCase().contains(_searchQuery) ||
+              post.authorName.toLowerCase().contains(_searchQuery),
+        )
+        .toList();
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -48,40 +99,12 @@ class _CommunityScreenState extends State<CommunityScreen> {
                 ],
               ),
             ),
-            
-            Divider(color: Color(0xFFD1D1D1),),
+
+            Divider(color: Color(0xFFD1D1D1)),
 
             _buildHeader(),
             _buildFilters(),
-            Expanded(
-              child: ListView(
-                padding: const EdgeInsets.symmetric(horizontal: 16),
-                children: [
-                  _buildPostCard(
-                    name: 'Brandie',
-                    time: '18 minutes ago',
-                    content: 'Hello, How are you all?',
-                    type: 'image',
-                    mediaUrl: 'https://images.unsplash.com/photo-1517842645767-c639042777db?auto=format&fit=crop&q=80&w=1000',
-                  ),
-                  _buildPostCard(
-                    name: 'Brandie',
-                    time: '18 minutes ago',
-                    content: 'Hello, How are you all?',
-                    type: 'video',
-                    mediaUrl: 'https://images.unsplash.com/photo-1517842645767-c639042777db?auto=format&fit=crop&q=80&w=1000',
-                  ),
-                  _buildPostCard(
-                    name: 'Brandie',
-                    time: '18 minutes ago',
-                    content: 'Hello, How are you all?',
-                    type: 'voice',
-                    duration: '0:45',
-                  ),
-                  const SizedBox(height: 20),
-                ],
-              ),
-            ),
+            Expanded(child: _buildPostList()),
           ],
         ),
       ),
@@ -101,13 +124,12 @@ class _CommunityScreenState extends State<CommunityScreen> {
                 borderRadius: BorderRadius.circular(16),
                 border: Border.all(color: const Color(0xFFE2E8F0)),
               ),
-              child: const TextField(
-                decoration: InputDecoration(
+              child: TextField(
+                onChanged: (value) =>
+                    setState(() => _searchQuery = value.trim().toLowerCase()),
+                decoration: const InputDecoration(
                   hintText: 'Search notes...',
-                  hintStyle: TextStyle(
-                    color: Color(0xFF94A3B8),
-                    fontSize: 14,
-                  ),
+                  hintStyle: TextStyle(color: Color(0xFF94A3B8), fontSize: 14),
                   prefixIcon: Icon(
                     Icons.search,
                     color: Color(0xFF94A3B8),
@@ -117,24 +139,27 @@ class _CommunityScreenState extends State<CommunityScreen> {
                   contentPadding: EdgeInsets.symmetric(vertical: 12),
                 ),
               ),
-            )
+            ),
           ),
           const SizedBox(width: 12),
           GestureDetector(
-            onTap: () => Get.to(() => CreatePostScreen()),
+            onTap: () async {
+              final created = await Get.to(() => CreatePostScreen());
+              if (created == true) await _loadPosts();
+            },
             child: Container(
               height: 48,
               width: 48,
               decoration: BoxDecoration(
                 border: Border.all(color: const Color(0xFFE2E8F0)),
                 borderRadius: BorderRadius.circular(12),
-                color: Color(0xFFFFFFFF)
+                color: Color(0xFFFFFFFF),
               ),
               child: const Icon(Icons.edit_outlined, color: Color(0xFF1E293B)),
             ),
           ),
 
-          SizedBox(width: 12,),
+          SizedBox(width: 12),
 
           GestureDetector(
             onTap: () => Get.to(() => const CommunityMessagesScreen()),
@@ -142,9 +167,9 @@ class _CommunityScreenState extends State<CommunityScreen> {
               height: 48,
               width: 48,
               decoration: BoxDecoration(
-                  border: Border.all(color: const Color(0xFFE2E8F0)),
-                  borderRadius: BorderRadius.circular(12),
-                  color: Color(0xFFFFFFFF)
+                border: Border.all(color: const Color(0xFFE2E8F0)),
+                borderRadius: BorderRadius.circular(12),
+                color: Color(0xFFFFFFFF),
               ),
               child: const Icon(Icons.chat, color: Color(0xFF1E293B)),
             ),
@@ -187,7 +212,7 @@ class _CommunityScreenState extends State<CommunityScreen> {
   }
 
   Widget _buildFilters() {
-    final filters = ['Recent', 'Image', 'Voice', 'Video', ];
+    final filters = ['Recent', 'Image', 'Voice', 'Video'];
     return Container(
       height: 40,
       margin: const EdgeInsets.only(bottom: 20),
@@ -195,15 +220,20 @@ class _CommunityScreenState extends State<CommunityScreen> {
         padding: const EdgeInsets.symmetric(horizontal: 16),
         scrollDirection: Axis.horizontal,
         itemCount: filters.length,
-        separatorBuilder: (_, __) => const SizedBox(width: 12),
+        separatorBuilder: (_, _) => const SizedBox(width: 12),
         itemBuilder: (context, index) {
           final isSelected = selectedFilter == filters[index];
           return GestureDetector(
-            onTap: () => setState(() => selectedFilter = filters[index]),
+            onTap: () async {
+              setState(() => selectedFilter = filters[index]);
+              await _loadPosts();
+            },
             child: Container(
               padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 8),
               decoration: BoxDecoration(
-                color: isSelected ? const Color(0xFF22A892) : const Color(0xFFE3E7EE),
+                color: isSelected
+                    ? const Color(0xFF22A892)
+                    : const Color(0xFFE3E7EE),
                 borderRadius: BorderRadius.circular(24),
               ),
               child: Center(
@@ -223,10 +253,72 @@ class _CommunityScreenState extends State<CommunityScreen> {
     );
   }
 
+  Widget _buildPostList() {
+    if (_isLoading) {
+      return const Center(child: CircularProgressIndicator());
+    }
+
+    if (_errorMessage != null) {
+      return Center(
+        child: Padding(
+          padding: const EdgeInsets.symmetric(horizontal: 24),
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              Text(
+                _errorMessage!,
+                textAlign: TextAlign.center,
+                style: const TextStyle(color: Color(0xFF94A3B8), fontSize: 13),
+              ),
+              if (!_isLocked)
+                TextButton(
+                  onPressed: _loadPosts,
+                  child: const Text('Try again'),
+                ),
+            ],
+          ),
+        ),
+      );
+    }
+
+    final posts = _visiblePosts;
+    if (posts.isEmpty) {
+      return const Center(
+        child: Text(
+          'No posts found.',
+          style: TextStyle(color: Color(0xFF94A3B8), fontSize: 13),
+        ),
+      );
+    }
+
+    return RefreshIndicator(
+      onRefresh: _loadPosts,
+      child: ListView(
+        padding: const EdgeInsets.symmetric(horizontal: 16),
+        children: [
+          ...posts.map((post) {
+            final media = post.primaryMedia;
+            return _buildPostCard(
+              name: post.authorName,
+              avatarUrl: post.authorImageUrl,
+              time: post.timeAgo,
+              content: post.content,
+              type: media?.uiType,
+              mediaUrl: media?.url,
+              duration: media?.uiType == 'voice' ? '0:00' : null,
+            );
+          }),
+          const SizedBox(height: 20),
+        ],
+      ),
+    );
+  }
+
   Widget _buildPostCard({
     required String name,
     required String time,
     required String content,
+    String? avatarUrl,
     String? type,
     String? mediaUrl,
     String? duration,
@@ -242,7 +334,9 @@ class _CommunityScreenState extends State<CommunityScreen> {
                 children: [
                   CircleAvatar(
                     radius: 20,
-                    backgroundImage: AssetImage(AssetsConstants.images.profileImage),
+                    backgroundImage: avatarUrl?.isNotEmpty == true
+                        ? NetworkImage(avatarUrl!)
+                        : AssetImage(AssetsConstants.images.profileImage),
                   ),
                 ],
               ),
@@ -269,8 +363,8 @@ class _CommunityScreenState extends State<CommunityScreen> {
                   Text(
                     time,
                     style: const TextStyle(
-                       fontSize: 10,
-                       color: Color(0xFF94A3B8),
+                      fontSize: 10,
+                      color: Color(0xFF94A3B8),
                     ),
                   ),
                 ],
@@ -280,10 +374,7 @@ class _CommunityScreenState extends State<CommunityScreen> {
           const SizedBox(height: 12),
           Text(
             content,
-            style: const TextStyle(
-              fontSize: 14,
-              color: Color(0xFF1E293B),
-            ),
+            style: const TextStyle(fontSize: 14, color: Color(0xFF1E293B)),
           ),
           const SizedBox(height: 12),
           if (type == 'image' || type == 'video')
@@ -297,6 +388,18 @@ class _CommunityScreenState extends State<CommunityScreen> {
                     width: double.infinity,
                     height: 200,
                     fit: BoxFit.cover,
+                    errorBuilder: (_, _, _) => Container(
+                      width: double.infinity,
+                      height: 200,
+                      color: const Color(0xFFCFFEF5),
+                      child: Icon(
+                        type == 'video'
+                            ? Icons.videocam_rounded
+                            : Icons.image_outlined,
+                        color: const Color(0xFF2FBDA3),
+                        size: 50,
+                      ),
+                    ),
                   ),
                 ),
                 if (type == 'video')
@@ -307,7 +410,11 @@ class _CommunityScreenState extends State<CommunityScreen> {
                       color: Color(0xFF2FBDA3),
                       shape: BoxShape.circle,
                     ),
-                    child: const Icon(Icons.play_arrow_rounded, color: Colors.white, size: 36),
+                    child: const Icon(
+                      Icons.play_arrow_rounded,
+                      color: Colors.white,
+                      size: 36,
+                    ),
                   ),
               ],
             ),
@@ -327,7 +434,11 @@ class _CommunityScreenState extends State<CommunityScreen> {
                       color: Color(0xFF2FBDA3),
                       shape: BoxShape.circle,
                     ),
-                    child: const Icon(Icons.play_arrow_rounded, color: Colors.white, size: 24),
+                    child: const Icon(
+                      Icons.play_arrow_rounded,
+                      color: Colors.white,
+                      size: 24,
+                    ),
                   ),
                   const Spacer(),
                   Text(
@@ -370,5 +481,18 @@ class _CommunityScreenState extends State<CommunityScreen> {
         ),
       ],
     );
+  }
+
+  String _apiFilter(String filter) {
+    switch (filter) {
+      case 'Image':
+        return 'image';
+      case 'Voice':
+        return 'voice';
+      case 'Video':
+        return 'video';
+      default:
+        return 'recent';
+    }
   }
 }

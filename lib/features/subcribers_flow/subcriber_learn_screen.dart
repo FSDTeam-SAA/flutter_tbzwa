@@ -98,36 +98,42 @@ class _SubcriberLearnScreenState extends State<SubcriberLearnScreen> {
         ],
       ),
       child: Row(
-        mainAxisAlignment: MainAxisAlignment.spaceBetween,
         children: [
-          Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              const Text(
-                "Your Current Level",
-                style: TextStyle(
-                  color: Color(0xFF64748B),
-                  fontSize: 13,
-                  fontWeight: FontWeight.w600,
-                ),
-              ),
-              const SizedBox(height: 8),
-              Row(
-                children: [
-                  const Text(
-                    "Level 3 - Intermediate",
-                    style: TextStyle(
-                      color: Color(0xFF1E293B),
-                      fontSize: 18,
-                      fontWeight: FontWeight.w900,
-                    ),
+          Expanded(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                const Text(
+                  "Your Current Level",
+                  style: TextStyle(
+                    color: Color(0xFF64748B),
+                    fontSize: 13,
+                    fontWeight: FontWeight.w600,
                   ),
-                  const SizedBox(width: 6),
-                  const Text("🏆", style: TextStyle(fontSize: 18)),
-                ],
-              ),
-            ],
+                ),
+                const SizedBox(height: 8),
+                const Row(
+                  children: [
+                    Flexible(
+                      child: Text(
+                        "Level 3 - Intermediate",
+                        maxLines: 1,
+                        overflow: TextOverflow.ellipsis,
+                        style: TextStyle(
+                          color: Color(0xFF1E293B),
+                          fontSize: 18,
+                          fontWeight: FontWeight.w900,
+                        ),
+                      ),
+                    ),
+                    SizedBox(width: 6),
+                    Text("🏆", style: TextStyle(fontSize: 18)),
+                  ],
+                ),
+              ],
+            ),
           ),
+          const SizedBox(width: 12),
           ElevatedButton(
             onPressed: () => Get.to(() => const UpgradePlanScreen()),
             style: ElevatedButton.styleFrom(

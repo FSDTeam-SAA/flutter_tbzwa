@@ -58,7 +58,10 @@ class DailyMissionSummary {
       );
     }
     return DailyMissionSummary(
-      overallProgress: (json['overallProgress'] as num?)?.toInt() ?? 0,
+      overallProgress:
+          (json['dailyScore'] as num?)?.toInt() ??
+          (json['overallProgress'] as num?)?.toInt() ??
+          0,
       completedCount: (json['completedCount'] as num?)?.toInt() ?? 0,
       totalCount: (json['totalCount'] as num?)?.toInt() ?? 0,
       missions: values,
@@ -76,13 +79,18 @@ class MissionProgress {
     Map<String, dynamic> json, {
     int? minimumTarget,
   }) {
-    final parsedTarget = json['target'] is bool
+    final doc = json['_doc'] is Map
+        ? Map<String, dynamic>.from(json['_doc'] as Map)
+        : const <String, dynamic>{};
+    final completedValue = json['completed'] ?? doc['completed'];
+    final targetValue = json['target'] ?? doc['target'];
+    final parsedTarget = targetValue is bool
         ? 1
-        : (json['target'] as num?)?.toInt() ?? 1;
+        : (targetValue as num?)?.toInt() ?? 1;
     return MissionProgress(
-      completed: json['completed'] is bool
-          ? (json['completed'] == true ? 1 : 0)
-          : (json['completed'] as num?)?.toInt() ?? 0,
+      completed: completedValue is bool
+          ? (completedValue == true ? 1 : 0)
+          : (completedValue as num?)?.toInt() ?? 0,
       target: minimumTarget != null && parsedTarget < minimumTarget
           ? minimumTarget
           : parsedTarget,
@@ -115,6 +123,18 @@ class WeeklyProgress {
       days: days,
     );
   }
+
+  List<WeeklyDayProgress> currentWeekDays({DateTime? now}) {
+    final today = _dateOnly(now ?? DateTime.now());
+    final weekStart = today.subtract(Duration(days: today.weekday - 1));
+    final daysByDate = {for (final day in days) _dateKey(day.date): day};
+
+    return List.generate(7, (index) {
+      final date = weekStart.add(Duration(days: index));
+      return daysByDate[_dateKey(date)] ??
+          WeeklyDayProgress(date: date, score: 0, hasActivity: false);
+    });
+  }
 }
 
 class WeeklyDayProgress {
@@ -129,10 +149,9 @@ class WeeklyDayProgress {
   });
 
   factory WeeklyDayProgress.fromJson(Map<String, dynamic> json) {
+    final rawDate = (json['date'] ?? '').toString();
     return WeeklyDayProgress(
-      date:
-          DateTime.tryParse((json['date'] ?? '').toString())?.toLocal() ??
-          DateTime.now(),
+      date: _parseLocalDate(rawDate) ?? DateTime.now(),
       score: ((json['score'] as num?)?.toInt() ?? 0).clamp(0, 100),
       hasActivity: json['hasActivity'] == true,
     );
@@ -149,6 +168,26 @@ class WeeklyDayProgress {
         date.month == now.month &&
         date.day == now.day;
   }
+}
+
+DateTime? _parseLocalDate(String value) {
+  final dateOnlyMatch = RegExp(r'^(\d{4})-(\d{2})-(\d{2})$').firstMatch(value);
+  if (dateOnlyMatch != null) {
+    return DateTime(
+      int.parse(dateOnlyMatch.group(1)!),
+      int.parse(dateOnlyMatch.group(2)!),
+      int.parse(dateOnlyMatch.group(3)!),
+    );
+  }
+
+  return DateTime.tryParse(value)?.toLocal();
+}
+
+DateTime _dateOnly(DateTime date) => DateTime(date.year, date.month, date.day);
+
+String _dateKey(DateTime date) {
+  final localDate = _dateOnly(date);
+  return '${localDate.year}-${localDate.month}-${localDate.day}';
 }
 
 class VocabularyWord {

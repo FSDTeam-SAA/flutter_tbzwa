@@ -91,12 +91,12 @@ class _DailyVoiceRecordingScreenState extends State<DailyVoiceRecordingScreen> {
   int get _averageScore => _weeklyProgress?.average ?? 0;
 
   List<WeeklyDayProgress> get _weeklyDays {
-    final apiDays = _weeklyProgress?.days ?? const [];
-    if (apiDays.length == 7) return apiDays;
-    return List.generate(7, (index) {
-      final date = DateTime.now().subtract(Duration(days: 6 - index));
-      return WeeklyDayProgress(date: date, score: 0, hasActivity: false);
-    });
+    return _weeklyProgress?.currentWeekDays() ??
+        WeeklyProgress(
+          average: 0,
+          scores: const [],
+          days: const [],
+        ).currentWeekDays();
   }
 
   @override

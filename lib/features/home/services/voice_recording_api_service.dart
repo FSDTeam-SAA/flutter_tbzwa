@@ -10,10 +10,23 @@ class VoiceRecordingApiService {
   final ApiClient _api = ApiClient();
 
   Future<List<VoiceRecordingModel>> getRecordingsForDate(DateTime date) async {
+    return _getRecordingsForDate(date, type: 'voice');
+  }
+
+  Future<List<VoiceRecordingModel>> getVideoRecordingsForDate(
+    DateTime date,
+  ) async {
+    return _getRecordingsForDate(date, type: 'video');
+  }
+
+  Future<List<VoiceRecordingModel>> _getRecordingsForDate(
+    DateTime date, {
+    required String type,
+  }) async {
     final result = await _api.get<List<VoiceRecordingModel>>(
       endpoint: ApiConstants.recording.my,
       queryParameters: {
-        'type': 'voice',
+        'type': type,
         'missionDate': _dateOnly(date),
         'page': 1,
         'limit': 100,
@@ -69,6 +82,37 @@ class VoiceRecordingApiService {
       fromJsonT: (_) {},
     );
     result.fold((failure) => throw Exception(failure.message), (_) {});
+  }
+
+  Future<VoiceRecordingModel> uploadVideoRecording({
+    required File videoFile,
+    required int duration,
+    required DateTime recordedAt,
+    String? label,
+  }) async {
+    final formData = FormData.fromMap({
+      'video': await MultipartFile.fromFile(
+        videoFile.path,
+        filename: videoFile.uri.pathSegments.last,
+      ),
+      if (label != null && label.trim().isNotEmpty) 'label': label.trim(),
+      'duration': duration,
+      'recordedAt': recordedAt.toUtc().toIso8601String(),
+      'timezoneOffsetMinutes': recordedAt.timeZoneOffset.inMinutes,
+      'missionDate': _dateOnly(recordedAt),
+    });
+
+    final result = await _api.post<VoiceRecordingModel>(
+      endpoint: ApiConstants.recording.video,
+      formData: formData,
+      fromJsonT: (json) => VoiceRecordingModel.fromJson(
+        Map<String, dynamic>.from(json['recording'] as Map),
+      ),
+    );
+    return result.fold(
+      (failure) => throw Exception(failure.message),
+      (success) => success.data,
+    );
   }
 
   String _dateOnly(DateTime value) {

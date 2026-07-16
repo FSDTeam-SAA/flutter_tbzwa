@@ -47,6 +47,8 @@ class VoiceRecordingModel {
     return 'evening';
   }
 
+  String get fileUrl => audioUrl;
+
   String get slotTitle {
     switch (timeSlot) {
       case 'morning':

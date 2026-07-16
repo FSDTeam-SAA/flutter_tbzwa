@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
+import '../../bz_pad/screens/bz_pad_splash_screen.dart';
 import 'daily_video_recording_screen.dart';
 import 'daily_voice_recording_screen.dart';
 import 'daily_vocabulary_screen.dart';
@@ -18,6 +19,7 @@ class DailyMissionsScreen extends StatefulWidget {
 class _DailyMissionsScreenState extends State<DailyMissionsScreen> {
   final LearnerApiService _learnerApiService = LearnerApiService();
   DailyMissionSummary? _missions;
+  bool _isLoadingMissions = false;
 
   @override
   void initState() {
@@ -26,10 +28,22 @@ class _DailyMissionsScreenState extends State<DailyMissionsScreen> {
   }
 
   Future<void> _loadMissions() async {
+    if (_isLoadingMissions) return;
+
+    _isLoadingMissions = true;
     try {
-      final missions = await _learnerApiService.getDailyMissions();
-      if (mounted) setState(() => _missions = missions);
-    } catch (_) {}
+      while (mounted) {
+        try {
+          final missions = await _learnerApiService.getDailyMissions();
+          if (mounted) setState(() => _missions = missions);
+          return;
+        } catch (_) {
+          await Future.delayed(const Duration(seconds: 2));
+        }
+      }
+    } finally {
+      _isLoadingMissions = false;
+    }
   }
 
   MissionProgress? _mission(String key) => _missions?.missions[key];
@@ -48,122 +62,152 @@ class _DailyMissionsScreenState extends State<DailyMissionsScreen> {
 
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
-      backgroundColor: const Color(0xFFF7F9FC),
-      appBar: AppBar(
-        backgroundColor: Colors.transparent,
-        elevation: 0,
-        leading: IconButton(
-          icon: const Icon(
-            Icons.arrow_back_ios_new_rounded,
-            color: Color(0xFF374151),
-            size: 20,
-          ),
-          onPressed: () => Get.back(),
-        ),
-        title: const Text(
-          "Daily Missions",
-          style: TextStyle(
-            color: Color(0xFF374151),
-            fontSize: 18,
-            fontWeight: FontWeight.bold,
-          ),
-        ),
-        centerTitle: true,
-      ),
-      body: SingleChildScrollView(
-        padding: const EdgeInsets.all(18),
-        child: Column(
-          children: [
-            GridView.count(
-              shrinkWrap: true,
-              physics: const NeverScrollableScrollPhysics(),
-              crossAxisCount: 2,
-              mainAxisSpacing: 16,
-              crossAxisSpacing: 12,
-              //childAspectRatio: 1.12,
-              children: [
-                GestureDetector(
-                  onTap: () async {
-                    await Get.to(() => const DailyVoiceRecordingScreen());
-                    await _loadMissions();
-                  },
-                  child: _buildMissionCard(
-                    "Daily Voice",
-                    _missionStatus('voiceRecordings', 3),
-                    "assets/images/voice.png",
-                    statusColor: _missionDone('voiceRecordings')
-                        ? Colors.green
-                        : Colors.orange,
-                    isDone: _missionDone('voiceRecordings'),
-                  ),
-                ),
-                GestureDetector(
-                  onTap: () => Get.to(() => DailyVideoRecordingScreen()),
-                  child: _buildMissionCard(
-                    "Daily Video",
-                    _missionStatus('videoRecordings', 3),
-                    'assets/images/video.png',
-                    statusColor: _missionDone('videoRecordings')
-                        ? Colors.green
-                        : Colors.orange,
-                    isDone: _missionDone('videoRecordings'),
-                  ),
-                ),
-                GestureDetector(
-                  onTap: () => Get.to(() => const DailyVocabularyScreen()),
-                  child: _buildMissionCard(
-                    "Daily Vocabulary",
-                    _missionStatus('vocabulary', 2),
-                    'assets/images/vocabulary.png',
-                    label: "Aa",
-                    statusColor: _missionDone('vocabulary')
-                        ? Colors.green
-                        : Colors.orange,
-                    isDone: _missionDone('vocabulary'),
-                  ),
-                ),
-                GestureDetector(
-                  onTap: () => Get.to(() => const DailySummaryScreen()),
-                  child: _buildMissionCard(
-                    "Daily Summary",
-                    _missionStatus('summary', 2),
-                    'assets/images/summary.png',
-                    statusColor: _missionDone('summary')
-                        ? Colors.green
-                        : Colors.orange,
-                    isDone: _missionDone('summary'),
-                  ),
-                ),
-                GestureDetector(
-                  onTap: () => Get.to(() => const DailyImmersionScreen()),
-                  child: _buildMissionCard(
-                    "Daily English Imrs.",
-                    _missionStatus('immersion', 3),
-                    "assets/images/eng_immerce.png",
-                    statusColor: _missionDone('immersion')
-                        ? Colors.green
-                        : Colors.orange,
-                    isDone: _missionDone('immersion'),
-                  ),
-                ),
-                // _buildMissionCard(
-                //   "Daily BZPad",
-                //   "Daily Reminder",
-                //   "assets/images/bzpad.png",
-                //   statusColor: const Color(0xFF26A69A),
-                //   isReminder: true,
-                // ),
-              ],
+    return PopScope(
+      canPop: false,
+      onPopInvokedWithResult: (didPop, result) {
+        if (!didPop) Get.back(result: true);
+      },
+      child: Scaffold(
+        backgroundColor: const Color(0xFFF7F9FC),
+        appBar: AppBar(
+          backgroundColor: Colors.transparent,
+          elevation: 0,
+          leading: IconButton(
+            icon: const Icon(
+              Icons.arrow_back_ios_new_rounded,
+              color: Color(0xFF374151),
+              size: 20,
             ),
-            const SizedBox(height: 16),
-            _buildWideMissionCard(
-              "Switch Everything In English",
-              "Daily Reminder",
-              Icons.star_outline_rounded,
+            onPressed: () => Get.back(result: true),
+          ),
+          title: const Text(
+            "Daily Missions",
+            style: TextStyle(
+              color: Color(0xFF374151),
+              fontSize: 18,
+              fontWeight: FontWeight.bold,
             ),
-            const SizedBox(width: 80), // Bottom padding
-          ],
+          ),
+          centerTitle: true,
+        ),
+        body: SingleChildScrollView(
+          padding: const EdgeInsets.all(18),
+          child: Column(
+            children: [
+              GridView.count(
+                shrinkWrap: true,
+                physics: const NeverScrollableScrollPhysics(),
+                crossAxisCount: 2,
+                mainAxisSpacing: 16,
+                crossAxisSpacing: 12,
+                childAspectRatio: 0.95,
+                children: [
+                  GestureDetector(
+                    onTap: () async {
+                      await Get.to(() => const DailyVoiceRecordingScreen());
+                      await _loadMissions();
+                    },
+                    child: _buildMissionCard(
+                      "Daily Voice",
+                      _missionStatus('voiceRecordings', 3),
+                      "assets/images/voice.png",
+                      statusColor: _missionDone('voiceRecordings')
+                          ? Colors.green
+                          : Colors.orange,
+                      isDone: _missionDone('voiceRecordings'),
+                    ),
+                  ),
+                  GestureDetector(
+                    onTap: () async {
+                      await Get.to(() => const DailyVideoRecordingScreen());
+                      await _loadMissions();
+                    },
+                    child: _buildMissionCard(
+                      "Daily Video",
+                      _missionStatus('videoRecordings', 3),
+                      'assets/images/video.png',
+                      statusColor: _missionDone('videoRecordings')
+                          ? Colors.green
+                          : Colors.orange,
+                      isDone: _missionDone('videoRecordings'),
+                    ),
+                  ),
+                  GestureDetector(
+                    onTap: () async {
+                      await Get.to(() => const DailyVocabularyScreen());
+                      await _loadMissions();
+                    },
+                    child: _buildMissionCard(
+                      "Daily Vocabulary",
+                      _missionStatus('vocabulary', 2),
+                      'assets/images/vocabulary.png',
+                      label: "Aa",
+                      statusColor: _missionDone('vocabulary')
+                          ? Colors.green
+                          : Colors.orange,
+                      isDone: _missionDone('vocabulary'),
+                    ),
+                  ),
+                  GestureDetector(
+                    onTap: () async {
+                      await Get.to(() => const DailySummaryScreen());
+                      await _loadMissions();
+                    },
+                    child: _buildMissionCard(
+                      "Daily Summary",
+                      _missionStatus('summary', 2),
+                      'assets/images/summary.png',
+                      statusColor: _missionDone('summary')
+                          ? Colors.green
+                          : Colors.orange,
+                      isDone: _missionDone('summary'),
+                    ),
+                  ),
+                  GestureDetector(
+                    onTap: () async {
+                      await Get.to(() => const DailyImmersionScreen());
+                      await _loadMissions();
+                    },
+                    child: _buildMissionCard(
+                      "Daily English Imrs.",
+                      _missionStatus('immersion', 3),
+                      "assets/images/eng_immerce.png",
+                      statusColor: _missionDone('immersion')
+                          ? Colors.green
+                          : Colors.orange,
+                      isDone: _missionDone('immersion'),
+                    ),
+                  ),
+                  GestureDetector(
+                    onTap: () async {
+                      await Get.to(() => const BZPadSplashScreen());
+                      await _loadMissions();
+                    },
+                    child: _buildMissionCard(
+                      "Daily BZPad",
+                      _missionStatus('bzpad', 1),
+                      "assets/images/bzpad.png",
+                      statusColor: _missionDone('bzpad')
+                          ? Colors.green
+                          : Colors.orange,
+                      isDone: _missionDone('bzpad'),
+                    ),
+                  ),
+                ],
+              ),
+              const SizedBox(height: 16),
+              _buildWideMissionCard(
+                "Switch Everything In English",
+                _missionStatus('switchToEnglish', 1),
+                Icons.star_outline_rounded,
+                statusColor: _missionDone('switchToEnglish')
+                    ? Colors.green
+                    : const Color(0xFF26A69A),
+                isDone: _missionDone('switchToEnglish'),
+              ),
+              const SizedBox(width: 80), // Bottom padding
+            ],
+          ),
         ),
       ),
     );
@@ -210,7 +254,7 @@ class _DailyMissionsScreenState extends State<DailyMissionsScreen> {
                     height: 24,
                   ),
           ),
-          SizedBox(height: 30),
+          const SizedBox(height: 24),
           Text(
             title,
             style: const TextStyle(
@@ -235,6 +279,8 @@ class _DailyMissionsScreenState extends State<DailyMissionsScreen> {
               Expanded(
                 child: Text(
                   status,
+                  maxLines: 1,
+                  overflow: TextOverflow.ellipsis,
                   style: TextStyle(color: Colors.grey[500], fontSize: 12),
                 ),
               ),
@@ -245,7 +291,13 @@ class _DailyMissionsScreenState extends State<DailyMissionsScreen> {
     );
   }
 
-  Widget _buildWideMissionCard(String title, String status, IconData icon) {
+  Widget _buildWideMissionCard(
+    String title,
+    String status,
+    IconData icon, {
+    required Color statusColor,
+    bool isDone = false,
+  }) {
     return Container(
       padding: const EdgeInsets.all(20),
       decoration: BoxDecoration(
@@ -282,11 +334,19 @@ class _DailyMissionsScreenState extends State<DailyMissionsScreen> {
           const SizedBox(height: 8),
           Row(
             children: [
-              const Icon(Icons.star, size: 14, color: Color(0xFF26A69A)),
+              Icon(
+                isDone ? Icons.check_circle_outline_rounded : Icons.star,
+                size: 14,
+                color: statusColor,
+              ),
               const SizedBox(width: 4),
-              Text(
-                status,
-                style: TextStyle(color: Colors.grey[500], fontSize: 12),
+              Expanded(
+                child: Text(
+                  status,
+                  maxLines: 1,
+                  overflow: TextOverflow.ellipsis,
+                  style: TextStyle(color: Colors.grey[500], fontSize: 12),
+                ),
               ),
             ],
           ),
