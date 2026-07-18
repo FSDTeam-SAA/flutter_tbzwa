@@ -3,16 +3,25 @@ import 'package:get/get.dart';
 import '../controllers/audio_recording_controller.dart';
 
 class AudioRecordingScreen extends StatefulWidget {
-  const AudioRecordingScreen({super.key});
+  const AudioRecordingScreen({super.key, this.mode = AudioRecordingMode.voice});
+
+  final AudioRecordingMode mode;
 
   @override
   State<AudioRecordingScreen> createState() => _AudioRecordingScreenState();
 }
 
 class _AudioRecordingScreenState extends State<AudioRecordingScreen> {
-  final AudioRecordingController controller = Get.put(
-    AudioRecordingController(),
-  );
+  late final AudioRecordingController controller;
+
+  @override
+  void initState() {
+    super.initState();
+    controller = Get.put(
+      AudioRecordingController(mode: widget.mode),
+      tag: widget.mode.name,
+    );
+  }
 
   @override
   Widget build(BuildContext context) {

@@ -1,10 +1,14 @@
 import 'dart:async';
+import 'dart:io';
 import 'package:camera/camera.dart';
 import 'package:get/get.dart';
+import '../services/voice_recording_api_service.dart';
 
 enum VideoState { initial, recording, review }
 
 class VideoRecordingController extends GetxController {
+  final VoiceRecordingApiService _recordingApiService =
+      VoiceRecordingApiService();
   CameraController? cameraController;
   List<CameraDescription> cameras = const [];
   bool _isControllerClosed = false;
@@ -13,6 +17,9 @@ class VideoRecordingController extends GetxController {
   var videoState = VideoState.initial.obs;
   var recordedVideoPath = "".obs;
   var clipName = "".obs;
+  var duration = 0.obs;
+  var isSaving = false.obs;
+  Timer? _timer;
 
   @override
   void onInit() {
@@ -23,6 +30,7 @@ class VideoRecordingController extends GetxController {
   @override
   void onClose() {
     _isControllerClosed = true;
+    _timer?.cancel();
     isInitialized.value = false;
     cameraController?.dispose();
     cameraController = null;
@@ -111,6 +119,7 @@ class VideoRecordingController extends GetxController {
     try {
       await controller.startVideoRecording();
       videoState.value = VideoState.recording;
+      _startTimer();
     } catch (e) {
       Get.snackbar("Error", "Failed to start recording: $e");
     }
@@ -124,14 +133,63 @@ class VideoRecordingController extends GetxController {
       final XFile file = await controller.stopVideoRecording();
       recordedVideoPath.value = file.path;
       videoState.value = VideoState.review;
+      _timer?.cancel();
     } catch (e) {
       Get.snackbar("Error", "Failed to stop recording: $e");
     }
   }
 
   void resetRecording() {
+    final oldPath = recordedVideoPath.value;
     videoState.value = VideoState.initial;
     recordedVideoPath.value = "";
     clipName.value = "";
+    duration.value = 0;
+    _timer?.cancel();
+    if (oldPath.isNotEmpty) {
+      File(oldPath).delete().catchError((_) => File(oldPath));
+    }
+  }
+
+  Future<bool> saveRecording() async {
+    if (isSaving.value) return false;
+    final path = recordedVideoPath.value;
+    if (videoState.value != VideoState.review || path.isEmpty) {
+      Get.snackbar("Error", "Please finish the recording before saving.");
+      return false;
+    }
+
+    final videoFile = File(path);
+    if (!await videoFile.exists()) {
+      Get.snackbar("Error", "The recorded video file could not be found.");
+      return false;
+    }
+
+    isSaving.value = true;
+    try {
+      await _recordingApiService.uploadVideoRecording(
+        videoFile: videoFile,
+        duration: duration.value,
+        recordedAt: DateTime.now(),
+        label: clipName.value,
+      );
+      return true;
+    } catch (error) {
+      Get.snackbar(
+        "Unable to save clip",
+        error.toString().replaceFirst('Exception: ', ''),
+      );
+      return false;
+    } finally {
+      isSaving.value = false;
+    }
+  }
+
+  void _startTimer() {
+    _timer?.cancel();
+    duration.value = 0;
+    _timer = Timer.periodic(const Duration(seconds: 1), (_) {
+      duration.value++;
+    });
   }
 }

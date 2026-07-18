@@ -1,8 +1,9 @@
-import 'dart:ui';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'subscriber_choose_program_screen.dart';
-import 'subscriber_choose_program_screen.dart';
+import '../community/models/community_post_model.dart';
+import 'models/subscriber_community_models.dart';
+import 'services/subscriber_community_api_service.dart';
 
 class SubscriberCommunityScreen extends StatefulWidget {
   const SubscriberCommunityScreen({super.key});
@@ -13,49 +14,113 @@ class SubscriberCommunityScreen extends StatefulWidget {
 }
 
 class _SubscriberCommunityScreenState extends State<SubscriberCommunityScreen> {
+  final SubscriberCommunityApiService _api = SubscriberCommunityApiService();
   int _selectedTab = 0; // 0 = Friends, 1 = Voice, 2 = Video room
-  bool _translationEnabled = false;
+  bool _isLoading = true;
+  String? _errorMessage;
 
   final List<String> _tabs = ['Friends', 'Voice', 'Live'];
 
-  final Set<String> _acceptedFriends = {};
+  List<SubscriberFriendRequest> _friendRequests = const [];
+  List<SubscriberOnlineFriend> _onlineUsers = const [];
+  List<SubscriberVoiceRoom> _voiceRooms = const [];
+  List<CommunityPost> _livePosts = const [];
 
-  // Sample data
-  final List<Map<String, String>> _friendRequests = [
-    {
-      'name': 'Anna Hustler',
-      'lang': 'French - Learning English',
-      'mutual': '3 mutual friends',
-    },
-    {
-      'name': 'Anna Hustler',
-      'lang': 'French - Learning English',
-      'mutual': '3 mutual friends',
-    },
-    {
-      'name': 'Anna Hustler',
-      'lang': 'French - Learning English',
-      'mutual': '3 mutual friends',
-    },
-  ];
+  @override
+  void initState() {
+    super.initState();
+    _loadCommunityData();
+  }
 
-  final List<Map<String, String>> _onlineUsers = [
-    {
-      'name': 'Anna Hustler',
-      'langs': 'Fra — Eng',
-      'location': 'Guildford, Australia',
-    },
-    {
-      'name': 'Anna Hustler',
-      'langs': 'Fra — Eng',
-      'location': 'Guildford, Australia',
-    },
-    {
-      'name': 'Anna Hustler',
-      'langs': 'Fra — Eng',
-      'location': 'Guildford, Australia',
-    },
-  ];
+  Future<void> _loadCommunityData() async {
+    setState(() {
+      _isLoading = true;
+      _errorMessage = null;
+    });
+    try {
+      final results = await Future.wait<dynamic>([
+        _api.getFriendRequests(),
+        _api.getOnlineFriends(),
+        _api.getVoiceRooms(),
+        _api.getVideoPosts(),
+      ]);
+      if (!mounted) return;
+      setState(() {
+        _friendRequests = results[0] as List<SubscriberFriendRequest>;
+        _onlineUsers = results[1] as List<SubscriberOnlineFriend>;
+        _voiceRooms = results[2] as List<SubscriberVoiceRoom>;
+        _livePosts = results[3] as List<CommunityPost>;
+      });
+    } catch (error) {
+      if (!mounted) return;
+      setState(
+        () => _errorMessage = error.toString().replaceFirst('Exception: ', ''),
+      );
+    } finally {
+      if (mounted) setState(() => _isLoading = false);
+    }
+  }
+
+  Future<void> _respondToFriendRequest(
+    SubscriberFriendRequest request,
+    String action,
+  ) async {
+    try {
+      await _api.respondToFriendRequest(request.id, action);
+      await _loadCommunityData();
+    } catch (error) {
+      Get.snackbar(
+        'Friend Request',
+        error.toString().replaceFirst('Exception: ', ''),
+        snackPosition: SnackPosition.BOTTOM,
+      );
+    }
+  }
+
+  Future<void> _createVoiceRoom() async {
+    try {
+      await _api.createVoiceRoom();
+      await _loadCommunityData();
+    } catch (error) {
+      Get.snackbar(
+        'Voice Room',
+        error.toString().replaceFirst('Exception: ', ''),
+        snackPosition: SnackPosition.BOTTOM,
+      );
+    }
+  }
+
+  Future<void> _joinVoiceRoom(SubscriberVoiceRoom room) async {
+    try {
+      await _api.joinVoiceRoom(room.id);
+      await _loadCommunityData();
+    } catch (error) {
+      Get.snackbar(
+        'Voice Room',
+        error.toString().replaceFirst('Exception: ', ''),
+        snackPosition: SnackPosition.BOTTOM,
+      );
+    }
+  }
+
+  Widget _buildNetworkAvatar(double radius, String? url) {
+    final size = radius * 2;
+    return CircleAvatar(
+      radius: radius,
+      backgroundColor: const Color(0xFFE8EAF0),
+      child: ClipOval(
+        child: url == null || url.isEmpty
+            ? SizedBox(width: size, height: size)
+            : Image.network(
+                url,
+                width: size,
+                height: size,
+                fit: BoxFit.cover,
+                errorBuilder: (_, _, _) => SizedBox(width: size, height: size),
+              ),
+      ),
+    );
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -70,18 +135,31 @@ class _SubscriberCommunityScreenState extends State<SubscriberCommunityScreen> {
                 _buildHeader(),
                 _buildTabBar(),
                 Expanded(
-                  child: _selectedTab == 0
-                      ? SingleChildScrollView(
-                          padding: const EdgeInsets.symmetric(horizontal: 18),
-                          child: Column(
-                            crossAxisAlignment: CrossAxisAlignment.start,
-                            children: [
-                              const SizedBox(height: 20),
-                              _buildFriendRequestsSection(),
-                              const SizedBox(height: 28),
-                              _buildOnlineNowSection(),
-                              const SizedBox(height: 20),
-                            ],
+                  child: _isLoading
+                      ? const Center(child: CircularProgressIndicator())
+                      : _errorMessage != null
+                      ? Center(
+                          child: Text(
+                            _errorMessage!,
+                            style: const TextStyle(color: Color(0xFF64748B)),
+                            textAlign: TextAlign.center,
+                          ),
+                        )
+                      : _selectedTab == 0
+                      ? RefreshIndicator(
+                          onRefresh: _loadCommunityData,
+                          child: SingleChildScrollView(
+                            padding: const EdgeInsets.symmetric(horizontal: 18),
+                            child: Column(
+                              crossAxisAlignment: CrossAxisAlignment.start,
+                              children: [
+                                const SizedBox(height: 20),
+                                _buildFriendRequestsSection(),
+                                const SizedBox(height: 28),
+                                _buildOnlineNowSection(),
+                                const SizedBox(height: 20),
+                              ],
+                            ),
                           ),
                         )
                       : _selectedTab == 1
@@ -138,28 +216,25 @@ class _SubscriberCommunityScreenState extends State<SubscriberCommunityScreen> {
           const SizedBox(height: 16),
           _buildPremiumBanner(),
           const SizedBox(height: 8),
-          _buildVoiceRoomCard(
-            title: 'English Corner',
-            hostName: 'David Kim',
-            hostSubtitle: 'Daily Conversation Practice',
-            language: 'English',
-            count: '12/20',
-            isPro: false,
-          ),
-          _buildVoiceRoomCard(
-            title: 'French Talks',
-            hostName: 'David Kim',
-            hostSubtitle: 'Daily Conversation Practice',
-            language: 'English',
-            count: '12/20',
-            isPro: true,
+          ..._voiceRooms.map(
+            (room) => _buildVoiceRoomCard(
+              title: room.title,
+              hostName: room.hostName,
+              hostSubtitle: room.hostSubtitle,
+              language: room.language,
+              count: room.countLabel,
+              isPro: room.isPro,
+              hostAvatarUrl: room.hostImageUrl,
+              participants: room.participants,
+              onJoin: () => _joinVoiceRoom(room),
+            ),
           ),
 
           //const SizedBox(height: 20),
           Padding(
             padding: const EdgeInsets.all(18.0),
             child: ElevatedButton(
-              onPressed: () {},
+              onPressed: _createVoiceRoom,
               style: ElevatedButton.styleFrom(
                 backgroundColor: Color(0xFF00A63E),
                 shape: RoundedRectangleBorder(
@@ -220,7 +295,8 @@ class _SubscriberCommunityScreenState extends State<SubscriberCommunityScreen> {
           ),
           const SizedBox(height: 16),
           OutlinedButton(
-            onPressed: () {},
+            onPressed: () =>
+                Get.to(() => const SubscriberChooseProgramScreen()),
             style: OutlinedButton.styleFrom(
               side: const BorderSide(color: Colors.white70),
               foregroundColor: Color(0xFF655EFF),
@@ -247,14 +323,11 @@ class _SubscriberCommunityScreenState extends State<SubscriberCommunityScreen> {
     required String language,
     required String count,
     required bool isPro,
+    required String? hostAvatarUrl,
+    required List<SubscriberVoiceRoomParticipant> participants,
+    required VoidCallback onJoin,
   }) {
-    // Participant avatar URLs & mic states (active, active, muted)
-    final List<String> avatarUrls = [
-      'https://i.pravatar.cc/150?u=p1',
-      'https://i.pravatar.cc/150?u=p2',
-      'https://i.pravatar.cc/150?u=p3',
-    ];
-    final List<bool> isMuted = [false, false, true];
+    final visibleParticipants = participants.take(3).toList();
 
     return Container(
       margin: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
@@ -264,7 +337,7 @@ class _SubscriberCommunityScreenState extends State<SubscriberCommunityScreen> {
         borderRadius: BorderRadius.circular(20),
         boxShadow: [
           BoxShadow(
-            color: Colors.black.withOpacity(0.04),
+            color: Colors.black.withValues(alpha: 0.04),
             blurRadius: 10,
             offset: const Offset(0, 4),
           ),
@@ -326,13 +399,7 @@ class _SubscriberCommunityScreenState extends State<SubscriberCommunityScreen> {
           // Host info
           Row(
             children: [
-              CircleAvatar(
-                radius: 22,
-                backgroundImage: const NetworkImage(
-                  'https://i.pravatar.cc/150?u=david',
-                ),
-                backgroundColor: const Color(0xFFE8EAF0),
-              ),
+              _buildNetworkAvatar(22, hostAvatarUrl),
               const SizedBox(width: 10),
               Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
@@ -363,20 +430,19 @@ class _SubscriberCommunityScreenState extends State<SubscriberCommunityScreen> {
               // Stacked avatars with mic indicators
               SizedBox(
                 height: 62,
-                width: 52.0 * avatarUrls.length + 50,
+                width: visibleParticipants.isEmpty
+                    ? 62
+                    : 52.0 * visibleParticipants.length + 50,
                 child: Stack(
                   clipBehavior: Clip.none,
-                  children: List.generate(avatarUrls.length, (i) {
+                  children: List.generate(visibleParticipants.length, (i) {
+                    final participant = visibleParticipants[i];
                     return Positioned(
                       left: i * 60.0,
                       child: Stack(
                         clipBehavior: Clip.none,
                         children: [
-                          CircleAvatar(
-                            radius: 24,
-                            backgroundImage: NetworkImage(avatarUrls[i]),
-                            backgroundColor: const Color(0xFFE8EAF0),
-                          ),
+                          _buildNetworkAvatar(24, participant.imageUrl),
                           Positioned(
                             right: -4,
                             bottom: -4,
@@ -384,7 +450,7 @@ class _SubscriberCommunityScreenState extends State<SubscriberCommunityScreen> {
                               width: 20,
                               height: 20,
                               decoration: BoxDecoration(
-                                color: isMuted[i]
+                                color: participant.isMuted
                                     ? const Color(0xFF94A3B8)
                                     : const Color(0xFF22C55E),
                                 shape: BoxShape.circle,
@@ -394,7 +460,7 @@ class _SubscriberCommunityScreenState extends State<SubscriberCommunityScreen> {
                                 ),
                               ),
                               child: Icon(
-                                isMuted[i] ? Icons.mic_off : Icons.mic,
+                                participant.isMuted ? Icons.mic_off : Icons.mic,
                                 size: 10,
                                 color: Colors.white,
                               ),
@@ -460,7 +526,7 @@ class _SubscriberCommunityScreenState extends State<SubscriberCommunityScreen> {
               ),
               const Spacer(),
               ElevatedButton.icon(
-                onPressed: () {},
+                onPressed: onJoin,
                 icon: const Icon(Icons.mic, size: 16, color: Colors.white),
                 label: const Text(
                   'Join',
@@ -513,7 +579,7 @@ class _SubscriberCommunityScreenState extends State<SubscriberCommunityScreen> {
                   boxShadow: isSelected
                       ? [
                           BoxShadow(
-                            color: Colors.black.withOpacity(0.08),
+                            color: Colors.black.withValues(alpha: 0.08),
                             blurRadius: 8,
                             offset: const Offset(0, 2),
                           ),
@@ -566,11 +632,15 @@ class _SubscriberCommunityScreenState extends State<SubscriberCommunityScreen> {
         ),
         const SizedBox(height: 16),
         ...List.generate(_friendRequests.length, (index) {
-          final req = _friendRequests[index];
+          final request = _friendRequests[index];
+          final user = request.requester;
           return _buildFriendRequestCard(
-            name: req['name']!,
-            lang: req['lang']!,
-            mutual: req['mutual']!,
+            name: user.fullName,
+            lang: user.languageLabel,
+            mutual: user.userId,
+            avatarUrl: user.profileImageUrl,
+            onAccept: () => _respondToFriendRequest(request, 'accept'),
+            onDecline: () => _respondToFriendRequest(request, 'reject'),
           );
         }),
       ],
@@ -581,6 +651,9 @@ class _SubscriberCommunityScreenState extends State<SubscriberCommunityScreen> {
     required String name,
     required String lang,
     required String mutual,
+    required String? avatarUrl,
+    required VoidCallback onAccept,
+    required VoidCallback onDecline,
   }) {
     return Container(
       margin: const EdgeInsets.only(bottom: 12),
@@ -590,7 +663,7 @@ class _SubscriberCommunityScreenState extends State<SubscriberCommunityScreen> {
         borderRadius: BorderRadius.circular(20),
         boxShadow: [
           BoxShadow(
-            color: Colors.black.withOpacity(0.03),
+            color: Colors.black.withValues(alpha: 0.03),
             blurRadius: 8,
             offset: const Offset(0, 2),
           ),
@@ -599,13 +672,7 @@ class _SubscriberCommunityScreenState extends State<SubscriberCommunityScreen> {
       child: Row(
         crossAxisAlignment: CrossAxisAlignment.center,
         children: [
-          CircleAvatar(
-            radius: 28,
-            backgroundColor: const Color(0xFFE8EAF0),
-            backgroundImage: const NetworkImage(
-              'https://i.pravatar.cc/150?u=anna',
-            ),
-          ),
+          _buildNetworkAvatar(28, avatarUrl),
           const SizedBox(width: 12),
           Expanded(
             child: Column(
@@ -646,7 +713,7 @@ class _SubscriberCommunityScreenState extends State<SubscriberCommunityScreen> {
                 height: 34,
                 width: 96,
                 child: ElevatedButton.icon(
-                  onPressed: () {},
+                  onPressed: onAccept,
                   icon: const Icon(Icons.check, size: 14, color: Colors.white),
                   label: const Text(
                     "Accept",
@@ -669,7 +736,7 @@ class _SubscriberCommunityScreenState extends State<SubscriberCommunityScreen> {
                 height: 34,
                 width: 96,
                 child: OutlinedButton.icon(
-                  onPressed: () {},
+                  onPressed: onDecline,
                   icon: const Icon(
                     Icons.close,
                     size: 14,
@@ -733,11 +800,12 @@ class _SubscriberCommunityScreenState extends State<SubscriberCommunityScreen> {
         ),
         const SizedBox(height: 16),
         ...List.generate(_onlineUsers.length, (index) {
-          final user = _onlineUsers[index];
+          final user = _onlineUsers[index].user;
           return _buildOnlineUserCard(
-            name: user['name']!,
-            langs: user['langs']!,
-            location: user['location']!,
+            name: user.fullName,
+            langs: user.shortLanguages,
+            location: user.locationLabel,
+            avatarUrl: user.profileImageUrl,
           );
         }),
       ],
@@ -748,6 +816,7 @@ class _SubscriberCommunityScreenState extends State<SubscriberCommunityScreen> {
     required String name,
     required String langs,
     required String location,
+    required String? avatarUrl,
   }) {
     return Container(
       margin: const EdgeInsets.only(bottom: 12),
@@ -757,7 +826,7 @@ class _SubscriberCommunityScreenState extends State<SubscriberCommunityScreen> {
         borderRadius: BorderRadius.circular(20),
         boxShadow: [
           BoxShadow(
-            color: Colors.black.withOpacity(0.03),
+            color: Colors.black.withValues(alpha: 0.03),
             blurRadius: 8,
             offset: const Offset(0, 2),
           ),
@@ -768,13 +837,7 @@ class _SubscriberCommunityScreenState extends State<SubscriberCommunityScreen> {
         children: [
           Stack(
             children: [
-              CircleAvatar(
-                radius: 28,
-                backgroundColor: const Color(0xFFE8EAF0),
-                backgroundImage: const NetworkImage(
-                  'https://i.pravatar.cc/150?u=anna',
-                ),
-              ),
+              _buildNetworkAvatar(28, avatarUrl),
               Positioned(
                 right: 0,
                 bottom: 2,
@@ -857,41 +920,18 @@ class _SubscriberCommunityScreenState extends State<SubscriberCommunityScreen> {
   // ─── Live Tab ────────────────────────────────────────────────────────────────
 
   Widget _buildLiveTab() {
-    final List<Map<String, String>> liveStreams = [
-      {
-        'title': 'Japanese Culture Live',
-        'host': 'Yomi Yamamoto',
-        'thumbnail':
-            'https://images.unsplash.com/photo-1536098561742-ca998e48cbcc?auto=format&fit=crop&w=800&q=80',
-        'avatar': 'https://i.pravatar.cc/150?u=yomi1',
-      },
-      {
-        'title': 'Spanish Culture Live',
-        'host': 'Yomi Yamamoto',
-        'thumbnail':
-            'https://images.unsplash.com/photo-1504196606672-aef5c9cefc92?auto=format&fit=crop&w=800&q=80',
-        'avatar': 'https://i.pravatar.cc/150?u=yomi2',
-      },
-      {
-        'title': 'French Culture Live',
-        'host': 'Yomi Yamamoto',
-        'thumbnail':
-            'https://images.unsplash.com/photo-1499856871958-5b9627545d1a?auto=format&fit=crop&w=800&q=80',
-        'avatar': 'https://i.pravatar.cc/150?u=yomi3',
-      },
-    ];
-
     return ListView.separated(
       padding: const EdgeInsets.fromLTRB(16, 16, 16, 24),
-      itemCount: liveStreams.length,
-      separatorBuilder: (_, __) => const SizedBox(height: 20),
+      itemCount: _livePosts.length,
+      separatorBuilder: (_, _) => const SizedBox(height: 20),
       itemBuilder: (context, index) {
-        final stream = liveStreams[index];
+        final post = _livePosts[index];
+        final media = post.primaryMedia;
         return _buildLiveCard(
-          title: stream['title']!,
-          hostName: stream['host']!,
-          thumbnailUrl: stream['thumbnail']!,
-          avatarUrl: stream['avatar']!,
+          title: post.content.isEmpty ? 'Community Live' : post.content,
+          hostName: post.authorName,
+          thumbnailUrl: media?.url ?? '',
+          avatarUrl: post.authorImageUrl,
         );
       },
     );
@@ -901,7 +941,7 @@ class _SubscriberCommunityScreenState extends State<SubscriberCommunityScreen> {
     required String title,
     required String hostName,
     required String thumbnailUrl,
-    required String avatarUrl,
+    required String? avatarUrl,
   }) {
     return Container(
       decoration: BoxDecoration(
@@ -909,7 +949,7 @@ class _SubscriberCommunityScreenState extends State<SubscriberCommunityScreen> {
         borderRadius: BorderRadius.circular(20),
         boxShadow: [
           BoxShadow(
-            color: Colors.black.withOpacity(0.05),
+            color: Colors.black.withValues(alpha: 0.05),
             blurRadius: 12,
             offset: const Offset(0, 4),
           ),
@@ -922,18 +962,22 @@ class _SubscriberCommunityScreenState extends State<SubscriberCommunityScreen> {
           // Thumbnail
           AspectRatio(
             aspectRatio: 16 / 9,
-            child: Image.network(
-              thumbnailUrl,
-              fit: BoxFit.cover,
-              loadingBuilder: (context, child, progress) {
-                if (progress == null) return child;
-                return Container(
-                  color: const Color(0xFFE8EAF0),
-                  alignment: Alignment.center,
-                  child: const CircularProgressIndicator(strokeWidth: 2),
-                );
-              },
-            ),
+            child: thumbnailUrl.isEmpty
+                ? Container(color: const Color(0xFFE8EAF0))
+                : Image.network(
+                    thumbnailUrl,
+                    fit: BoxFit.cover,
+                    errorBuilder: (_, _, _) =>
+                        Container(color: const Color(0xFFE8EAF0)),
+                    loadingBuilder: (context, child, progress) {
+                      if (progress == null) return child;
+                      return Container(
+                        color: const Color(0xFFE8EAF0),
+                        alignment: Alignment.center,
+                        child: const CircularProgressIndicator(strokeWidth: 2),
+                      );
+                    },
+                  ),
           ),
 
           // Title row
@@ -968,11 +1012,7 @@ class _SubscriberCommunityScreenState extends State<SubscriberCommunityScreen> {
             padding: const EdgeInsets.fromLTRB(14, 0, 14, 14),
             child: Row(
               children: [
-                CircleAvatar(
-                  radius: 20,
-                  backgroundColor: const Color(0xFFE8EAF0),
-                  backgroundImage: NetworkImage(avatarUrl),
-                ),
+                _buildNetworkAvatar(20, avatarUrl),
                 const SizedBox(width: 10),
                 Expanded(
                   child: Text(

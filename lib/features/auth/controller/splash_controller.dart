@@ -15,6 +15,7 @@ import '../../../core/services/secure_store_services.dart';
 import '../../instructor/controllers/instructor_home_controller.dart';
 import '../../navigation/instructor_nav_menu.dart' as instructor_navigation;
 import '../../onboarding/screens/onboarding_screen.dart';
+import '../screens/role_selection_screen.dart';
 
 class SplashController extends GetxController {
   final AuthStorageService _authStorageService = AuthStorageService();

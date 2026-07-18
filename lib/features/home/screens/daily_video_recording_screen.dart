@@ -1,9 +1,108 @@
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
+import 'package:url_launcher/url_launcher.dart';
+import '../models/learner_api_models.dart';
+import '../models/voice_recording_model.dart';
+import '../services/learner_api_service.dart';
+import '../services/voice_recording_api_service.dart';
 import 'video_recording_screen.dart';
 
-class DailyVideoRecordingScreen extends StatelessWidget {
+class DailyVideoRecordingScreen extends StatefulWidget {
   const DailyVideoRecordingScreen({super.key});
+
+  @override
+  State<DailyVideoRecordingScreen> createState() =>
+      _DailyVideoRecordingScreenState();
+}
+
+class _DailyVideoRecordingScreenState extends State<DailyVideoRecordingScreen> {
+  final VoiceRecordingApiService _recordingApiService =
+      VoiceRecordingApiService();
+  final LearnerApiService _learnerApiService = LearnerApiService();
+
+  List<VoiceRecordingModel> _recordings = const [];
+  MissionProgress? _missionProgress;
+  LearnerProfile? _profile;
+  WeeklyProgress? _weeklyProgress;
+  String _selectedFilter = 'all';
+  String _searchQuery = '';
+  String? _errorMessage;
+  bool _isLoading = true;
+
+  @override
+  void initState() {
+    super.initState();
+    _loadRecordings();
+  }
+
+  Future<void> _loadRecordings() async {
+    setState(() {
+      _isLoading = true;
+      _errorMessage = null;
+    });
+
+    try {
+      final results = await Future.wait<dynamic>([
+        _recordingApiService.getVideoRecordingsForDate(DateTime.now()),
+        _learnerApiService.getDailyMissions(),
+        _learnerApiService.getProfile(),
+        _learnerApiService.getWeeklyProgress(),
+      ]);
+      if (!mounted) return;
+
+      final missions = results[1] as DailyMissionSummary;
+      setState(() {
+        _recordings = results[0] as List<VoiceRecordingModel>;
+        _missionProgress = missions.missions['videoRecordings'];
+        _profile = results[2] as LearnerProfile;
+        _weeklyProgress = results[3] as WeeklyProgress;
+      });
+    } catch (error) {
+      if (!mounted) return;
+      setState(
+        () => _errorMessage = error.toString().replaceFirst('Exception: ', ''),
+      );
+    } finally {
+      if (mounted) setState(() => _isLoading = false);
+    }
+  }
+
+  int get _completed {
+    final apiCompleted = _missionProgress?.completed ?? 0;
+    return apiCompleted > _recordings.length
+        ? apiCompleted
+        : _recordings.length;
+  }
+
+  int get _target {
+    final apiTarget = _missionProgress?.target ?? 3;
+    return apiTarget < 3 ? 3 : apiTarget;
+  }
+
+  int get _currentStreak => _profile?.currentStreak ?? 0;
+  int get _averageScore => _weeklyProgress?.average ?? 0;
+
+  Future<void> _openRecorder() async {
+    if (_completed >= 3) {
+      Get.snackbar(
+        'Daily Video',
+        "You've reached today's 3 video recordings limit.",
+        snackPosition: SnackPosition.BOTTOM,
+      );
+      return;
+    }
+    await Get.to(() => const VideoRecordingScreen());
+    await _loadRecordings();
+  }
+
+  List<WeeklyDayProgress> get _weeklyDays {
+    return _weeklyProgress?.currentWeekDays() ??
+        WeeklyProgress(
+          average: 0,
+          scores: const [],
+          days: const [],
+        ).currentWeekDays();
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -13,7 +112,11 @@ class DailyVideoRecordingScreen extends StatelessWidget {
         backgroundColor: Colors.transparent,
         elevation: 0,
         leading: IconButton(
-          icon: const Icon(Icons.arrow_back_ios_new_rounded, color: Color(0xFF374151), size: 20),
+          icon: const Icon(
+            Icons.arrow_back_ios_new_rounded,
+            color: Color(0xFF374151),
+            size: 20,
+          ),
           onPressed: () => Get.back(),
         ),
         title: const Text(
@@ -30,215 +133,61 @@ class DailyVideoRecordingScreen extends StatelessWidget {
         padding: const EdgeInsets.all(20),
         child: Column(
           children: [
-            // Search Bar
-            Container(
-              padding: const EdgeInsets.symmetric(horizontal: 16),
-              decoration: BoxDecoration(
-                color: Colors.white,
-                borderRadius: BorderRadius.circular(16),
-                border: Border.all(color: const Color(0xFFF1F5F9)),
-              ),
-              child: const TextField(
-                decoration: InputDecoration(
-                  icon: Icon(Icons.search, color: Color(0xFF94A3B8)),
-                  hintText: "Search recordings...",
-                  hintStyle: TextStyle(color: Color(0xFF94A3B8), fontSize: 14),
-                  border: InputBorder.none,
-                ),
-              ),
-            ),
+            _buildSearchBar(),
             const SizedBox(height: 20),
-
-            // Today's Video Progress Card
-            Container(
-              padding: const EdgeInsets.all(24),
-              decoration: BoxDecoration(
-                color: Colors.white,
-                borderRadius: BorderRadius.circular(24),
-                border: Border.all(color: const Color(0xFFEBECEE)),
-              ),
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Row(
-                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                    children: [
-                      Column(
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        children: [
-                          Container(
-                            padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
-                            decoration: BoxDecoration(
-                              color: const Color(0xFFE0F2F1),
-                              borderRadius: BorderRadius.circular(8),
-                            ),
-                            child: const Text(
-                              "MISSION ACTIVE",
-                              style: TextStyle(
-                                color: Color(0xFF151918),
-                                fontSize: 10,
-                                fontWeight: FontWeight.bold,
-                              ),
-                            ),
-                          ),
-                          const SizedBox(height: 12),
-                          const Text(
-                            "Today's Video\nProgress",
-                            style: TextStyle(
-                              fontSize: 22,
-                              fontWeight: FontWeight.bold,
-                              color: Color(0xFF374151),
-                              height: 1.2,
-                            ),
-                          ),
-                        ],
-                      ),
-                      Container(
-                        padding: const EdgeInsets.all(12),
-                        decoration: const BoxDecoration(
-                          color: Color(0xFF26A69A),
-                          shape: BoxShape.circle,
-                        ),
-                        child: const Icon(Icons.videocam_rounded, color: Colors.white, size: 32),
-                      ),
-                    ],
-                  ),
-                  const SizedBox(height: 32),
-                  const Row(
-                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                    children: [
-                      Text(
-                        "Progress to Mastery",
-                        style: TextStyle(color: Color(0xFF64748B), fontSize: 14),
-                      ),
-                      Text(
-                        "2/3",
-                        style: TextStyle(color: Color(0xFF374151), fontWeight: FontWeight.bold),
-                      ),
-                    ],
-                  ),
-                  const SizedBox(height: 12),
-                  ClipRRect(
-                    borderRadius: BorderRadius.circular(10),
-                    child: const LinearProgressIndicator(
-                      value: 0.66,
-                      minHeight: 10,
-                      backgroundColor: Color(0xFFE0F2F1),
-                      valueColor: AlwaysStoppedAnimation<Color>(Color(0xFF26A69A)),
-                    ),
-                  ),
-                ],
-              ),
-            ),
+            _buildProgressCard(),
             const SizedBox(height: 20),
-
-            // Start Video Recording Button
-            ElevatedButton(
-              onPressed: () => Get.to(() => const VideoRecordingScreen()),
-              style: ElevatedButton.styleFrom(
-                backgroundColor: const Color(0xFF26A69A),
-                foregroundColor: Colors.white,
-                minimumSize: const Size(double.infinity, 56),
-                shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
-                elevation: 0,
-              ),
-              child: const Text(
-                "Start Video Recording",
-                style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
-              ),
-            ),
+            _buildStartButton(),
             const SizedBox(height: 24),
-
-            // Weekly Consistency Card
-            Container(
-              padding: const EdgeInsets.all(15),
-              decoration: BoxDecoration(
-                color: Colors.white,
-                borderRadius: BorderRadius.circular(24),
-                border: Border.all(color: const Color(0xFFEBECEE)),
-              ),
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  const Text(
-                    "Weekly Consistency",
-                    style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold, color: Color(0xFF374151)),
-                  ),
-                  const SizedBox(height: 20),
-                  Row(
-                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                    children: [
-                      _buildDayItem("M", 1.0, isActive: true),
-                      _buildDayItem("T", 0.6),
-                      _buildDayItem("W", 0.8),
-                      _buildDayItem("T", 0.5),
-                      _buildDayItem("F", 0.9),
-                      _buildDayItem("S", 0.2),
-                      _buildDayItem("S", 1.0, isSpecial: true),
-                    ],
-                  ),
-                ],
-              ),
-            ),
+            _buildWeeklyCard(),
             const SizedBox(height: 20),
-
-            // Stats row
             Row(
               children: [
-                 _buildSmallStatCard("Current Streak", "12 Days", Icons.bolt, const Color(0xFF26A69A)),
-                 const SizedBox(width: 16),
-                 _buildSmallStatCard("Average Score", "70%", Icons.percent, const Color(0xFF26A69A)),
+                _buildSmallStatCard(
+                  "Current Streak",
+                  "$_currentStreak ${_currentStreak == 1 ? 'Day' : 'Days'}",
+                  Icons.bolt,
+                  const Color(0xFF26A69A),
+                ),
+                const SizedBox(width: 16),
+                _buildSmallStatCard(
+                  "Average Score",
+                  "$_averageScore%",
+                  Icons.percent,
+                  const Color(0xFF26A69A),
+                ),
               ],
             ),
             const SizedBox(height: 32),
-
-            // Filter Chips
-            SingleChildScrollView(
-              scrollDirection: Axis.horizontal,
-              child: Row(
-                children: [
-                  _buildFilterChip("All Recordings", isActive: true),
-                  _buildFilterChip("Morning Drill"),
-                  _buildFilterChip("Afternoon Dr."),
-                ],
-              ),
-            ),
+            _buildFilters(),
             const SizedBox(height: 24),
-
-            // Daily Voice Section (Should probably be Daily Video based on image labels?)
-            // Actually, the image says "Daily Voice 2/3" at the bottom but let's follow the title
-            const Row(
+            Row(
               mainAxisAlignment: MainAxisAlignment.spaceBetween,
               children: [
-                Text(
-                  "Daily Voice",
-                  style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold, color: Color(0xFF374151)),
+                const Text(
+                  "Daily Video",
+                  style: TextStyle(
+                    fontSize: 18,
+                    fontWeight: FontWeight.bold,
+                    color: Color(0xFF374151),
+                  ),
                 ),
                 Text(
-                  "2/3",
-                  style: TextStyle(color: Color(0xFF64748B), fontWeight: FontWeight.bold),
+                  "$_completed/$_target",
+                  style: const TextStyle(
+                    color: Color(0xFF64748B),
+                    fontWeight: FontWeight.bold,
+                  ),
                 ),
               ],
             ),
             const SizedBox(height: 16),
-
-            // Recording List Items
-            _buildRecordingItem(
-              "Morning Drill",
-              "Vowel pronunciation &\ntone check",
-              Icons.play_arrow_rounded,
-            ),
-            _buildRecordingItem(
-              "Afternoon Flunency",
-              "3-minute casual\nconversation",
-              Icons.play_arrow_rounded,
-            ),
-            _buildRecordingItem(
-              "Evening Reflection",
-              "Summarize your day in target\nlanguage",
-              Icons.mic, // Keep as per image
-              isActive: true,
-            ),
+            if (_isLoading)
+              const Center(child: CircularProgressIndicator())
+            else if (_errorMessage != null)
+              _buildErrorSection()
+            else
+              ..._buildDailyVideoItems(),
             const SizedBox(height: 40),
           ],
         ),
@@ -246,32 +195,228 @@ class DailyVideoRecordingScreen extends StatelessWidget {
     );
   }
 
-  Widget _buildDayItem(String day, double heightFactor, {bool isActive = false, bool isSpecial = false}) {
+  Widget _buildSearchBar() {
+    return Container(
+      padding: const EdgeInsets.symmetric(horizontal: 16),
+      decoration: BoxDecoration(
+        color: Colors.white,
+        borderRadius: BorderRadius.circular(16),
+        border: Border.all(color: const Color(0xFFF1F5F9)),
+      ),
+      child: TextField(
+        onChanged: (value) =>
+            setState(() => _searchQuery = value.trim().toLowerCase()),
+        cursorColor: const Color(0xFF374151),
+        style: const TextStyle(color: Color(0xFF000000)),
+        decoration: const InputDecoration(
+          icon: Icon(Icons.search, color: Color(0xFF94A3B8)),
+          hintText: "Search recordings...",
+          hintStyle: TextStyle(color: Color(0xFF94A3B8), fontSize: 14),
+          border: InputBorder.none,
+        ),
+      ),
+    );
+  }
+
+  Widget _buildProgressCard() {
+    return Container(
+      padding: const EdgeInsets.all(24),
+      decoration: BoxDecoration(
+        color: Colors.white,
+        borderRadius: BorderRadius.circular(24),
+        border: Border.all(color: const Color(0xFFEBECEE)),
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Row(
+            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+            children: [
+              Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Container(
+                    padding: const EdgeInsets.symmetric(
+                      horizontal: 12,
+                      vertical: 6,
+                    ),
+                    decoration: BoxDecoration(
+                      color: const Color(0xFFE0F2F1),
+                      borderRadius: BorderRadius.circular(8),
+                    ),
+                    child: const Text(
+                      "MISSION ACTIVE",
+                      style: TextStyle(
+                        color: Color(0xFF151918),
+                        fontSize: 10,
+                        fontWeight: FontWeight.bold,
+                      ),
+                    ),
+                  ),
+                  const SizedBox(height: 12),
+                  const Text(
+                    "Today's Video\nProgress",
+                    style: TextStyle(
+                      fontSize: 22,
+                      fontWeight: FontWeight.bold,
+                      color: Color(0xFF374151),
+                      height: 1.2,
+                    ),
+                  ),
+                ],
+              ),
+              Container(
+                padding: const EdgeInsets.all(12),
+                decoration: const BoxDecoration(
+                  color: Color(0xFF26A69A),
+                  shape: BoxShape.circle,
+                ),
+                child: const Icon(
+                  Icons.videocam_rounded,
+                  color: Colors.white,
+                  size: 32,
+                ),
+              ),
+            ],
+          ),
+          const SizedBox(height: 32),
+          Row(
+            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+            children: [
+              const Text(
+                "Progress to Mastery",
+                style: TextStyle(color: Color(0xFF64748B), fontSize: 14),
+              ),
+              Text(
+                "$_completed/$_target",
+                style: const TextStyle(
+                  color: Color(0xFF374151),
+                  fontWeight: FontWeight.bold,
+                ),
+              ),
+            ],
+          ),
+          const SizedBox(height: 12),
+          ClipRRect(
+            borderRadius: BorderRadius.circular(10),
+            child: LinearProgressIndicator(
+              value: _target == 0 ? 0 : (_completed / _target).clamp(0.0, 1.0),
+              minHeight: 10,
+              backgroundColor: const Color(0xFFE0F2F1),
+              valueColor: const AlwaysStoppedAnimation<Color>(
+                Color(0xFF26A69A),
+              ),
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildStartButton() {
+    return ElevatedButton(
+      onPressed: _openRecorder,
+      style: ElevatedButton.styleFrom(
+        backgroundColor: const Color(0xFF26A69A),
+        foregroundColor: Colors.white,
+        minimumSize: const Size(double.infinity, 56),
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+        elevation: 0,
+      ),
+      child: const Text(
+        "Start Video Recording",
+        style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
+      ),
+    );
+  }
+
+  Widget _buildWeeklyCard() {
+    return Container(
+      padding: const EdgeInsets.all(20),
+      decoration: BoxDecoration(
+        color: Colors.white,
+        borderRadius: BorderRadius.circular(24),
+        border: Border.all(color: const Color(0xFFEBECEE)),
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          const Text(
+            "Weekly Consistency",
+            style: TextStyle(
+              fontSize: 16,
+              fontWeight: FontWeight.bold,
+              color: Color(0xFF374151),
+            ),
+          ),
+          const SizedBox(height: 20),
+          Row(
+            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+            children: _weeklyDays
+                .map(
+                  (day) => _buildDayItem(
+                    day.dayLabel,
+                    day.score / 100,
+                    isActive: day.hasActivity && day.score > 0,
+                    isSpecial: day.isToday && day.score >= 100,
+                  ),
+                )
+                .toList(),
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildDayItem(
+    String day,
+    double heightFactor, {
+    bool isActive = false,
+    bool isSpecial = false,
+  }) {
     return Column(
       children: [
         Container(
           width: 36,
           height: 48,
           decoration: BoxDecoration(
-            color: isSpecial ? const Color(0xFF22A892) : const Color(0xFFE0F2F1),
+            color: isSpecial
+                ? const Color(0xFF26A69A)
+                : const Color(0xFFE0F2F1),
             borderRadius: BorderRadius.circular(8),
           ),
           alignment: Alignment.bottomCenter,
-          child: isActive ? Container(
-            height: 48 * heightFactor,
-            decoration: BoxDecoration(
-              color: isSpecial ? const Color(0xFF26A69A) : const Color(0xFF26A69A).withOpacity(0.3),
-              borderRadius: BorderRadius.circular(8),
-            ),
-          ) : null,
+          child: isActive
+              ? Container(
+                  height: 48 * heightFactor.clamp(0.0, 1.0),
+                  decoration: BoxDecoration(
+                    color: isSpecial
+                        ? const Color(0xFF26A69A)
+                        : const Color(0xFF26A69A).withValues(alpha: 0.3),
+                    borderRadius: BorderRadius.circular(8),
+                  ),
+                )
+              : null,
         ),
         const SizedBox(height: 8),
-        Text(day, style: const TextStyle(fontSize: 10, color: Color(0xFF000000), fontWeight: FontWeight.bold)),
+        Text(
+          day,
+          style: const TextStyle(
+            fontSize: 10,
+            color: Color(0xFF94A3B8),
+            fontWeight: FontWeight.bold,
+          ),
+        ),
       ],
     );
   }
 
-  Widget _buildSmallStatCard(String label, String value, IconData icon, Color color) {
+  Widget _buildSmallStatCard(
+    String label,
+    String value,
+    IconData icon,
+    Color color,
+  ) {
     return Expanded(
       child: Container(
         padding: const EdgeInsets.all(16),
@@ -292,80 +437,274 @@ class DailyVideoRecordingScreen extends StatelessWidget {
               child: Icon(icon, color: color, size: 20),
             ),
             const SizedBox(height: 12),
-            Text(label, style: const TextStyle(fontSize: 10, color: Color(
-                0xFF374151))),
+            Text(
+              label,
+              style: const TextStyle(fontSize: 10, color: Color(0xFF64748B)),
+            ),
             const SizedBox(height: 4),
-            Text(value, style: const TextStyle(fontSize: 18, fontWeight: FontWeight.bold, color: Color(0xFF374151))),
+            Text(
+              value,
+              style: const TextStyle(
+                fontSize: 18,
+                fontWeight: FontWeight.bold,
+                color: Color(0xFF374151),
+              ),
+            ),
           ],
         ),
       ),
     );
   }
 
-  Widget _buildFilterChip(String label, {bool isActive = false}) {
-    return Container(
-      margin: const EdgeInsets.only(right: 12),
-      padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 12),
-      decoration: BoxDecoration(
-        color: isActive ? const Color(0xFF22A892) : Colors.white,
-        borderRadius: BorderRadius.circular(20),
-        border: Border.all(color: isActive ? Colors.transparent : const Color(0xFFF1F5F9)),
+  Widget _buildFilters() {
+    return SingleChildScrollView(
+      scrollDirection: Axis.horizontal,
+      child: Row(
+        children: [
+          _buildFilterChip("All Recordings", 'all'),
+          _buildFilterChip("Morning Drill", 'morning'),
+          _buildFilterChip("Afternoon Dr.", 'afternoon'),
+          _buildFilterChip("Evening", 'evening'),
+        ],
       ),
-      child: Text(
-        label,
-        style: TextStyle(
-          color: isActive ? Colors.white : const Color(0xFF64748B),
-          fontWeight: FontWeight.w600,
-          fontSize: 14,
+    );
+  }
+
+  Widget _buildFilterChip(String label, String filter) {
+    final isActive = _selectedFilter == filter;
+    return GestureDetector(
+      onTap: () => setState(() => _selectedFilter = filter),
+      child: Container(
+        margin: const EdgeInsets.only(right: 12),
+        padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 12),
+        decoration: BoxDecoration(
+          color: isActive ? const Color(0xFF26A69A) : Colors.white,
+          borderRadius: BorderRadius.circular(20),
+          border: Border.all(
+            color: isActive ? Colors.transparent : const Color(0xFFF1F5F9),
+          ),
+        ),
+        child: Text(
+          label,
+          style: TextStyle(
+            color: isActive ? Colors.white : const Color(0xFF64748B),
+            fontWeight: FontWeight.bold,
+            fontSize: 14,
+          ),
         ),
       ),
     );
   }
 
-  Widget _buildRecordingItem(String title, String subtitle, IconData icon, {bool isActive = false}) {
-    return Container(
-      margin: const EdgeInsets.only(bottom: 16),
-      padding: const EdgeInsets.all(16),
-      decoration: BoxDecoration(
-        color: isActive ? const Color(0xFF26A69A) : Colors.white,
-        borderRadius: BorderRadius.circular(20),
-        border: Border.all(color: const Color(0xFFEBECEE)),
+  Widget _buildRecordingItem(
+    String title,
+    String subtitle,
+    IconData icon, {
+    bool isActive = false,
+    VoidCallback? onTap,
+    VoidCallback? onDelete,
+  }) {
+    return GestureDetector(
+      onTap: onTap,
+      child: Container(
+        margin: const EdgeInsets.only(bottom: 16),
+        padding: const EdgeInsets.all(16),
+        decoration: BoxDecoration(
+          color: isActive ? const Color(0xFF26A69A) : Colors.white,
+          borderRadius: BorderRadius.circular(20),
+          border: Border.all(color: const Color(0xFFEBECEE)),
+        ),
+        child: Row(
+          children: [
+            Container(
+              padding: const EdgeInsets.all(10),
+              decoration: BoxDecoration(
+                color: isActive
+                    ? Colors.white.withValues(alpha: 0.2)
+                    : const Color(0xFFE0F2F1),
+                shape: BoxShape.circle,
+              ),
+              child: Icon(
+                icon,
+                color: isActive ? Colors.white : const Color(0xFF26A69A),
+                size: 24,
+              ),
+            ),
+            const SizedBox(width: 16),
+            Expanded(
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text(
+                    title,
+                    style: TextStyle(
+                      fontSize: 15,
+                      fontWeight: FontWeight.bold,
+                      color: isActive ? Colors.white : const Color(0xFF374151),
+                    ),
+                  ),
+                  const SizedBox(height: 4),
+                  Text(
+                    subtitle,
+                    style: TextStyle(
+                      fontSize: 12,
+                      color: isActive
+                          ? Colors.white.withValues(alpha: 0.8)
+                          : const Color(0xFF94A3B8),
+                    ),
+                  ),
+                ],
+              ),
+            ),
+            if (onDelete == null)
+              Icon(
+                Icons.more_vert,
+                color: isActive ? Colors.white : const Color(0xFF94A3B8),
+              )
+            else
+              PopupMenuButton<String>(
+                padding: EdgeInsets.zero,
+                color: Colors.white,
+                icon: const Icon(Icons.more_vert, color: Color(0xFF94A3B8)),
+                onSelected: (value) {
+                  if (value == 'delete') onDelete();
+                },
+                itemBuilder: (context) => const [
+                  PopupMenuItem<String>(
+                    value: 'delete',
+                    child: Row(
+                      children: [
+                        Icon(Icons.delete_outline, color: Colors.red),
+                        SizedBox(width: 8),
+                        Text('Delete', style: TextStyle(color: Colors.red)),
+                      ],
+                    ),
+                  ),
+                ],
+              ),
+          ],
+        ),
       ),
-      child: Row(
+    );
+  }
+
+  List<Widget> _buildDailyVideoItems() {
+    const slots = ['morning', 'afternoon', 'evening'];
+    final widgets = <Widget>[];
+
+    for (final slot in slots) {
+      if (_selectedFilter != 'all' && _selectedFilter != slot) continue;
+      final slotRecordings = _recordings.where((item) {
+        final matchesSlot = item.timeSlot == slot;
+        final matchesSearch =
+            _searchQuery.isEmpty ||
+            item.label.toLowerCase().contains(_searchQuery) ||
+            item.slotTitle.toLowerCase().contains(_searchQuery);
+        return matchesSlot && matchesSearch;
+      }).toList();
+
+      if (slotRecordings.isEmpty) {
+        final title = _slotTitle(slot);
+        if (_searchQuery.isNotEmpty &&
+            !title.toLowerCase().contains(_searchQuery)) {
+          continue;
+        }
+        widgets.add(
+          _buildRecordingItem(
+            title,
+            _slotPrompt(slot),
+            Icons.videocam_rounded,
+            isActive: true,
+            onTap: _openRecorder,
+          ),
+        );
+      } else {
+        for (final recording in slotRecordings) {
+          widgets.add(
+            _buildRecordingItem(
+              recording.slotTitle,
+              '${recording.label}\n${recording.durationLabel}',
+              Icons.play_arrow_rounded,
+              onTap: () => _openVideo(recording),
+              onDelete: () => _deleteRecording(recording),
+            ),
+          );
+        }
+      }
+    }
+
+    if (widgets.isEmpty) {
+      widgets.add(
+        const Padding(
+          padding: EdgeInsets.symmetric(vertical: 24),
+          child: Center(
+            child: Text(
+              'No videos found.',
+              style: TextStyle(color: Color(0xFF94A3B8), fontSize: 13),
+            ),
+          ),
+        ),
+      );
+    }
+    return widgets;
+  }
+
+  Future<void> _openVideo(VoiceRecordingModel recording) async {
+    final uri = Uri.tryParse(recording.fileUrl);
+    if (uri == null || recording.fileUrl.isEmpty) return;
+
+    if (!await launchUrl(uri, mode: LaunchMode.externalApplication)) {
+      Get.snackbar('Unable to open video', 'Please try again.');
+    }
+  }
+
+  Future<void> _deleteRecording(VoiceRecordingModel recording) async {
+    try {
+      await _recordingApiService.deleteRecording(recording.id);
+      await _loadRecordings();
+    } catch (error) {
+      Get.snackbar(
+        'Unable to delete recording',
+        error.toString().replaceFirst('Exception: ', ''),
+      );
+    }
+  }
+
+  String _slotTitle(String slot) {
+    switch (slot) {
+      case 'morning':
+        return 'Morning Drill';
+      case 'afternoon':
+        return 'Afternoon Fluency';
+      default:
+        return 'Evening Reflection';
+    }
+  }
+
+  String _slotPrompt(String slot) {
+    switch (slot) {
+      case 'morning':
+        return 'Record your morning video\npractice';
+      case 'afternoon':
+        return 'Capture afternoon fluency\npractice';
+      default:
+        return 'Record your evening\nreflection';
+    }
+  }
+
+  Widget _buildErrorSection() {
+    return Center(
+      child: Column(
         children: [
-          Container(
-            padding: const EdgeInsets.all(10),
-            decoration: BoxDecoration(
-              color: isActive ? Colors.white.withOpacity(0.2) : const Color(0xFFE0F2F1),
-              shape: BoxShape.circle,
-            ),
-            child: Icon(icon, color: isActive ? Colors.white : const Color(0xFF26A69A), size: 24),
+          Text(
+            _errorMessage ?? 'Unable to load videos.',
+            textAlign: TextAlign.center,
+            style: const TextStyle(color: Color(0xFF94A3B8), fontSize: 13),
           ),
-          const SizedBox(width: 16),
-          Expanded(
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Text(
-                  title,
-                  style: TextStyle(
-                    fontSize: 15,
-                    fontWeight: FontWeight.bold,
-                    color: isActive ? Colors.white : const Color(0xFF374151),
-                  ),
-                ),
-                const SizedBox(height: 4),
-                Text(
-                  subtitle,
-                  style: TextStyle(
-                    fontSize: 12,
-                    color: isActive ? Colors.white : const Color(0xFF94A3B8),
-                  ),
-                ),
-              ],
-            ),
+          TextButton(
+            onPressed: _loadRecordings,
+            child: const Text('Try again'),
           ),
-          Icon(Icons.more_vert, color: isActive ? Colors.white : const Color(0xFF94A3B8)),
         ],
       ),
     );

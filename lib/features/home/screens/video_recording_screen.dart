@@ -64,7 +64,7 @@ class _VideoRecordingScreenState extends State<VideoRecordingScreen> {
           child: Container(
             padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
             decoration: BoxDecoration(
-              color: Colors.black.withOpacity(0.2),
+              color: Colors.black.withValues(alpha: 0.2),
               borderRadius: BorderRadius.circular(20),
             ),
             child: Row(
@@ -210,7 +210,7 @@ class _VideoRecordingScreenState extends State<VideoRecordingScreen> {
               aspectRatio: 1.2,
               child: Container(
                 decoration: BoxDecoration(
-                  color: const Color(0xFF26A69A).withOpacity(0.8),
+                  color: const Color(0xFF26A69A).withValues(alpha: 0.8),
                   borderRadius: BorderRadius.circular(24),
                 ),
                 child: const Icon(
@@ -235,7 +235,7 @@ class _VideoRecordingScreenState extends State<VideoRecordingScreen> {
                     width: double.infinity,
                     padding: const EdgeInsets.symmetric(vertical: 16),
                     decoration: BoxDecoration(
-                      color: const Color(0xFFEBECEE).withOpacity(0.5),
+                      color: const Color(0xFFEBECEE).withValues(alpha: 0.5),
                       borderRadius: BorderRadius.circular(8),
                     ),
                     alignment: Alignment.center,
@@ -265,11 +265,19 @@ class _VideoRecordingScreenState extends State<VideoRecordingScreen> {
                     ),
                     const SizedBox(width: 12),
                     Expanded(
-                      child: _buildActionBtn(
-                        "Save Clip",
-                        const Color(0xFF26A69A),
-                        Colors.white,
-                        onTap: () => _showSuccessDialog(),
+                      child: Obx(
+                        () => _buildActionBtn(
+                          controller.isSaving.value ? "Saving..." : "Save Clip",
+                          const Color(0xFF26A69A),
+                          Colors.white,
+                          onTap: controller.isSaving.value
+                              ? null
+                              : () async {
+                                  if (await controller.saveRecording()) {
+                                    _showSuccessDialog();
+                                  }
+                                },
+                        ),
                       ),
                     ),
                   ],
@@ -300,7 +308,7 @@ class _VideoRecordingScreenState extends State<VideoRecordingScreen> {
       child: Container(
         padding: const EdgeInsets.all(12),
         decoration: BoxDecoration(
-          color: Colors.white.withOpacity(0.2),
+          color: Colors.white.withValues(alpha: 0.2),
           shape: BoxShape.circle,
         ),
         child: Icon(icon, color: Colors.white, size: 28),
@@ -312,7 +320,7 @@ class _VideoRecordingScreenState extends State<VideoRecordingScreen> {
     String label,
     Color bg,
     Color text, {
-    required VoidCallback onTap,
+    required VoidCallback? onTap,
   }) {
     return ElevatedButton(
       onPressed: onTap,
@@ -361,7 +369,7 @@ class _VideoRecordingScreenState extends State<VideoRecordingScreen> {
               ),
               const SizedBox(height: 16),
               const Text(
-                "You've completed today's voice recording task.\nKeep up the consistency!",
+                "You've completed today's video recording task.\nKeep up the consistency!",
                 textAlign: TextAlign.center,
                 style: TextStyle(
                   fontSize: 14,

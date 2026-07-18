@@ -8,7 +8,12 @@ import '../services/voice_recording_api_service.dart';
 
 enum RecordingState { initial, recording, paused, finished }
 
+enum AudioRecordingMode { voice, summary }
+
 class AudioRecordingController extends GetxController {
+  AudioRecordingController({this.mode = AudioRecordingMode.voice});
+
+  final AudioRecordingMode mode;
   final AudioRecorder _audioRecorder = AudioRecorder();
   final VoiceRecordingApiService _recordingApiService =
       VoiceRecordingApiService();
@@ -136,12 +141,21 @@ class AudioRecordingController extends GetxController {
 
     isSaving.value = true;
     try {
-      await _recordingApiService.uploadVoiceRecording(
-        audioFile: audioFile,
-        duration: duration.value,
-        recordedAt: DateTime.now(),
-        label: clipName.value,
-      );
+      if (mode == AudioRecordingMode.summary) {
+        await _recordingApiService.uploadSummaryRecording(
+          audioFile: audioFile,
+          duration: duration.value,
+          recordedAt: DateTime.now(),
+          label: clipName.value,
+        );
+      } else {
+        await _recordingApiService.uploadVoiceRecording(
+          audioFile: audioFile,
+          duration: duration.value,
+          recordedAt: DateTime.now(),
+          label: clipName.value,
+        );
+      }
       return true;
     } catch (error) {
       Get.snackbar(

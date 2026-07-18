@@ -1,11 +1,134 @@
 import 'dart:ui';
+
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
+import '../home/models/learner_api_models.dart';
+import '../home/services/learner_api_service.dart';
 import 'subscriber_choose_program_screen.dart';
 import 'subscriber_menu_drawer.dart';
 
-class SubscriberProfileScreen extends StatelessWidget {
+class SubscriberProfileScreen extends StatefulWidget {
   const SubscriberProfileScreen({super.key});
+
+  @override
+  State<SubscriberProfileScreen> createState() =>
+      _SubscriberProfileScreenState();
+}
+
+class _SubscriberProfileScreenState extends State<SubscriberProfileScreen> {
+  final LearnerApiService _api = LearnerApiService();
+  LearnerProfile? _profile;
+  LearnerProgressSnapshot? _progress;
+  DailyMissionSummary? _missions;
+
+  @override
+  void initState() {
+    super.initState();
+    _loadProfileData();
+  }
+
+  Future<void> _loadProfileData() async {
+    try {
+      final values = await Future.wait<dynamic>([
+        _api.getProfile(),
+        _api.getProgressSnapshot(),
+        _api.getDailyMissions(),
+      ]);
+      if (!mounted) return;
+      setState(() {
+        _profile = values[0] as LearnerProfile;
+        _progress = values[1] as LearnerProgressSnapshot;
+        _missions = values[2] as DailyMissionSummary;
+      });
+    } catch (error) {
+      if (!mounted) return;
+      Get.snackbar(
+        'Profile',
+        error.toString().replaceFirst('Exception: ', ''),
+        snackPosition: SnackPosition.BOTTOM,
+      );
+    }
+  }
+
+  String get _fullName =>
+      _profile?.fullName.trim().isNotEmpty == true ? _profile!.fullName : '';
+
+  String get _email =>
+      _profile?.email.trim().isNotEmpty == true ? _profile!.email : '';
+
+  String get _userId =>
+      _profile?.userId.trim().isNotEmpty == true ? _profile!.userId : '';
+
+  String get _planLabel => _formatPlan(_profile?.plan ?? 'none');
+
+  String get _subscriptionLabel {
+    final status = _profile?.subscriptionStatus ?? '';
+    if (_planLabel.isEmpty) return status;
+    return '$_planLabel - ${_capitalize(status)}';
+  }
+
+  String get _memberSince => _formatMonthYear(_profile?.memberSince);
+
+  double _missionRatio(String key) {
+    final mission = _missions?.missions[key];
+    if (mission == null || mission.target == 0) return 0;
+    return (mission.completed / mission.target).clamp(0.0, 1.0);
+  }
+
+  String _missionLabel(String key) {
+    final mission = _missions?.missions[key];
+    if (mission == null) return '0/0';
+    return '${mission.completed}/${mission.target}';
+  }
+
+  Widget _buildNetworkAvatar(double radius, String? url) {
+    final size = radius * 2;
+    return CircleAvatar(
+      radius: radius,
+      backgroundColor: const Color(0xFFE8EAF0),
+      child: ClipOval(
+        child: url == null || url.isEmpty
+            ? SizedBox(width: size, height: size)
+            : Image.network(
+                url,
+                width: size,
+                height: size,
+                fit: BoxFit.cover,
+                errorBuilder: (_, _, _) => SizedBox(width: size, height: size),
+              ),
+      ),
+    );
+  }
+
+  String _formatPlan(String value) {
+    if (value == 'none' || value.isEmpty) return '';
+    if (value == 'immersion_plus_plus') return 'IMMERSION++';
+    return value.replaceAll('_', ' ').toUpperCase();
+  }
+
+  String _capitalize(String value) {
+    if (value.isEmpty) return '';
+    return '${value[0].toUpperCase()}${value.substring(1)}';
+  }
+
+  String _formatMonthYear(DateTime? date) {
+    if (date == null) return '';
+    const months = [
+      'January',
+      'February',
+      'March',
+      'April',
+      'May',
+      'June',
+      'July',
+      'August',
+      'September',
+      'October',
+      'November',
+      'December',
+    ];
+    return '${months[date.month - 1]}, ${date.year}';
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -54,7 +177,7 @@ class SubscriberProfileScreen extends StatelessWidget {
                 child: GestureDetector(
                   onTap: () =>
                       Get.to(() => const SubscriberChooseProgramScreen()),
-                  child: Container(color: Colors.black.withOpacity(0.01)),
+                  child: Container(color: Colors.black.withValues(alpha: 0.01)),
                 ),
               ),
             ),
@@ -134,28 +257,23 @@ class SubscriberProfileScreen extends StatelessWidget {
           Row(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              const CircleAvatar(
-                radius: 40,
-                backgroundImage: NetworkImage(
-                  'https://i.pravatar.cc/150?u=kathy',
-                ),
-              ),
+              _buildNetworkAvatar(40, _profile?.profileImageUrl),
               const SizedBox(width: 16),
               Expanded(
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    const Text(
-                      'Kathy Onana',
-                      style: TextStyle(
+                    Text(
+                      _fullName,
+                      style: const TextStyle(
                         fontSize: 22,
                         fontWeight: FontWeight.bold,
                         color: Color(0xFF1E293B),
                       ),
                     ),
                     Text(
-                      'moses@abc.com',
-                      style: TextStyle(
+                      _email,
+                      style: const TextStyle(
                         fontSize: 14,
                         color: Color(0xFF686868),
                         fontWeight: FontWeight.w500,
@@ -179,9 +297,9 @@ class SubscriberProfileScreen extends StatelessWidget {
                             width: 12,
                             height: 12,
                           ),
-                          const Text(
-                            ' IMMERSION++',
-                            style: TextStyle(
+                          Text(
+                            ' $_planLabel',
+                            style: const TextStyle(
                               color: Colors.white,
                               fontSize: 12,
                               fontWeight: FontWeight.bold,
@@ -198,11 +316,11 @@ class SubscriberProfileScreen extends StatelessWidget {
           const SizedBox(height: 20),
           Divider(color: Color(0xFFDEDEDE)),
           const SizedBox(height: 12),
-          _buildInfoRow('User ID', 'BZ-20240-1234'),
+          _buildInfoRow('User ID', _userId),
           const SizedBox(height: 12),
           Divider(color: Color(0xFFDEDEDE)),
           const SizedBox(height: 12),
-          _buildInfoRow('Member Since', 'January, 2026'),
+          _buildInfoRow('Member Since', _memberSince),
         ],
       ),
     );
@@ -237,21 +355,21 @@ class SubscriberProfileScreen extends StatelessWidget {
       children: [
         _buildStatCard(
           'Lessons\nCompleted',
-          '45',
+          '${_progress?.completedLessons ?? 0}',
           'assets/images/medal-star.png',
           const Color(0xFF5456E7),
         ),
         const SizedBox(width: 12),
         _buildStatCard(
           'Daily\nStreaks',
-          '15 days',
+          '${_profile?.currentStreak ?? 0} days',
           'assets/images/daily_streak.png',
           const Color(0xFF5456E7),
         ),
         const SizedBox(width: 12),
         _buildStatCard(
           'Total\nProgress',
-          '68%',
+          '${_progress?.totalProgress ?? 0}%',
           'assets/images/symbols_crown.png',
           const Color(0xFF5456E7),
         ),
@@ -307,7 +425,7 @@ class SubscriberProfileScreen extends StatelessWidget {
         borderRadius: BorderRadius.circular(24),
         boxShadow: [
           BoxShadow(
-            color: Colors.black.withOpacity(0.04),
+            color: Colors.black.withValues(alpha: 0.04),
             blurRadius: 10,
             offset: const Offset(0, 4),
           ),
@@ -325,19 +443,44 @@ class SubscriberProfileScreen extends StatelessWidget {
             ),
           ),
           const SizedBox(height: 20),
-          _buildProgressBar('Voice Recording', 0.65, const Color(0xFF00C853)),
+          _buildProgressBar(
+            'Voice Recording',
+            _missionRatio('voiceRecordings'),
+            const Color(0xFF00C853),
+            _missionLabel('voiceRecordings'),
+          ),
           const SizedBox(height: 16),
-          _buildProgressBar('Video Recording', 0.65, const Color(0xFFFB8C00)),
+          _buildProgressBar(
+            'Video Recording',
+            _missionRatio('videoRecordings'),
+            const Color(0xFFFB8C00),
+            _missionLabel('videoRecordings'),
+          ),
           const SizedBox(height: 16),
-          _buildProgressBar('Vocabulary', 0.65, const Color(0xFFFFD600)),
+          _buildProgressBar(
+            'Vocabulary',
+            _missionRatio('vocabulary'),
+            const Color(0xFFFFD600),
+            _missionLabel('vocabulary'),
+          ),
           const SizedBox(height: 16),
-          _buildProgressBar('Reading', 0.65, const Color(0xFF4A82E7)),
+          _buildProgressBar(
+            'Reading',
+            _missionRatio('summary'),
+            const Color(0xFF4A82E7),
+            _missionLabel('summary'),
+          ),
         ],
       ),
     );
   }
 
-  Widget _buildProgressBar(String label, double progress, Color color) {
+  Widget _buildProgressBar(
+    String label,
+    double progress,
+    Color color,
+    String value,
+  ) {
     return Column(
       children: [
         Row(
@@ -351,9 +494,9 @@ class SubscriberProfileScreen extends StatelessWidget {
                 fontWeight: FontWeight.bold,
               ),
             ),
-            const Text(
-              '23/35%',
-              style: TextStyle(
+            Text(
+              value,
+              style: const TextStyle(
                 fontSize: 12,
                 color: Color(0xFF878787),
                 fontWeight: FontWeight.bold,
@@ -439,7 +582,7 @@ class SubscriberProfileScreen extends StatelessWidget {
         borderRadius: BorderRadius.circular(24),
         boxShadow: [
           BoxShadow(
-            color: Colors.black.withOpacity(0.04),
+            color: Colors.black.withValues(alpha: 0.04),
             blurRadius: 10,
             offset: const Offset(0, 4),
           ),
@@ -463,8 +606,8 @@ class SubscriberProfileScreen extends StatelessWidget {
                     ),
                     const SizedBox(height: 4),
                     Text(
-                      'IMMERSION++ - Active',
-                      style: TextStyle(
+                      _subscriptionLabel,
+                      style: const TextStyle(
                         fontSize: 13,
                         color: Color(0xFF878787),
                         fontWeight: FontWeight.w500,
@@ -488,7 +631,8 @@ class SubscriberProfileScreen extends StatelessWidget {
               borderRadius: BorderRadius.circular(14),
             ),
             child: TextButton(
-              onPressed: () {},
+              onPressed: () =>
+                  Get.to(() => const SubscriberChooseProgramScreen()),
               child: const Text(
                 'Manage Subscription',
                 style: TextStyle(
@@ -511,7 +655,7 @@ class SubscriberProfileScreen extends StatelessWidget {
         borderRadius: BorderRadius.circular(16),
         boxShadow: [
           BoxShadow(
-            color: Colors.black.withOpacity(0.04),
+            color: Colors.black.withValues(alpha: 0.04),
             blurRadius: 10,
             offset: const Offset(0, 4),
           ),

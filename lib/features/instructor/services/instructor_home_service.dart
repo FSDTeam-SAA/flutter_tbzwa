@@ -37,7 +37,7 @@ class InstructorHomeService {
     required String privacy,
   }) async {
     final result = await _api.post<void>(
-      endpoint: ApiConstants.voiceRoom.root,
+      endpoint: ApiConstants.voiceRooms.root,
       data: {
         'name': name.trim(),
         'groupId': groupId,

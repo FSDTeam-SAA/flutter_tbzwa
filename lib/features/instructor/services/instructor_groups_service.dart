@@ -109,7 +109,7 @@ class InstructorGroupsService {
 
   Future<List<InstructorGroupRoom>> getRooms(String groupId) async {
     final result = await _api.get<List<InstructorGroupRoom>>(
-      endpoint: ApiConstants.voiceRoom.root,
+      endpoint: ApiConstants.voiceRooms.root,
       queryParameters: {'groupId': groupId},
       fromJsonT: (json) {
         final data = Map<String, dynamic>.from(json as Map);
@@ -134,7 +134,7 @@ class InstructorGroupsService {
     required String privacy,
   }) async {
     final result = await _api.post<void>(
-      endpoint: ApiConstants.voiceRoom.root,
+      endpoint: ApiConstants.voiceRooms.root,
       data: {
         'groupId': groupId,
         'name': name.trim(),

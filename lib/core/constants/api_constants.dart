@@ -6,7 +6,7 @@ class ApiConstants {
 
   // static const String baseDomain = 'http://187.77.187.56:5006'; // Office VPS
 
-  static const String baseDomain = 'http://10.10.26.124:5008'; // soykot
+  static const String baseDomain = 'http://10.10.26.122:5008'; // soykot
 
   static const String baseUrl = '$baseDomain/api/v1';
   static const String graphqlEndpoint = '$baseDomain/graphql';
@@ -49,6 +49,7 @@ class ApiConstants {
   static BZPadEndpoints get bzPad => BZPadEndpoints();
   static LibraryEndpoints get library => LibraryEndpoints();
   static RecordingEndpoints get recording => RecordingEndpoints();
+  static SummaryEndpoints get summary => SummaryEndpoints();
   static VocabularyEndpoints get vocabulary => VocabularyEndpoints();
   static ImmersionEndpoints get immersion => ImmersionEndpoints();
   static InstructorEndpoints get instructor => InstructorEndpoints();
@@ -56,8 +57,9 @@ class ApiConstants {
   static CommentEndpoints get comment => CommentEndpoints();
   static PostEndpoints get post => PostEndpoints();
   static FriendEndpoints get friend => FriendEndpoints();
-  static NotificationEndpoints get notification => NotificationEndpoints();
   static VoiceRoomEndpoints get voiceRoom => VoiceRoomEndpoints();
+  static NotificationEndpoints get notification => NotificationEndpoints();
+  static VoiceRoomEndpointss get voiceRooms => VoiceRoomEndpointss();
   static StoryEndpoints get story => StoryEndpoints();
   static ChatEndpoints get chat => ChatEndpoints();
   static SearchEndpoints get search => SearchEndpoints();
@@ -238,9 +240,19 @@ class RecordingEndpoints {
   static const String _base = '${ApiConstants.baseUrl}/recordings';
 
   final String voice = '$_base/voice';
+  final String video = '$_base/video';
+  final String summary = '$_base/summary';
   final String my = '$_base/my';
   String byDate(String date) => '$_base/date/$date';
   String recording(String id) => '$_base/$id';
+}
+
+class SummaryEndpoints {
+  static const String _base = '${ApiConstants.baseUrl}/summary';
+
+  final String today = '$_base/today';
+  final String history = '$_base/history';
+  final String saveText = '$_base/save-text';
 }
 
 class VocabularyEndpoints {
@@ -327,7 +339,7 @@ class PostEndpoints {
 }
 
 class FriendEndpoints {
-  static const String _base = '${ApiConstants.baseUrl}/friends';
+  static const String _base = '${ApiConstants.baseUrl}/friendships';
   final String root = _base;
 
   final String getNotFriends = '$_base/non-friends';
@@ -341,6 +353,14 @@ class FriendEndpoints {
   String unfriend(String friendId) => '$_base/$friendId';
 }
 
+class VoiceRoomEndpoints {
+  static const String _base = '${ApiConstants.baseUrl}/voicerooms';
+  final String rooms = _base;
+  String room(String id) => '$_base/$id';
+  String join(String id) => '$_base/$id/join';
+  String leave(String id) => '$_base/$id/leave';
+}
+
 class NotificationEndpoints {
   static const String _base = '${ApiConstants.baseUrl}/notifications';
   final String root = _base;
@@ -350,7 +370,7 @@ class NotificationEndpoints {
   String delete(String id) => '$_base/$id';
 }
 
-class VoiceRoomEndpoints {
+class VoiceRoomEndpointss {
   static const String _base = '${ApiConstants.baseUrl}/voicerooms';
   final String root = _base;
 

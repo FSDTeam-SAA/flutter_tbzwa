@@ -17,7 +17,11 @@ class CreatePostScreen extends StatelessWidget {
         backgroundColor: Colors.white,
         elevation: 0,
         leading: IconButton(
-          icon: const Icon(Icons.arrow_back_ios_new_rounded, color: Color(0xFF1E293B), size: 20),
+          icon: const Icon(
+            Icons.arrow_back_ios_new_rounded,
+            color: Color(0xFF1E293B),
+            size: 20,
+          ),
           onPressed: () => Get.back(),
         ),
         title: const Text(
@@ -44,12 +48,14 @@ class CreatePostScreen extends StatelessWidget {
                     borderRadius: BorderRadius.circular(20),
                   ),
                 ),
-                child: const Text(
-                  'Post',
-                  style: TextStyle(
-                    color: Colors.white,
-                    fontWeight: FontWeight.w700,
-                    fontSize: 14,
+                child: Obx(
+                  () => Text(
+                    controller.isPosting.value ? '...' : 'Post',
+                    style: const TextStyle(
+                      color: Colors.white,
+                      fontWeight: FontWeight.w700,
+                      fontSize: 14,
+                    ),
                   ),
                 ),
               ),
@@ -88,12 +94,18 @@ class CreatePostScreen extends StatelessWidget {
                   border: Border.all(color: const Color(0xFFE2E8F0)),
                 ),
                 child: controller.selectedImage.value != null
-                    ? _buildMediaPreview(controller.selectedImage.value!, isImage: true)
+                    ? _buildMediaPreview(
+                        controller.selectedImage.value!,
+                        isImage: true,
+                      )
                     : controller.selectedVideo.value != null
-                        ? _buildMediaPreview(controller.selectedVideo.value!, isVideo: true)
-                        : controller.selectedAudio.value != null
-                            ? _buildAudioPreview(controller.selectedAudio.value!)
-                            : _buildMediaPlaceholder(),
+                    ? _buildMediaPreview(
+                        controller.selectedVideo.value!,
+                        isVideo: true,
+                      )
+                    : controller.selectedAudio.value != null
+                    ? _buildAudioPreview(controller.selectedAudio.value!)
+                    : _buildMediaPlaceholder(),
               );
             }),
             const SizedBox(height: 40),
@@ -103,25 +115,35 @@ class CreatePostScreen extends StatelessWidget {
     );
   }
 
-  Widget _buildMediaPreview(File file, {bool isImage = false, bool isVideo = false}) {
+  Widget _buildMediaPreview(
+    File file, {
+    bool isImage = false,
+    bool isVideo = false,
+  }) {
     return Stack(
       children: [
         ClipRRect(
           //borderRadius: BorderRadius.circular(12),
-          child: isImage 
-            ? Image.file(file, width: double.infinity, height: 220, fit: BoxFit.cover)
-            : Container(
-            width: double.infinity,
-            height: 220,
-            decoration: BoxDecoration(
-              border: Border.all(
-                color: Color(0xFF1A8C79),
-                width: 2
-              )
-            ),
+          child: isImage
+              ? Image.file(
+                  file,
+                  width: double.infinity,
+                  height: 220,
+                  fit: BoxFit.cover,
+                )
+              : Container(
+                  width: double.infinity,
+                  height: 220,
+                  decoration: BoxDecoration(
+                    border: Border.all(color: Color(0xFF1A8C79), width: 2),
+                  ),
 
-                child: const Icon(Icons.videocam_rounded, color: Color(0xFF2FBDA3), size: 50),
-              ),
+                  child: const Icon(
+                    Icons.videocam_rounded,
+                    color: Color(0xFF2FBDA3),
+                    size: 50,
+                  ),
+                ),
         ),
         Positioned(
           top: 8,
@@ -152,7 +174,9 @@ class CreatePostScreen extends StatelessWidget {
       decoration: BoxDecoration(
         color: const Color(0xFFEBFDF5),
         borderRadius: BorderRadius.circular(12),
-        border: Border.all(color: const Color(0xFF2FBDA3).withOpacity(0.2)),
+        border: Border.all(
+          color: const Color(0xFF2FBDA3).withValues(alpha: 0.2),
+        ),
       ),
       child: Row(
         children: [
@@ -161,7 +185,10 @@ class CreatePostScreen extends StatelessWidget {
           const Expanded(
             child: Text(
               'Voice Note Selected',
-              style: TextStyle(fontWeight: FontWeight.w600, color: Color(0xFF123456)),
+              style: TextStyle(
+                fontWeight: FontWeight.w600,
+                color: Color(0xFF123456),
+              ),
             ),
           ),
           IconButton(
@@ -189,18 +216,34 @@ class CreatePostScreen extends StatelessWidget {
         Row(
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
-            _buildPlaceholderIcon(Icons.image_outlined, 'Image', () => controller.pickImage()),
+            _buildPlaceholderIcon(
+              Icons.image_outlined,
+              'Image',
+              () => controller.pickImage(),
+            ),
             const SizedBox(width: 30),
-            _buildPlaceholderIcon(Icons.videocam_outlined, 'Video', () => controller.pickVideo()),
+            _buildPlaceholderIcon(
+              Icons.videocam_outlined,
+              'Video',
+              () => controller.pickVideo(),
+            ),
             const SizedBox(width: 30),
-            _buildPlaceholderIcon(Icons.mic_none_rounded, 'Audio', () => controller.pickAudio()),
+            _buildPlaceholderIcon(
+              Icons.mic_none_rounded,
+              'Audio',
+              () => controller.pickAudio(),
+            ),
           ],
         ),
       ],
     );
   }
 
-  Widget _buildPlaceholderIcon(IconData icon, String label, VoidCallback onTap) {
+  Widget _buildPlaceholderIcon(
+    IconData icon,
+    String label,
+    VoidCallback onTap,
+  ) {
     return GestureDetector(
       onTap: onTap,
       child: Column(

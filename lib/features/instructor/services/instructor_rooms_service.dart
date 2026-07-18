@@ -11,7 +11,7 @@ class InstructorRoomsService {
     String status = 'active',
   }) async {
     final result = await _api.get<Map<String, dynamic>>(
-      endpoint: ApiConstants.voiceRoom.root,
+      endpoint: ApiConstants.voiceRooms.root,
       queryParameters: {'page': page, 'limit': limit, 'status': status},
       fromJsonT: (json) => Map<String, dynamic>.from(json as Map),
     );
@@ -44,7 +44,7 @@ class InstructorRoomsService {
 
   Future<InstructorRoom> getRoom(String roomId) async {
     final result = await _api.get<InstructorRoom>(
-      endpoint: ApiConstants.voiceRoom.details(roomId),
+      endpoint: ApiConstants.voiceRooms.details(roomId),
       fromJsonT: (json) {
         final data = Map<String, dynamic>.from(json as Map);
         return InstructorRoom.fromJson(
@@ -65,7 +65,7 @@ class InstructorRoomsService {
     required String privacy,
   }) async {
     final result = await _api.post<InstructorRoom>(
-      endpoint: ApiConstants.voiceRoom.root,
+      endpoint: ApiConstants.voiceRooms.root,
       data: {
         'name': name.trim(),
         'groupId': groupId,
@@ -112,7 +112,7 @@ class InstructorRoomsService {
 
   Future<void> closeRoom(String roomId) async {
     final result = await _api.delete<void>(
-      endpoint: ApiConstants.voiceRoom.close(roomId),
+      endpoint: ApiConstants.voiceRooms.close(roomId),
       fromJsonT: (_) {},
     );
     result.fold((failure) => throw Exception(failure.message), (_) {});
