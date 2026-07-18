@@ -2,6 +2,7 @@ import 'dart:ui';
 
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
+import '../auth/controller/auth_controller.dart';
 import '../home/models/learner_api_models.dart';
 import '../home/services/learner_api_service.dart';
 import 'subscriber_choose_program_screen.dart';
@@ -20,6 +21,7 @@ class _SubscriberProfileScreenState extends State<SubscriberProfileScreen> {
   LearnerProfile? _profile;
   LearnerProgressSnapshot? _progress;
   DailyMissionSummary? _missions;
+  bool _isLoggingOut = false;
 
   @override
   void initState() {
@@ -130,6 +132,54 @@ class _SubscriberProfileScreenState extends State<SubscriberProfileScreen> {
     return '${months[date.month - 1]}, ${date.year}';
   }
 
+  void _showLogoutDialog() {
+    Get.dialog(
+      AlertDialog(
+        backgroundColor: Colors.white,
+        shape: RoundedRectangleBorder(
+          borderRadius: BorderRadius.circular(16),
+          side: const BorderSide(color: Color(0xFFD1D5DB)),
+        ),
+        title: const Text(
+          'Logout',
+          style: TextStyle(color: Color(0xFF000000), fontSize: 18),
+        ),
+        content: const Text(
+          'Are you sure you want to logout?',
+          style: TextStyle(color: Color(0xFF000000), fontSize: 16),
+        ),
+        actions: [
+          TextButton(onPressed: () => Get.back(), child: const Text('Cancel')),
+          TextButton(
+            onPressed: _isLoggingOut ? null : _logout,
+            child: const Text(
+              'Logout',
+              style: TextStyle(color: Color(0xFFE00000)),
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
+  Future<void> _logout() async {
+    Get.back();
+    if (!mounted) return;
+
+    setState(() => _isLoggingOut = true);
+    try {
+      await Get.find<AuthController>().logout();
+    } catch (error) {
+      if (!mounted) return;
+      setState(() => _isLoggingOut = false);
+      Get.snackbar(
+        'Logout',
+        error.toString().replaceFirst('Exception: ', ''),
+        snackPosition: SnackPosition.BOTTOM,
+      );
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -160,9 +210,7 @@ class _SubscriberProfileScreenState extends State<SubscriberProfileScreen> {
                         _buildSubscriptionCard(),
                         const SizedBox(height: 20),
                         _buildSettingsTile(),
-                        const SizedBox(height: 20),
-                        _buildLogoutButton(),
-                        const SizedBox(height: 30),
+                        const SizedBox(height: 110),
                       ],
                     ),
                   ),
@@ -205,6 +253,13 @@ class _SubscriberProfileScreenState extends State<SubscriberProfileScreen> {
                   ],
                 ),
               ),
+            ),
+
+            Positioned(
+              left: 16,
+              right: 16,
+              bottom: 20,
+              child: _buildLogoutButton(),
             ),
           ],
         ),
@@ -689,11 +744,20 @@ class _SubscriberProfileScreenState extends State<SubscriberProfileScreen> {
         borderRadius: BorderRadius.circular(16),
       ),
       child: TextButton.icon(
-        onPressed: () {},
-        icon: const Icon(Icons.logout, color: Color(0xFFE00000)),
-        label: const Text(
-          'Logout',
-          style: TextStyle(
+        onPressed: _isLoggingOut ? null : _showLogoutDialog,
+        icon: _isLoggingOut
+            ? const SizedBox(
+                width: 18,
+                height: 18,
+                child: CircularProgressIndicator(
+                  strokeWidth: 2,
+                  color: Color(0xFFE00000),
+                ),
+              )
+            : const Icon(Icons.logout, color: Color(0xFFE00000)),
+        label: Text(
+          _isLoggingOut ? 'Logging out...' : 'Logout',
+          style: const TextStyle(
             color: Color(0xFFE00000),
             fontWeight: FontWeight.bold,
             fontSize: 16,
