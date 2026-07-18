@@ -46,6 +46,19 @@ class LearnerApiService {
     );
   }
 
+  Future<LearnerProgressSnapshot> getProgressSnapshot() async {
+    final result = await _api.get<LearnerProgressSnapshot>(
+      endpoint: ApiConstants.progress.my,
+      fromJsonT: (json) => LearnerProgressSnapshot.fromJson(
+        Map<String, dynamic>.from(json as Map),
+      ),
+    );
+    return result.fold(
+      (failure) => throw Exception(failure.message),
+      (success) => success.data,
+    );
+  }
+
   Future<TodayVocabulary> getTodayVocabulary() async {
     final result = await _api.get<TodayVocabulary>(
       endpoint: ApiConstants.vocabulary.today,
@@ -122,6 +135,35 @@ class LearnerApiService {
       endpoint: ApiConstants.immersion.today,
       fromJsonT: (json) =>
           TodayImmersion.fromJson(Map<String, dynamic>.from(json as Map)),
+    );
+    return result.fold(
+      (failure) => throw Exception(failure.message),
+      (success) => success.data,
+    );
+  }
+
+  Future<TodaySummaryTask> getTodaySummaryTask() async {
+    final result = await _api.get<TodaySummaryTask>(
+      endpoint: ApiConstants.summary.today,
+      fromJsonT: (json) =>
+          TodaySummaryTask.fromJson(Map<String, dynamic>.from(json as Map)),
+    );
+    return result.fold(
+      (failure) => throw Exception(failure.message),
+      (success) => success.data,
+    );
+  }
+
+  Future<List<SummaryHistoryEntry>> getSummaryHistory() async {
+    final result = await _api.get<List<SummaryHistoryEntry>>(
+      endpoint: ApiConstants.summary.history,
+      fromJsonT: (json) => (json['history'] as List? ?? const [])
+          .map(
+            (item) => SummaryHistoryEntry.fromJson(
+              Map<String, dynamic>.from(item as Map),
+            ),
+          )
+          .toList(),
     );
     return result.fold(
       (failure) => throw Exception(failure.message),

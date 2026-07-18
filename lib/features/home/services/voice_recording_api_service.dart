@@ -19,6 +19,12 @@ class VoiceRecordingApiService {
     return _getRecordingsForDate(date, type: 'video');
   }
 
+  Future<List<VoiceRecordingModel>> getSummaryRecordingsForDate(
+    DateTime date,
+  ) async {
+    return _getRecordingsForDate(date, type: 'summary');
+  }
+
   Future<List<VoiceRecordingModel>> _getRecordingsForDate(
     DateTime date, {
     required String type,
@@ -104,6 +110,37 @@ class VoiceRecordingApiService {
 
     final result = await _api.post<VoiceRecordingModel>(
       endpoint: ApiConstants.recording.video,
+      formData: formData,
+      fromJsonT: (json) => VoiceRecordingModel.fromJson(
+        Map<String, dynamic>.from(json['recording'] as Map),
+      ),
+    );
+    return result.fold(
+      (failure) => throw Exception(failure.message),
+      (success) => success.data,
+    );
+  }
+
+  Future<VoiceRecordingModel> uploadSummaryRecording({
+    required File audioFile,
+    required int duration,
+    required DateTime recordedAt,
+    String? label,
+  }) async {
+    final formData = FormData.fromMap({
+      'audio': await MultipartFile.fromFile(
+        audioFile.path,
+        filename: audioFile.uri.pathSegments.last,
+      ),
+      if (label != null && label.trim().isNotEmpty) 'label': label.trim(),
+      'duration': duration,
+      'recordedAt': recordedAt.toUtc().toIso8601String(),
+      'timezoneOffsetMinutes': recordedAt.timeZoneOffset.inMinutes,
+      'missionDate': _dateOnly(recordedAt),
+    });
+
+    final result = await _api.post<VoiceRecordingModel>(
+      endpoint: ApiConstants.recording.summary,
       formData: formData,
       fromJsonT: (json) => VoiceRecordingModel.fromJson(
         Map<String, dynamic>.from(json['recording'] as Map),

@@ -1,14 +1,13 @@
 import 'package:flutx_core/core/debug_print.dart';
 import 'package:flutter_tbzwa/features/auth/screens/login_screen.dart';
-import 'package:flutter_tbzwa/navigation_menu.dart';
 import 'package:get/get.dart';
 import 'package:video_player/video_player.dart';
 
 import '../../../core/api/api_client.dart';
 import '../../../core/services/auth_storage_service.dart';
 import '../../../core/services/secure_store_services.dart';
-import '../../navigation/instructor_nav_menu.dart' as instructor_navigation;
 import '../../onboarding/screens/onboarding_screen.dart';
+import '../screens/role_selection_screen.dart';
 
 class SplashController extends GetxController {
   final AuthStorageService _authStorageService = AuthStorageService();
@@ -82,12 +81,7 @@ class SplashController extends GetxController {
     final isAuth = await _authStorageService.isAuthenticated();
 
     if (isAuth) {
-      final role = await _authStorageService.getRole();
-      if (role == 'instructor') {
-        Get.offAll(() => const instructor_navigation.NavigationMenu());
-      } else {
-        Get.offAll(() => const NavigationMenu());
-      }
+      Get.offAll(() => const RoleSelectionScreen());
     } else if (savedEmail != null && savedPassword != null) {
       Get.offAll(() => LoginScreen());
     } else {

@@ -8,7 +8,13 @@ import '../bz_wallet/screens/top_up_screen.dart';
 import '../library/screens/library_splash_screen.dart';
 import '../daily_mission/screens/daily_mission_splash_screen.dart';
 import 'subscriber_menu_drawer.dart';
-
+import '../home/models/learner_api_models.dart';
+import '../home/screens/daily_mission_screen.dart';
+import '../home/screens/daily_summary_screen.dart';
+import '../home/screens/daily_video_recording_screen.dart';
+import '../home/screens/daily_voice_recording_screen.dart';
+import '../home/screens/daily_vocabulary_screen.dart';
+import '../home/services/learner_api_service.dart';
 
 class SubscriberHome extends StatefulWidget {
   const SubscriberHome({super.key});
@@ -19,6 +25,98 @@ class SubscriberHome extends StatefulWidget {
 
 class _SubscriberHomeState extends State<SubscriberHome> {
   final _scaffoldKey = GlobalKey<ScaffoldState>();
+  final LearnerApiService _learnerApiService = LearnerApiService();
+  LearnerProfile? _profile;
+  DailyMissionSummary? _missions;
+  LearnerLiveClasses? _liveClasses;
+  bool _isLoadingHome = true;
+
+  @override
+  void initState() {
+    super.initState();
+    _loadHomeData();
+  }
+
+  Future<void> _loadHomeData() async {
+    setState(() => _isLoadingHome = true);
+    try {
+      final results = await Future.wait<dynamic>([
+        _learnerApiService.getProfile(),
+        _learnerApiService.getDailyMissions(),
+        _learnerApiService.getLiveClasses(),
+      ]);
+      if (!mounted) return;
+      setState(() {
+        _profile = results[0] as LearnerProfile;
+        _missions = results[1] as DailyMissionSummary;
+        _liveClasses = results[2] as LearnerLiveClasses;
+      });
+    } catch (_) {
+      if (!mounted) return;
+    } finally {
+      if (mounted) setState(() => _isLoadingHome = false);
+    }
+  }
+
+  MissionProgress? _mission(String key) => _missions?.missions[key];
+
+  String _missionStatus(String key, int fallbackTarget) {
+    final mission = _mission(key);
+    final completed = mission?.completed ?? 0;
+    final target = mission?.target ?? fallbackTarget;
+    return '$completed/$target ${completed >= target ? 'complete' : 'in progress'}';
+  }
+
+  bool _missionDone(String key) {
+    final mission = _mission(key);
+    return mission != null && mission.completed >= mission.target;
+  }
+
+  String get _learnerName {
+    final name = _profile?.fullName.trim();
+    return name == null || name.isEmpty ? 'Learner' : name;
+  }
+
+  String get _learnerId {
+    final userId = _profile?.userId.trim();
+    return userId == null || userId.isEmpty ? 'BZ - 284910' : userId;
+  }
+
+  String get _planLabel {
+    final plan = _profile?.plan ?? 'pro';
+    if (plan == 'none') return 'PRO';
+    return plan.replaceAll('_', ' ').toUpperCase();
+  }
+
+  String get _balanceLabel =>
+      '\$${(_profile?.walletBalance ?? 0).toStringAsFixed(2)}';
+
+  int get _goalProgress => _missions?.overallProgress ?? 0;
+
+  int get _remainingTasks {
+    final missions = _missions;
+    if (missions == null) return 0;
+    return missions.totalCount - missions.completedCount;
+  }
+
+  LiveClassInfo? get _nextLiveClass {
+    final today = _liveClasses?.today ?? const <LiveClassInfo>[];
+    if (today.isNotEmpty) return today.first;
+    final upcoming = _liveClasses?.upcoming ?? const <LiveClassInfo>[];
+    return upcoming.isEmpty ? null : upcoming.first;
+  }
+
+  String _formatClassTime(DateTime date) {
+    final hour = date.hour % 12 == 0 ? 12 : date.hour % 12;
+    final minute = date.minute.toString().padLeft(2, '0');
+    final suffix = date.hour >= 12 ? 'PM' : 'AM';
+    return '$hour:$minute $suffix';
+  }
+
+  Future<void> _openMission(Widget screen) async {
+    await Get.to(() => screen);
+    await _loadHomeData();
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -27,7 +125,6 @@ class _SubscriberHomeState extends State<SubscriberHome> {
       backgroundColor: const Color(0xFFF7F8FC),
       drawer: const SubscriberMenuDrawer(),
       body: Stack(
-
         children: [
           // ─── Main Content (Blurred) ──────────────────────────────────────────
           SingleChildScrollView(
@@ -43,7 +140,14 @@ class _SubscriberHomeState extends State<SubscriberHome> {
                       _buildBlurredSection(_buildTodayGoalCard()),
 
                       const SizedBox(height: 30),
-                      _buildSectionHeader("Daily Missions", 'yes', onSeeAll: () {}),
+                      _buildSectionHeader(
+                        "Daily Missions",
+                        'yes',
+                        onSeeAll: () async {
+                          await Get.to(() => const DailyMissionsScreen());
+                          await _loadHomeData();
+                        },
+                      ),
                       const SizedBox(height: 16),
                       _buildDailyMissionsGrid(),
                       const SizedBox(height: 30),
@@ -59,7 +163,11 @@ class _SubscriberHomeState extends State<SubscriberHome> {
                       _buildBlurredSection(_buildNextLiveClassCard()),
 
                       const SizedBox(height: 30),
-                      _buildSectionHeader("Quick Access", 'no', onSeeAll: () {}),
+                      _buildSectionHeader(
+                        "Quick Access",
+                        'no',
+                        onSeeAll: () {},
+                      ),
                       const SizedBox(height: 16),
                       _buildQuickAccessList(),
                       const SizedBox(height: 30),
@@ -69,7 +177,6 @@ class _SubscriberHomeState extends State<SubscriberHome> {
               ],
             ),
           ),
-
 
           // ─── Unblurred Header ─────────────────────────────────────────────
           Positioned(
@@ -85,19 +192,16 @@ class _SubscriberHomeState extends State<SubscriberHome> {
                   //   child: const Icon(Icons.menu, color: Colors.white, size: 28),
                   // ),
                   //const SizedBox(width: 16),
-                  const Column(
+                  Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
-                      Text(
+                      const Text(
                         "Bonjour,",
-                        style: TextStyle(
-                          color: Colors.white,
-                          fontSize: 14,
-                        ),
+                        style: TextStyle(color: Colors.white, fontSize: 14),
                       ),
                       Text(
-                        "Kathy Onana",
-                        style: TextStyle(
+                        _learnerName,
+                        style: const TextStyle(
                           color: Colors.white,
                           fontSize: 22,
                           fontWeight: FontWeight.bold,
@@ -107,14 +211,17 @@ class _SubscriberHomeState extends State<SubscriberHome> {
                   ),
                   const Spacer(),
                   Container(
-                    padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 5),
+                    padding: const EdgeInsets.symmetric(
+                      horizontal: 12,
+                      vertical: 5,
+                    ),
                     decoration: BoxDecoration(
                       color: Colors.white,
                       borderRadius: BorderRadius.circular(20),
                     ),
-                    child: const Text(
-                      "PRO",
-                      style: TextStyle(
+                    child: Text(
+                      _planLabel,
+                      style: const TextStyle(
                         color: Color(0xFF000000),
                         fontWeight: FontWeight.bold,
                         fontSize: 12,
@@ -128,7 +235,10 @@ class _SubscriberHomeState extends State<SubscriberHome> {
                       color: Colors.white,
                       shape: BoxShape.circle,
                     ),
-                    child: const Icon(Icons.notifications_none_rounded, color: Colors.black),
+                    child: const Icon(
+                      Icons.notifications_none_rounded,
+                      color: Colors.black,
+                    ),
                   ),
                   //const SizedBox(width: 12),
                 ],
@@ -159,7 +269,10 @@ class _SubscriberHomeState extends State<SubscriberHome> {
             mainAxisAlignment: MainAxisAlignment.spaceBetween,
             children: [
               Container(
-                padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+                padding: const EdgeInsets.symmetric(
+                  horizontal: 16,
+                  vertical: 12,
+                ),
                 decoration: BoxDecoration(
                   color: Color(0xFF6666EE),
                   borderRadius: BorderRadius.circular(25),
@@ -169,18 +282,26 @@ class _SubscriberHomeState extends State<SubscriberHome> {
                   onTap: () => Get.to(() => const TopUpScreen()),
                   child: Row(
                     children: [
-                      const Icon(Icons.account_balance_wallet_outlined, size: 20, color: Color(0xFFFFFFFF)),
+                      const Icon(
+                        Icons.account_balance_wallet_outlined,
+                        size: 20,
+                        color: Color(0xFFFFFFFF),
+                      ),
                       const SizedBox(width: 8),
-                      const Column(
+                      Column(
                         crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
-                          Text(
+                          const Text(
                             "TalkCoin Balance",
                             style: TextStyle(color: Colors.white, fontSize: 12),
                           ),
                           Text(
-                            "\$00.00",
-                            style: TextStyle(color: Colors.white, fontSize: 16, fontWeight: FontWeight.bold),
+                            _balanceLabel,
+                            style: const TextStyle(
+                              color: Colors.white,
+                              fontSize: 16,
+                              fontWeight: FontWeight.bold,
+                            ),
                           ),
                         ],
                       ),
@@ -193,23 +314,39 @@ class _SubscriberHomeState extends State<SubscriberHome> {
                 children: [
                   ElevatedButton(
                     onPressed: () {},
-                    style: ElevatedButton.styleFrom(
-                      backgroundColor: Colors.white,
-                      foregroundColor: const Color(0xFF4F5CD1),
-                      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
-                      padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
-                      elevation: 0,
-                    ).copyWith(
-                      shape: WidgetStateProperty.all(RoundedRectangleBorder(borderRadius: BorderRadius.circular(20))),
+                    style:
+                        ElevatedButton.styleFrom(
+                          backgroundColor: Colors.white,
+                          foregroundColor: const Color(0xFF4F5CD1),
+                          shape: RoundedRectangleBorder(
+                            borderRadius: BorderRadius.circular(20),
+                          ),
+                          padding: const EdgeInsets.symmetric(
+                            horizontal: 16,
+                            vertical: 8,
+                          ),
+                          elevation: 0,
+                        ).copyWith(
+                          shape: WidgetStateProperty.all(
+                            RoundedRectangleBorder(
+                              borderRadius: BorderRadius.circular(20),
+                            ),
+                          ),
+                        ),
+                    child: const Text(
+                      "Give interview",
+                      style: TextStyle(
+                        fontWeight: FontWeight.bold,
+                        color: Colors.black,
+                      ),
                     ),
-                    child: const Text("Give interview", style: TextStyle(fontWeight: FontWeight.bold, color: Colors.black)),
                   ),
                   const SizedBox(height: 4),
                   Padding(
                     padding: const EdgeInsets.only(right: 18.0),
-                    child: const Text(
-                      "ID : BZ - 284910",
-                      style: TextStyle(color: Colors.white, fontSize: 12),
+                    child: Text(
+                      "ID : $_learnerId",
+                      style: const TextStyle(color: Colors.white, fontSize: 12),
                     ),
                   ),
                 ],
@@ -226,10 +363,7 @@ class _SubscriberHomeState extends State<SubscriberHome> {
       padding: const EdgeInsets.all(1.5), // Border thickness
       decoration: BoxDecoration(
         gradient: const LinearGradient(
-          colors: [
-            Color(0xFFFAFAFF),
-            Color(0xFF7E7EFB),
-          ],
+          colors: [Color(0xFFFAFAFF), Color(0xFF7E7EFB)],
           begin: Alignment.topCenter,
           end: Alignment.bottomCenter,
         ),
@@ -240,15 +374,14 @@ class _SubscriberHomeState extends State<SubscriberHome> {
         decoration: BoxDecoration(
           color: Colors.white,
           borderRadius: BorderRadius.circular(24),
-
         ),
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            const Row(
+            Row(
               mainAxisAlignment: MainAxisAlignment.spaceBetween,
               children: [
-                Text(
+                const Text(
                   "Today’s Goal",
                   style: TextStyle(
                     color: Color(0xFF000055),
@@ -258,22 +391,21 @@ class _SubscriberHomeState extends State<SubscriberHome> {
                 ),
 
                 Text(
-                  "72%",
-                  style: TextStyle(
+                  "$_goalProgress%",
+                  style: const TextStyle(
                     color: Color(0xFF000055),
                     fontSize: 28,
                     fontWeight: FontWeight.bold,
                   ),
                 ),
-
               ],
             ),
 
             Row(
               mainAxisAlignment: MainAxisAlignment.spaceBetween,
               children: [
-                const Text(
-                  "Keep up the streak, Kathy!",
+                Text(
+                  "Keep up the streak, $_learnerName!",
                   style: TextStyle(color: Colors.blueGrey, fontSize: 14),
                 ),
                 Text(
@@ -287,11 +419,13 @@ class _SubscriberHomeState extends State<SubscriberHome> {
             const SizedBox(height: 20),
             ClipRRect(
               borderRadius: BorderRadius.circular(10),
-              child: const LinearProgressIndicator(
-                value: 0.72,
+              child: LinearProgressIndicator(
+                value: (_goalProgress / 100).clamp(0.0, 1.0),
                 minHeight: 10,
-                backgroundColor: Color(0xFFF0F2F5),
-                valueColor: AlwaysStoppedAnimation<Color>(Color(0xFF4880E6)),
+                backgroundColor: const Color(0xFFF0F2F5),
+                valueColor: const AlwaysStoppedAnimation<Color>(
+                  Color(0xFF4880E6),
+                ),
               ),
             ),
             const SizedBox(height: 20),
@@ -299,25 +433,41 @@ class _SubscriberHomeState extends State<SubscriberHome> {
               mainAxisAlignment: MainAxisAlignment.spaceBetween,
               children: [
                 Container(
-                  padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
+                  padding: const EdgeInsets.symmetric(
+                    horizontal: 10,
+                    vertical: 6,
+                  ),
                   decoration: BoxDecoration(
                     color: const Color(0xFFECFDF5),
                     borderRadius: BorderRadius.circular(8),
                   ),
                   child: const Row(
                     children: [
-                      Icon(Icons.trending_up, size: 14, color: Color(0xFF006B5B)),
+                      Icon(
+                        Icons.trending_up,
+                        size: 14,
+                        color: Color(0xFF006B5B),
+                      ),
                       SizedBox(width: 4),
                       Text(
                         "On Track",
-                        style: TextStyle(color: Color(0xFF006B5B), fontSize: 12, fontWeight: FontWeight.bold),
+                        style: TextStyle(
+                          color: Color(0xFF006B5B),
+                          fontSize: 12,
+                          fontWeight: FontWeight.bold,
+                        ),
                       ),
                     ],
                   ),
                 ),
-                const Text(
-                  "3 tasks remaining",
-                  style: TextStyle(color: Color(0xFF191C1F), fontSize: 14),
+                Text(
+                  _isLoadingHome
+                      ? "Loading tasks"
+                      : "$_remainingTasks ${_remainingTasks == 1 ? 'task' : 'tasks'} remaining",
+                  style: const TextStyle(
+                    color: Color(0xFF191C1F),
+                    fontSize: 14,
+                  ),
                 ),
               ],
             ),
@@ -327,7 +477,11 @@ class _SubscriberHomeState extends State<SubscriberHome> {
     );
   }
 
-  Widget _buildSectionHeader(String title, String text, {VoidCallback? onSeeAll}) {
+  Widget _buildSectionHeader(
+    String title,
+    String text, {
+    VoidCallback? onSeeAll,
+  }) {
     return Row(
       mainAxisAlignment: MainAxisAlignment.spaceBetween,
       children: [
@@ -339,14 +493,18 @@ class _SubscriberHomeState extends State<SubscriberHome> {
             fontWeight: FontWeight.bold,
           ),
         ),
-        if(text != 'no')
-        GestureDetector(
-          onTap: onSeeAll,
-          child: const Text(
-            "View all",
-            style: TextStyle(color: Color(0xFF4F5CD1), fontSize: 14, fontWeight: FontWeight.bold),
+        if (text != 'no')
+          GestureDetector(
+            onTap: onSeeAll,
+            child: const Text(
+              "View all",
+              style: TextStyle(
+                color: Color(0xFF4F5CD1),
+                fontSize: 14,
+                fontWeight: FontWeight.bold,
+              ),
+            ),
           ),
-        ),
       ],
     );
   }
@@ -363,91 +521,135 @@ class _SubscriberHomeState extends State<SubscriberHome> {
       children: [
         _buildMissionCard(
           "Daily Audio",
-          "3/3 complete",
+          _missionStatus('voiceRecordings', 3),
           Color(0xFFE2E3F7),
           "assets/images/voice.png",
           const Color(0xFFC5C6F5),
           const Color(0xFF5151EF),
-          isDone: true,
+          isDone: _missionDone('voiceRecordings'),
+          onTap: () => _openMission(const DailyVoiceRecordingScreen()),
         ),
         _buildMissionCard(
           "Daily Video",
-          "1/3 in progress",
+          _missionStatus('videoRecordings', 3),
           Color(0xFFDFF2F4),
           "assets/images/video.png",
           const Color(0xFFBCF1EC),
           const Color(0xFF006B5B),
-          isDone: false,
+          isDone: _missionDone('videoRecordings'),
           progress: "1/3",
+          onTap: () => _openMission(const DailyVideoRecordingScreen()),
         ),
         _buildMissionCard(
           "Daily Vocabulary",
-          "2 words today",
+          _missionStatus('vocabulary', 2),
           Color(0xFFF3EBF3),
           "assets/images/vocabulary.png",
           const Color(0xFFF5DDEA),
           const Color(0xFF7F3858),
-          isDone: true,
+          isDone: _missionDone('vocabulary'),
+          onTap: () => _openMission(const DailyVocabularyScreen()),
         ),
         _buildMissionCard(
           "Daily Summary",
-          "0/2 reads",
+          _missionStatus('summary', 2),
           Color(0xFFFFFFFF),
           "assets/images/summary.png",
           const Color(0xFFDCDCFC),
           const Color(0xFF5151EF),
-          isDone: false,
+          isDone: _missionDone('summary'),
           progress: "0/2",
+          onTap: () => _openMission(const DailySummaryScreen()),
         ),
       ],
     );
   }
 
-  Widget _buildMissionCard(String title, String status, Color background_Color, String iconPath, Color bgColor, Color iconColor, {bool isDone = false, String? progress, }) {
-    return Container(
-      padding: const EdgeInsets.all(16),
-      decoration: BoxDecoration(
-        color: background_Color,
-        borderRadius: BorderRadius.circular(20),
-        border: Border.all(color: const Color(0xFFF0F2F5)),
-      ),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          Container(
-            padding: const EdgeInsets.all(13),
-            decoration: BoxDecoration(
-              color: bgColor,
-              shape: BoxShape.circle,
+  Widget _buildMissionCard(
+    String title,
+    String status,
+    Color backgroundColor,
+    String iconPath,
+    Color bgColor,
+    Color iconColor, {
+    bool isDone = false,
+    String? progress,
+    VoidCallback? onTap,
+  }) {
+    return GestureDetector(
+      onTap: onTap,
+      child: Container(
+        padding: const EdgeInsets.all(16),
+        decoration: BoxDecoration(
+          color: backgroundColor,
+          borderRadius: BorderRadius.circular(20),
+          border: Border.all(color: const Color(0xFFF0F2F5)),
+        ),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Container(
+              padding: const EdgeInsets.all(13),
+              decoration: BoxDecoration(color: bgColor, shape: BoxShape.circle),
+              child: Image.asset(
+                iconPath,
+                width: 24,
+                height: 24,
+                color: iconColor,
+              ),
             ),
-            child: Image.asset(iconPath, width: 24, height: 24, color: iconColor),
-          ),
-          const Spacer(),
-          Text(
-            title,
-            style: const TextStyle(color: Color(0xFF263238), fontSize: 13, fontWeight: FontWeight.bold),
-          ),
-          const SizedBox(height: 4),
-          Row(
-            children: [
-              Icon(
-                isDone ? Icons.check_circle_outline_rounded : Icons.cancel_outlined,
-                size: 14,
-                color: isDone ? Color(0xFF006B5B) : Color(0xFFFF8800),
+            const Spacer(),
+            Text(
+              title,
+              style: const TextStyle(
+                color: Color(0xFF263238),
+                fontSize: 13,
+                fontWeight: FontWeight.bold,
               ),
-              const SizedBox(width: 4),
-              Text(
-                status,
-                style: const TextStyle(color: Colors.blueGrey, fontSize: 12, fontWeight: FontWeight.w600),
-              ),
-            ],
-          ),
-        ],
+            ),
+            const SizedBox(height: 4),
+            Row(
+              children: [
+                Icon(
+                  isDone
+                      ? Icons.check_circle_outline_rounded
+                      : Icons.cancel_outlined,
+                  size: 14,
+                  color: isDone ? Color(0xFF006B5B) : Color(0xFFFF8800),
+                ),
+                const SizedBox(width: 4),
+                Text(
+                  status,
+                  style: const TextStyle(
+                    color: Colors.blueGrey,
+                    fontSize: 12,
+                    fontWeight: FontWeight.w600,
+                  ),
+                ),
+              ],
+            ),
+          ],
+        ),
       ),
     );
   }
 
   Widget _buildNextLiveClassCard() {
+    final liveClass = _nextLiveClass;
+    final title = liveClass?.title ?? 'No live class scheduled';
+    final instructor = liveClass?.instructorName.isNotEmpty == true
+        ? liveClass!.instructorName
+        : 'Instructor';
+    final time = liveClass == null
+        ? 'Today'
+        : _formatClassTime(liveClass.scheduledAt);
+    final initials = instructor
+        .split(' ')
+        .where((part) => part.isNotEmpty)
+        .take(2)
+        .map((part) => part[0].toUpperCase())
+        .join();
+
     return Container(
       padding: const EdgeInsets.all(16),
       decoration: BoxDecoration(
@@ -465,23 +667,34 @@ class _SubscriberHomeState extends State<SubscriberHome> {
               shape: BoxShape.circle,
             ),
             alignment: Alignment.center,
-            child: const Text(
-              "MS",
-              style: TextStyle(color: Color(0xFF000055), fontWeight: FontWeight.bold),
+            child: Text(
+              initials.isEmpty ? 'LC' : initials,
+              style: const TextStyle(
+                color: Color(0xFF000055),
+                fontWeight: FontWeight.bold,
+              ),
             ),
           ),
           const SizedBox(width: 12),
-          const Expanded(
+          Expanded(
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
                 Text(
-                  "FLUENCY+ P1",
-                  style: TextStyle(color: Color(0xFF263238), fontSize: 16, fontWeight: FontWeight.bold),
+                  title,
+                  style: const TextStyle(
+                    color: Color(0xFF263238),
+                    fontSize: 16,
+                    fontWeight: FontWeight.bold,
+                  ),
                 ),
                 Text(
-                  "Mr. Samuel • 09:00 AM",
-                  style: TextStyle(color: Colors.blueGrey, fontSize: 12, fontWeight: FontWeight.w600),
+                  "$instructor • $time",
+                  style: const TextStyle(
+                    color: Colors.blueGrey,
+                    fontSize: 12,
+                    fontWeight: FontWeight.w600,
+                  ),
                 ),
               ],
             ),
@@ -491,11 +704,16 @@ class _SubscriberHomeState extends State<SubscriberHome> {
             style: ElevatedButton.styleFrom(
               backgroundColor: const Color(0xFF5151EF),
               foregroundColor: Colors.white,
-              shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+              shape: RoundedRectangleBorder(
+                borderRadius: BorderRadius.circular(12),
+              ),
               padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 12),
               elevation: 0,
             ),
-            child: const Text("Join", style: TextStyle(fontWeight: FontWeight.bold)),
+            child: const Text(
+              "Join",
+              style: TextStyle(fontWeight: FontWeight.bold),
+            ),
           ),
         ],
       ),
@@ -540,7 +758,7 @@ class _SubscriberHomeState extends State<SubscriberHome> {
                       borderRadius: BorderRadius.circular(16),
                       boxShadow: [
                         BoxShadow(
-                          color: Colors.black.withOpacity(0.05),
+                          color: Colors.black.withValues(alpha: 0.05),
                           blurRadius: 10,
                           offset: const Offset(0, 4),
                         ),
@@ -553,7 +771,11 @@ class _SubscriberHomeState extends State<SubscriberHome> {
                 const SizedBox(height: 8),
                 Text(
                   item['label']!,
-                  style: const TextStyle(color: Color(0xFF374151), fontSize: 11, fontWeight: FontWeight.w600),
+                  style: const TextStyle(
+                    color: Color(0xFF374151),
+                    fontSize: 11,
+                    fontWeight: FontWeight.w600,
+                  ),
                 ),
               ],
             ),
@@ -573,7 +795,8 @@ class _SubscriberHomeState extends State<SubscriberHome> {
             child: BackdropFilter(
               filter: ImageFilter.blur(sigmaX: 4.0, sigmaY: 4.0),
               child: GestureDetector(
-                onTap: () => Get.to(() => const SubscriberChooseProgramScreen()),
+                onTap: () =>
+                    Get.to(() => const SubscriberChooseProgramScreen()),
                 child: Container(
                   decoration: BoxDecoration(
                     color: Colors.white12,
@@ -588,4 +811,3 @@ class _SubscriberHomeState extends State<SubscriberHome> {
     );
   }
 }
-

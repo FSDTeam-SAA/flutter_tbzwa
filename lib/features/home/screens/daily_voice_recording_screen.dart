@@ -90,6 +90,19 @@ class _DailyVoiceRecordingScreenState extends State<DailyVoiceRecordingScreen> {
   int get _currentStreak => _profile?.currentStreak ?? 0;
   int get _averageScore => _weeklyProgress?.average ?? 0;
 
+  Future<void> _openRecorder() async {
+    if (_completed >= 3) {
+      Get.snackbar(
+        'Daily Voice',
+        "You've reached today's 3 audio recordings limit.",
+        snackPosition: SnackPosition.BOTTOM,
+      );
+      return;
+    }
+    await Get.to(() => const AudioRecordingScreen());
+    await _loadRecordings();
+  }
+
   List<WeeklyDayProgress> get _weeklyDays {
     return _weeklyProgress?.currentWeekDays() ??
         WeeklyProgress(
@@ -253,10 +266,7 @@ class _DailyVoiceRecordingScreenState extends State<DailyVoiceRecordingScreen> {
 
             // Start Audio Recording Button
             ElevatedButton(
-              onPressed: () async {
-                await Get.to(() => const AudioRecordingScreen());
-                await _loadRecordings();
-              },
+              onPressed: _openRecorder,
               style: ElevatedButton.styleFrom(
                 backgroundColor: const Color(0xFF26A69A),
                 foregroundColor: Colors.white,
@@ -614,10 +624,7 @@ class _DailyVoiceRecordingScreenState extends State<DailyVoiceRecordingScreen> {
             _slotPrompt(slot),
             Icons.mic,
             isActive: true,
-            onTap: () async {
-              await Get.to(() => const AudioRecordingScreen());
-              await _loadRecordings();
-            },
+            onTap: _openRecorder,
           ),
         );
       } else {

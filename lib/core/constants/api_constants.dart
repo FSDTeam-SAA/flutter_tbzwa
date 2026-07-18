@@ -47,12 +47,14 @@ class ApiConstants {
   static BZPadEndpoints get bzPad => BZPadEndpoints();
   static LibraryEndpoints get library => LibraryEndpoints();
   static RecordingEndpoints get recording => RecordingEndpoints();
+  static SummaryEndpoints get summary => SummaryEndpoints();
   static VocabularyEndpoints get vocabulary => VocabularyEndpoints();
   static ImmersionEndpoints get immersion => ImmersionEndpoints();
   static GroupEndpoints get group => GroupEndpoints();
   static CommentEndpoints get comment => CommentEndpoints();
   static PostEndpoints get post => PostEndpoints();
   static FriendEndpoints get friend => FriendEndpoints();
+  static VoiceRoomEndpoints get voiceRoom => VoiceRoomEndpoints();
   static NotificationEndpoints get notification => NotificationEndpoints();
   static StoryEndpoints get story => StoryEndpoints();
   static ChatEndpoints get chat => ChatEndpoints();
@@ -202,9 +204,18 @@ class RecordingEndpoints {
 
   final String voice = '$_base/voice';
   final String video = '$_base/video';
+  final String summary = '$_base/summary';
   final String my = '$_base/my';
   String byDate(String date) => '$_base/date/$date';
   String recording(String id) => '$_base/$id';
+}
+
+class SummaryEndpoints {
+  static const String _base = '${ApiConstants.baseUrl}/summary';
+
+  final String today = '$_base/today';
+  final String history = '$_base/history';
+  final String saveText = '$_base/save-text';
 }
 
 class VocabularyEndpoints {
@@ -289,7 +300,7 @@ class PostEndpoints {
 }
 
 class FriendEndpoints {
-  static const String _base = '${ApiConstants.baseUrl}/friends';
+  static const String _base = '${ApiConstants.baseUrl}/friendships';
   final String root = _base;
 
   final String getNotFriends = '$_base/non-friends';
@@ -301,6 +312,14 @@ class FriendEndpoints {
   String cancelFriendRequest(String requestId) =>
       '$_base/request/$requestId/cancel';
   String unfriend(String friendId) => '$_base/$friendId';
+}
+
+class VoiceRoomEndpoints {
+  static const String _base = '${ApiConstants.baseUrl}/voicerooms';
+  final String rooms = _base;
+  String room(String id) => '$_base/$id';
+  String join(String id) => '$_base/$id/join';
+  String leave(String id) => '$_base/$id/leave';
 }
 
 class NotificationEndpoints {

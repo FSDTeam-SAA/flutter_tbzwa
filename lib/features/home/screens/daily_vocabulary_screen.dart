@@ -81,6 +81,19 @@ class _DailyVocabularyScreenState extends State<DailyVocabularyScreen> {
   int get _currentStreak => _profile?.currentStreak ?? 0;
   int get _averageScore => _weeklyProgress?.average ?? 0;
 
+  Future<void> _openVocabularyEntry() async {
+    if (_completed >= 3) {
+      Get.snackbar(
+        'Daily Vocabulary',
+        "You've reached today's 3 vocabulary entries limit.",
+        snackPosition: SnackPosition.BOTTOM,
+      );
+      return;
+    }
+    await Get.to(() => VocabularyEntryScreen(learnerName: _profile?.fullName));
+    await _loadVocabulary();
+  }
+
   List<WeeklyDayProgress> get _weeklyDays {
     return _weeklyProgress?.currentWeekDays() ??
         WeeklyProgress(
@@ -259,12 +272,7 @@ class _DailyVocabularyScreenState extends State<DailyVocabularyScreen> {
 
             // Start Vocabulary Button
             ElevatedButton(
-              onPressed: () async {
-                await Get.to(
-                  () => VocabularyEntryScreen(learnerName: _profile?.fullName),
-                );
-                await _loadVocabulary();
-              },
+              onPressed: _openVocabularyEntry,
               style: ElevatedButton.styleFrom(
                 backgroundColor: const Color(0xFF26A69A),
                 foregroundColor: Colors.white,

@@ -82,6 +82,19 @@ class _DailyVideoRecordingScreenState extends State<DailyVideoRecordingScreen> {
   int get _currentStreak => _profile?.currentStreak ?? 0;
   int get _averageScore => _weeklyProgress?.average ?? 0;
 
+  Future<void> _openRecorder() async {
+    if (_completed >= 3) {
+      Get.snackbar(
+        'Daily Video',
+        "You've reached today's 3 video recordings limit.",
+        snackPosition: SnackPosition.BOTTOM,
+      );
+      return;
+    }
+    await Get.to(() => const VideoRecordingScreen());
+    await _loadRecordings();
+  }
+
   List<WeeklyDayProgress> get _weeklyDays {
     return _weeklyProgress?.currentWeekDays() ??
         WeeklyProgress(
@@ -302,10 +315,7 @@ class _DailyVideoRecordingScreenState extends State<DailyVideoRecordingScreen> {
 
   Widget _buildStartButton() {
     return ElevatedButton(
-      onPressed: () async {
-        await Get.to(() => const VideoRecordingScreen());
-        await _loadRecordings();
-      },
+      onPressed: _openRecorder,
       style: ElevatedButton.styleFrom(
         backgroundColor: const Color(0xFF26A69A),
         foregroundColor: Colors.white,
@@ -605,10 +615,7 @@ class _DailyVideoRecordingScreenState extends State<DailyVideoRecordingScreen> {
             _slotPrompt(slot),
             Icons.videocam_rounded,
             isActive: true,
-            onTap: () async {
-              await Get.to(() => const VideoRecordingScreen());
-              await _loadRecordings();
-            },
+            onTap: _openRecorder,
           ),
         );
       } else {

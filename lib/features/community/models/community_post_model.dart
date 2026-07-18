@@ -71,5 +71,25 @@ class CommunityPostMedia {
 String? _absoluteUrl(String? url) {
   if (url == null || url.isEmpty) return null;
   if (url.startsWith('/')) return '${ApiConstants.baseDomain}$url';
+  final uri = Uri.tryParse(url);
+  if (uri == null || !uri.hasScheme) return url;
+  if (_isLocalBackendHost(uri.host) && uri.path.isNotEmpty) {
+    final base = Uri.parse(ApiConstants.baseDomain);
+    return base
+        .replace(path: uri.path, query: uri.query.isEmpty ? null : uri.query)
+        .toString();
+  }
   return url;
+}
+
+bool _isLocalBackendHost(String host) {
+  if (host == 'localhost' || host == '127.0.0.1') return true;
+  if (host.startsWith('10.')) return true;
+  if (host.startsWith('192.168.')) return true;
+  final parts = host.split('.');
+  if (parts.length == 4 && parts.first == '172') {
+    final second = int.tryParse(parts[1]);
+    return second != null && second >= 16 && second <= 31;
+  }
+  return false;
 }
