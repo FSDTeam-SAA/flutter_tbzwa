@@ -11,6 +11,8 @@ import '../../instructor/controllers/instructor_home_controller.dart';
 import '../../instructor/controllers/instructor_messages_controller.dart';
 import '../../instructor/controllers/instructor_profile_controller.dart';
 import '../../instructor/controllers/instructor_rooms_controller.dart';
+import '../../community/controllers/community_controller.dart';
+import '../../community/controllers/community_messages_controller.dart';
 import '../../navigation/instructor_nav_menu.dart' as instructor_navigation;
 import '../../auth/model/request/login_request.dart';
 import '../../auth/model/request/register_request.dart';
@@ -400,6 +402,12 @@ class AuthController extends BaseController {
     }
     if (Get.isRegistered<InstructorMessagesController>()) {
       Get.delete<InstructorMessagesController>(force: true);
+    }
+    if (Get.isRegistered<CommunityController>()) {
+      Get.delete<CommunityController>(force: true);
+    }
+    if (Get.isRegistered<CommunityMessagesController>()) {
+      Get.delete<CommunityMessagesController>(force: true);
     }
     if (Get.isRegistered<InstructorRoomsController>()) {
       Get.delete<InstructorRoomsController>(force: true);

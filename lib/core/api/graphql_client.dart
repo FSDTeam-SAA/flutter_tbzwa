@@ -3,10 +3,8 @@ import 'dart:convert';
 import 'package:dartz/dartz.dart';
 import 'package:dio/dio.dart';
 import 'package:flutter/foundation.dart';
-import 'package:get/get.dart';
 import 'package:graphql_flutter/graphql_flutter.dart';
 import 'package:flutx_core/core/debug_print.dart';
-
 
 import '../common/models/base_response.dart';
 import '../common/models/network_failure.dart';
@@ -21,13 +19,14 @@ class GraphQLClientService {
   late final ConnectivityService _connectivityService;
   late final ApiCacheService _cacheService;
   final AuthStorageService _authStorageService = AuthStorageService();
-  
+
   bool _isRefreshing = false;
   final List<Completer<void>> _pendingRequests = [];
   final Completer<void> _initCompleter = Completer<void>();
 
   // Singleton instance
-  static final GraphQLClientService _instance = GraphQLClientService._internal();
+  static final GraphQLClientService _instance =
+      GraphQLClientService._internal();
   factory GraphQLClientService() => _instance;
 
   bool _isInitialized = false;
@@ -57,9 +56,7 @@ class GraphQLClientService {
     _cacheService = ApiCacheService();
     await _cacheService.initialize();
 
-    final HttpLink httpLink = HttpLink(
-      ApiConstants.graphqlEndpoint,
-    );
+    final HttpLink httpLink = HttpLink(ApiConstants.graphqlEndpoint);
 
     final AuthLink authLink = AuthLink(
       getToken: () async {
@@ -72,7 +69,8 @@ class GraphQLClientService {
 
     _client = GraphQLClient(
       link: link,
-      cache: GraphQLCache(), // Basic memory cache, using ApiCacheService for persistence
+      cache:
+          GraphQLCache(), // Basic memory cache, using ApiCacheService for persistence
       defaultPolicies: DefaultPolicies(
         query: Policies(fetch: FetchPolicy.networkOnly),
         mutate: Policies(fetch: FetchPolicy.networkOnly),
@@ -121,15 +119,23 @@ class GraphQLClientService {
         final newRefreshToken = baseResponse.data!['refreshToken'] as String;
 
         await _authStorageService.storeAccessToken(accessToken: newAccessToken);
-        await _authStorageService.storeRefreshToken(refreshToken: newRefreshToken);
+        await _authStorageService.storeRefreshToken(
+          refreshToken: newRefreshToken,
+        );
 
         return true;
       }
 
       await _logout();
       return false;
+    } on DioException catch (e) {
+      DPrint.log(
+        "GraphQL Refresh token error: status=${e.response?.statusCode ?? 'none'} type=${e.type}",
+      );
+      await _logout();
+      return false;
     } catch (e) {
-      DPrint.log("GraphQL Refresh token error: $e");
+      DPrint.log("GraphQL Refresh token error: ${e.runtimeType}");
       await _logout();
       return false;
     }
@@ -149,14 +155,17 @@ class GraphQLClientService {
   NetworkFailure _handleGraphQLError(QueryResult result) {
     if (result.hasException) {
       final exception = result.exception!;
-      
+
       // Check HTTP errors (like 401)
       if (exception.linkException != null) {
         if (exception.linkException is ServerException) {
           final serverException = exception.linkException as ServerException;
           final originalResponse = serverException.parsedResponse?.response;
           if (originalResponse != null && originalResponse['status'] == 401) {
-            return const UnauthorizedFailure(message: "Unauthorized", statusCode: 401);
+            return const UnauthorizedFailure(
+              message: "Unauthorized",
+              statusCode: 401,
+            );
           }
         }
       }
@@ -166,22 +175,29 @@ class GraphQLClientService {
         final error = exception.graphqlErrors.first;
         final extensions = error.extensions ?? {};
         final code = extensions['code']?.toString() ?? '';
-        
-        if (code == 'UNAUTHENTICATED' || error.message.toLowerCase().contains("unauthorized")) {
-           return const UnauthorizedFailure(message: "Unauthenticated", statusCode: 401);
+
+        if (code == 'UNAUTHENTICATED' ||
+            error.message.toLowerCase().contains("unauthorized")) {
+          return const UnauthorizedFailure(
+            message: "Unauthenticated",
+            statusCode: 401,
+          );
         }
 
         return ServerFailure(message: error.message, statusCode: 400);
       }
-      
+
       return ServerFailure(message: exception.toString(), statusCode: 500);
     }
-    return const UnknownFailure(message: "Unknown error occurred", statusCode: 0);
+    return const UnknownFailure(
+      message: "Unknown error occurred",
+      statusCode: 0,
+    );
   }
 
   /// Base Request wrapper to handle Execution and Refresh Logic
   Future<Either<NetworkFailure, QueryResult>> _executeOperation(
-    Future<QueryResult> Function() operation
+    Future<QueryResult> Function() operation,
   ) async {
     await _initCompleter.future;
 
@@ -196,25 +212,25 @@ class GraphQLClientService {
     // Check for 401 Unauthenticated
     final failure = _handleGraphQLError(result);
     if (failure is UnauthorizedFailure) {
-       if (!_isRefreshing) {
-          _isRefreshing = true;
-          try {
-             if (await _refreshToken()) {
-                // Retry operation
-                result = await operation();
-             }
-          } finally {
-             _isRefreshing = false;
-             for (var completer in _pendingRequests) {
-               completer.complete();
-             }
-             _pendingRequests.clear();
+      if (!_isRefreshing) {
+        _isRefreshing = true;
+        try {
+          if (await _refreshToken()) {
+            // Retry operation
+            result = await operation();
           }
-       }
+        } finally {
+          _isRefreshing = false;
+          for (var completer in _pendingRequests) {
+            completer.complete();
+          }
+          _pendingRequests.clear();
+        }
+      }
     }
 
     if (result.hasException) {
-       return Left(_handleGraphQLError(result));
+      return Left(_handleGraphQLError(result));
     }
 
     return Right(result);
@@ -230,14 +246,18 @@ class GraphQLClientService {
     String? cacheKey,
   }) async {
     final connectivityCheck = await _checkConnectivity();
-    final effectiveCacheKey = cacheKey ?? document.hashCode.toString() + variables.toString().hashCode.toString();
+    final effectiveCacheKey =
+        cacheKey ??
+        document.hashCode.toString() + variables.toString().hashCode.toString();
     final bool cache = cacheDuration != null;
 
     if (connectivityCheck.isLeft()) {
       if (cache) {
         final cachedData = await _cacheService.getCachedData(effectiveCacheKey);
         if (cachedData != null) {
-          DPrint.info('Serving cached graphql data for $effectiveCacheKey (offline)');
+          DPrint.info(
+            'Serving cached graphql data for $effectiveCacheKey (offline)',
+          );
           return Right(
             NetworkSuccess<T>(
               data: fromJsonT(cachedData),
@@ -258,36 +278,37 @@ class GraphQLClientService {
       fetchPolicy: FetchPolicy.networkOnly,
     );
 
-    DPrint.log("🟩 GraphQL Query \nDocument: $document\nVariables: $variables");
+    DPrint.log(
+      "🟩 GraphQL Query -> operation=${operationName ?? 'anonymous'} variableKeys=${variables.keys.toList()}",
+    );
 
     final resultEither = await _executeOperation(() => _client.query(options));
 
-    return resultEither.fold(
-      (failure) => Left(failure),
-      (result) async {
-        DPrint.log("☁️  GraphQL Query Success -> \n${result.data}");
-        
-        // Parse custom base response if your backend still wraps data in success/message wrapper
-        // If your GraphQL backend just returns data, we can directly parse the root query object.
-        // Assuming we parse direct data:
-        
-        final successResult = NetworkSuccess<T>(
-          data: fromJsonT(result.data),
-          message: 'Success',
-          statusCode: 200,
+    return resultEither.fold((failure) => Left(failure), (result) async {
+      DPrint.log(
+        "☁️  GraphQL Query Success -> operation=${operationName ?? 'anonymous'} ${_graphqlPayloadSummary(result.data)}",
+      );
+
+      // Parse custom base response if your backend still wraps data in success/message wrapper
+      // If your GraphQL backend just returns data, we can directly parse the root query object.
+      // Assuming we parse direct data:
+
+      final successResult = NetworkSuccess<T>(
+        data: fromJsonT(result.data),
+        message: 'Success',
+        statusCode: 200,
+      );
+
+      if (cache) {
+        await _cacheService.cacheData(
+          effectiveCacheKey,
+          data: result.data,
+          cacheDuration: cacheDuration,
         );
-
-        if (cache) {
-           await _cacheService.cacheData(
-              effectiveCacheKey, 
-              data: result.data,
-              cacheDuration: cacheDuration,
-           );
-        }
-
-        return Right(successResult);
       }
-    );
+
+      return Right(successResult);
+    });
   }
 
   /// MUTATION method (equivalent to POST/PUT/DELETE)
@@ -300,7 +321,7 @@ class GraphQLClientService {
   }) async {
     final connectivityCheck = await _checkConnectivity();
     if (connectivityCheck.isLeft()) {
-       return const Left(NoInternetFailure());
+      return const Left(NoInternetFailure());
     }
 
     final MutationOptions options = MutationOptions(
@@ -310,30 +331,31 @@ class GraphQLClientService {
       fetchPolicy: FetchPolicy.networkOnly,
     );
 
-    DPrint.log("🟦 GraphQL Mutation \nDocument: $document\nVariables: $variables");
+    DPrint.log(
+      "🟦 GraphQL Mutation -> operation=${operationName ?? 'anonymous'} variableKeys=${variables.keys.toList()}",
+    );
 
     final resultEither = await _executeOperation(() => _client.mutate(options));
 
-    return resultEither.fold(
-      (failure) => Left(failure),
-      (result) async {
-        DPrint.log("☁️  GraphQL Mutation Success -> \n${result.data}");
+    return resultEither.fold((failure) => Left(failure), (result) async {
+      DPrint.log(
+        "☁️  GraphQL Mutation Success -> operation=${operationName ?? 'anonymous'} ${_graphqlPayloadSummary(result.data)}",
+      );
 
-        if (invalidatePaths != null) {
-          for (final path in invalidatePaths) {
-            await _cacheService.clearCache(path);
-          }
+      if (invalidatePaths != null) {
+        for (final path in invalidatePaths) {
+          await _cacheService.clearCache(path);
         }
-
-        return Right(
-          NetworkSuccess<T>(
-            data: fromJsonT(result.data),
-            message: 'Success',
-            statusCode: 200,
-          )
-        );
       }
-    );
+
+      return Right(
+        NetworkSuccess<T>(
+          data: fromJsonT(result.data),
+          message: 'Success',
+          statusCode: 200,
+        ),
+      );
+    });
   }
 
   /// WATCH QUERY Stream method (equivalent to getStream)
@@ -346,9 +368,10 @@ class GraphQLClientService {
     bool forceEmitRemote = false,
     String? cacheKey,
   }) async* {
-    
     final bool cache = cacheDuration != null;
-    final effectiveCacheKey = cacheKey ?? document.hashCode.toString() + variables.toString().hashCode.toString();
+    final effectiveCacheKey =
+        cacheKey ??
+        document.hashCode.toString() + variables.toString().hashCode.toString();
     dynamic cachedRawData;
 
     // 1. Emit cached data if available
@@ -356,7 +379,9 @@ class GraphQLClientService {
       cachedRawData = await _cacheService.getCachedData(effectiveCacheKey);
 
       if (cachedRawData != null) {
-        DPrint.info('Serving cached GraphQL data stream for $effectiveCacheKey');
+        DPrint.info(
+          'Serving cached GraphQL data stream for $effectiveCacheKey',
+        );
         yield Right(
           NetworkSuccess<T>(
             data: fromJsonT(cachedRawData),
@@ -379,8 +404,12 @@ class GraphQLClientService {
     );
 
     if (result.isRight()) {
-      final success = result.getOrElse(() => throw Exception("Should not happen"));
-      final remoteRawData = await _cacheService.getCachedData(effectiveCacheKey);
+      final success = result.getOrElse(
+        () => throw Exception("Should not happen"),
+      );
+      final remoteRawData = await _cacheService.getCachedData(
+        effectiveCacheKey,
+      );
 
       bool isUpdated = true;
       if (cachedRawData != null && remoteRawData != null) {
@@ -388,10 +417,14 @@ class GraphQLClientService {
       }
 
       if (isUpdated || cachedRawData == null || forceEmitRemote) {
-        DPrint.info('Serving remote GraphQL data stream for $effectiveCacheKey');
+        DPrint.info(
+          'Serving remote GraphQL data stream for $effectiveCacheKey',
+        );
         yield Right(success);
       } else {
-        DPrint.info('Remote GraphQL data same as cache for $effectiveCacheKey, skipping emission');
+        DPrint.info(
+          'Remote GraphQL data same as cache for $effectiveCacheKey, skipping emission',
+        );
       }
     } else {
       yield result;
@@ -409,8 +442,16 @@ class GraphQLClientService {
       }
       return jsonEncode(oldData) != jsonEncode(newData);
     } catch (e) {
-      return true; 
+      return true;
     }
   }
+}
 
+String _graphqlPayloadSummary(dynamic data) {
+  if (data == null) return 'data=null';
+  if (data is Map) {
+    return 'dataKeys=${data.keys.map((key) => key.toString()).toList()}';
+  }
+  if (data is Iterable) return 'dataLength=${data.length}';
+  return 'dataType=${data.runtimeType}';
 }

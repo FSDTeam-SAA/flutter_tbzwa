@@ -4,10 +4,38 @@ import 'package:flutter/material.dart';
 import 'package:flutter_tbzwa/features/community/controllers/create_post_controller.dart';
 import 'package:get/get.dart';
 
-class CreatePostScreen extends StatelessWidget {
-  CreatePostScreen({super.key});
+import '../models/community_post_model.dart';
 
-  final controller = Get.put(CreatePostController());
+class CreatePostScreen extends StatefulWidget {
+  const CreatePostScreen({super.key, this.editingPost});
+
+  final CommunityPost? editingPost;
+
+  @override
+  State<CreatePostScreen> createState() => _CreatePostScreenState();
+}
+
+class _CreatePostScreenState extends State<CreatePostScreen> {
+  late final String _tag;
+  late final CreatePostController controller;
+
+  @override
+  void initState() {
+    super.initState();
+    _tag =
+        widget.editingPost?.id ??
+        'create-post-${DateTime.now().microsecondsSinceEpoch}';
+    controller = Get.put(
+      CreatePostController(editingPost: widget.editingPost),
+      tag: _tag,
+    );
+  }
+
+  @override
+  void dispose() {
+    Get.delete<CreatePostController>(tag: _tag);
+    super.dispose();
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -24,9 +52,9 @@ class CreatePostScreen extends StatelessWidget {
           ),
           onPressed: () => Get.back(),
         ),
-        title: const Text(
-          'Create Post',
-          style: TextStyle(
+        title: Text(
+          controller.isEditing ? 'Edit Post' : 'Create Post',
+          style: const TextStyle(
             color: Color(0xFF1E293B),
             fontSize: 18,
             fontWeight: FontWeight.w700,
@@ -50,7 +78,11 @@ class CreatePostScreen extends StatelessWidget {
                 ),
                 child: Obx(
                   () => Text(
-                    controller.isPosting.value ? '...' : 'Post',
+                    controller.isPosting.value
+                        ? '...'
+                        : controller.isEditing
+                        ? 'Save'
+                        : 'Post',
                     style: const TextStyle(
                       color: Colors.white,
                       fontWeight: FontWeight.w700,
@@ -105,12 +137,98 @@ class CreatePostScreen extends StatelessWidget {
                       )
                     : controller.selectedAudio.value != null
                     ? _buildAudioPreview(controller.selectedAudio.value!)
+                    : controller.shouldShowExistingMedia
+                    ? _buildExistingMediaPreview(controller.existingMedia!)
                     : _buildMediaPlaceholder(),
               );
             }),
             const SizedBox(height: 40),
           ],
         ),
+      ),
+    );
+  }
+
+  Widget _buildExistingMediaPreview(CommunityPostMedia media) {
+    if (media.uiType == 'voice') {
+      return _buildExistingAudioPreview();
+    }
+
+    return Stack(
+      alignment: Alignment.center,
+      children: [
+        ClipRRect(
+          child: media.uiType == 'image'
+              ? Image.network(
+                  media.url,
+                  width: double.infinity,
+                  height: 220,
+                  fit: BoxFit.cover,
+                  errorBuilder: (_, _, _) =>
+                      _buildExistingMediaFallback(Icons.image_outlined),
+                )
+              : _buildExistingMediaFallback(Icons.videocam_rounded),
+        ),
+        if (media.uiType == 'video')
+          const Icon(Icons.play_circle_fill, color: Colors.white, size: 60),
+        Positioned(
+          top: 8,
+          right: 8,
+          child: GestureDetector(
+            onTap: () => controller.removeMedia(),
+            child: Container(
+              padding: const EdgeInsets.all(4),
+              decoration: const BoxDecoration(
+                color: Colors.black54,
+                shape: BoxShape.circle,
+              ),
+              child: const Icon(Icons.close, color: Colors.white, size: 18),
+            ),
+          ),
+        ),
+      ],
+    );
+  }
+
+  Widget _buildExistingMediaFallback(IconData icon) {
+    return Container(
+      width: double.infinity,
+      height: 220,
+      decoration: BoxDecoration(
+        border: Border.all(color: const Color(0xFF1A8C79), width: 2),
+      ),
+      child: Icon(icon, color: const Color(0xFF2FBDA3), size: 50),
+    );
+  }
+
+  Widget _buildExistingAudioPreview() {
+    return Container(
+      padding: const EdgeInsets.all(12),
+      decoration: BoxDecoration(
+        color: const Color(0xFFEBFDF5),
+        borderRadius: BorderRadius.circular(12),
+        border: Border.all(
+          color: const Color(0xFF2FBDA3).withValues(alpha: 0.2),
+        ),
+      ),
+      child: Row(
+        children: [
+          const Icon(Icons.mic_rounded, color: Color(0xFF2FBDA3)),
+          const SizedBox(width: 12),
+          const Expanded(
+            child: Text(
+              'Voice Note Selected',
+              style: TextStyle(
+                fontWeight: FontWeight.w600,
+                color: Color(0xFF123456),
+              ),
+            ),
+          ),
+          IconButton(
+            icon: const Icon(Icons.close, color: Color(0xFF64748B)),
+            onPressed: () => controller.removeMedia(),
+          ),
+        ],
       ),
     );
   }

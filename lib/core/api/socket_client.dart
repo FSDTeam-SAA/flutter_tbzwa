@@ -120,7 +120,9 @@ class SocketClient {
       final Map<String, dynamic> message = {'event': event, 'data': data};
       _messageStream.add(message);
 
-      if (kDebugMode) DPrint.log("Socket Event: $event → $data");
+      if (kDebugMode) {
+        DPrint.log("Socket Event: $event → ${_socketPayloadSummary(data)}");
+      }
 
       final handlers = _listeners[event.toString()] ?? [];
       for (var handler in handlers) {
@@ -157,7 +159,9 @@ class SocketClient {
       return;
     }
     _socket!.emit(event, data);
-    if (kDebugMode) DPrint.log("Emit → $event: $data");
+    if (kDebugMode) {
+      DPrint.log("Emit → $event: ${_socketPayloadSummary(data)}");
+    }
   }
 
   /// Listen to event
@@ -199,7 +203,7 @@ class SocketClient {
 
   /// Handle errors (especially auth)
   void _handleError(dynamic error) {
-    DPrint.error("Socket.IO Error: $error");
+    DPrint.error("Socket.IO Error: ${error.runtimeType}");
 
     final msg = error.toString().toLowerCase();
     if (msg.contains('401') ||
@@ -286,4 +290,13 @@ class SocketClient {
     _messageStream.close();
     clearListeners();
   }
+}
+
+String _socketPayloadSummary(dynamic data) {
+  if (data == null) return 'null';
+  if (data is Map) {
+    return 'map keys=${data.keys.map((key) => key.toString()).toList()}';
+  }
+  if (data is Iterable) return 'list length=${data.length}';
+  return 'type=${data.runtimeType}';
 }

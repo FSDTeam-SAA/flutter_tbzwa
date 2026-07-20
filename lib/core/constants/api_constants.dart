@@ -6,7 +6,7 @@ class ApiConstants {
 
   // static const String baseDomain = 'http://187.77.187.56:5006'; // Office VPS
 
-  static const String baseDomain = 'http://10.10.26.122:5008'; // soykot
+  static const String baseDomain = 'http://10.10.26.124:5008'; // soykot
 
   static const String baseUrl = '$baseDomain/api/v1';
   static const String graphqlEndpoint = '$baseDomain/graphql';
@@ -88,8 +88,22 @@ class SocketEndpoint {
   final String voiceRoomJoin = "voiceroom:join";
   final String voiceRoomLeave = "voiceroom:leave";
   final String voiceRoomParticipantsUpdated = "voiceroom:participants_updated";
+  final String voiceRoomMessage = "voiceroom:message";
   final String voiceRoomStageInvite = "voiceroom:stage_invite";
+  final String voiceRoomStageInvitationCreated =
+      "voiceroom:stage_invitation_created";
+  final String voiceRoomStageInvitationAccepted =
+      "voiceroom:stage_invitation_accepted";
+  final String voiceRoomStageInvitationDeclined =
+      "voiceroom:stage_invitation_declined";
+  final String voiceRoomStageInvitationCancelled =
+      "voiceroom:stage_invitation_cancelled";
   final String voiceRoomStageChanged = "voiceroom:stage_changed";
+  final String voiceRoomStageDeclined = "voiceroom:stage_declined";
+  final String voiceRoomStageRemoved = "voiceroom:stage_removed";
+  final String voiceRoomStageLeft = "voiceroom:stage_left";
+  final String voiceRoomStageMuted = "voiceroom:stage_muted";
+  final String voiceRoomRtcSignal = "voiceroom:rtc_signal";
   final String voiceRoomGift = "voiceroom:gift";
   final String roomClosed = "room:closed";
   final String classStarted = "class:started";
@@ -183,6 +197,8 @@ class UserEndpoints {
 
   final String profile = '$_base/me';
   final String deleteAccount = '$_base/delete-account';
+
+  String publicProfile(String id) => '$_base/public/$id';
 
   String followUser(String id) => '$_base/follow/$id';
   String unfollowUser(String id) => '$_base/follow/$id';
@@ -324,11 +340,19 @@ class PostEndpoints {
   final String posts = _base;
 
   String postByID(String id) => '$_base/$id';
+  String updatePost(String postId) => '$_base/$postId';
 
   final String feed = '$_base/feed';
 
   String createPost(String groupId) => '$_base/$groupId';
   String deletePost(String postId) => '$_base/$postId';
+
+  String likePost(String postId) => '$_base/$postId/like';
+  String postComments(String postId) => '$_base/$postId/comments';
+  String createComment(String postId) => '$_base/$postId/comments';
+  String deleteComment(String postId, String commentId) =>
+      '$_base/$postId/comments/$commentId';
+  String shareLink(String postId) => '${ApiConstants.baseDomain}/posts/$postId';
 
   String reactPost(String postId) => '$_base/$postId/react';
   String save(String postId) => '$_base/$postId/save';
@@ -348,17 +372,28 @@ class FriendEndpoints {
   final String getFriendSuggestions = '$_base/suggestions';
   final String sendFriendRequest = '$_base/request';
   String respondFriendRequest(String requestId) => '$_base/request/$requestId';
+  String friendshipStatus(String userId) => '$_base/status/$userId';
   String cancelFriendRequest(String requestId) =>
       '$_base/request/$requestId/cancel';
-  String unfriend(String friendId) => '$_base/$friendId';
+  String unfriend(String friendshipId) => '$_base/$friendshipId';
 }
 
 class VoiceRoomEndpoints {
   static const String _base = '${ApiConstants.baseUrl}/voicerooms';
   final String rooms = _base;
+  final String createEligibility = '$_base/create-eligibility';
   String room(String id) => '$_base/$id';
   String join(String id) => '$_base/$id/join';
   String leave(String id) => '$_base/$id/leave';
+  String messages(String id) => '$_base/$id/messages';
+  String stageInvite(String id) => '$_base/$id/stage-invite';
+  String stageInviteAccept(String id, String invitationId) =>
+      '$_base/$id/stage-invite/$invitationId/accept';
+  String stageInviteDecline(String id, String invitationId) =>
+      '$_base/$id/stage-invite/$invitationId/decline';
+  String stageRemove(String id) => '$_base/$id/stage-remove';
+  String stageLeave(String id) => '$_base/$id/stage-leave';
+  String stageMute(String id) => '$_base/$id/stage-mute';
 }
 
 class NotificationEndpoints {
@@ -404,6 +439,8 @@ class ChatEndpoints {
   String get getMyConversations => conversations;
 
   String get createDirectConversation => conversations;
+
+  String get deleteConversations => conversations;
 
   String getConversationByID(String conversationId) =>
       '$conversations/$conversationId';
