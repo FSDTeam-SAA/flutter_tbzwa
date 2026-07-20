@@ -15,7 +15,6 @@ import '../../../core/services/secure_store_services.dart';
 import '../../instructor/controllers/instructor_home_controller.dart';
 import '../../navigation/instructor_nav_menu.dart' as instructor_navigation;
 import '../../onboarding/screens/onboarding_screen.dart';
-import '../screens/role_selection_screen.dart';
 
 class SplashController extends GetxController {
   final AuthStorageService _authStorageService = AuthStorageService();
@@ -39,7 +38,8 @@ class SplashController extends GetxController {
   Future<void> _startSplashFlow() async {
     DPrint.log("SplashController: Starting splash flow...");
 
-    const videoPath = 'assets/images/splash_video.mp4';
+    final nextNavigation = _resolveNextNavigation();
+    const videoPath = 'assets/images/splash_2.mp4';
     DPrint.log("SplashController: Initializing video: $videoPath");
 
     // Initialize video controller
@@ -47,6 +47,7 @@ class SplashController extends GetxController {
 
     try {
       await videoController!.initialize();
+      await videoController!.setLooping(false);
       DPrint.log("SplashController: Video initialized successfully.");
 
       isVideoInitialized.value = true;
@@ -58,12 +59,15 @@ class SplashController extends GetxController {
       final duration = videoController!.value.duration;
       if (duration.inMilliseconds > 0) {
         DPrint.log("SplashController: Waiting for video duration: $duration");
-        await Future.delayed(duration);
+        final visibleDuration = duration - const Duration(milliseconds: 700);
+        await Future.delayed(
+          visibleDuration.isNegative ? duration : visibleDuration,
+        );
       } else {
         DPrint.log(
           "SplashController: Video duration is zero, waiting for 5 seconds fallback.",
         );
-        await Future.delayed(const Duration(seconds: 0));
+        await Future.delayed(const Duration(seconds: 5));
       }
     } catch (e) {
       DPrint.error("SplashController: Error initializing video: $e");
@@ -71,11 +75,15 @@ class SplashController extends GetxController {
       await Future.delayed(const Duration(seconds: 3));
     }
 
+    await videoController?.pause();
+    isVideoInitialized.value = false;
+
     DPrint.log("SplashController: Navigating to next screen...");
-    _navigateToNext();
+    final navigate = await nextNavigation;
+    navigate();
   }
 
-  Future<void> _navigateToNext() async {
+  Future<void Function()> _resolveNextNavigation() async {
     final secureStore = SecureStoreServices();
     final savedEmail = await secureStore.retrieveData("email");
     final savedPassword = await secureStore.retrieveData("password");
@@ -86,8 +94,7 @@ class SplashController extends GetxController {
     if (hasStoredSessionToken) {
       final role = await _resolveStartupRole();
       if (role != null) {
-        _openDashboardForRole(role);
-        return;
+        return () => _openDashboardForRole(role);
       }
 
       final accessToken = await _authStorageService.getAccessToken();
@@ -95,9 +102,10 @@ class SplashController extends GetxController {
         DPrint.warn(
           "SplashController: Session exists but role is unresolved. Opening role selection.",
         );
-        _resetRoleNavigationState();
-        Get.offAll(() => const RoleSelectionScreen());
-        return;
+        return () {
+          _resetRoleNavigationState();
+          Get.offAll(() => const RoleSelectionScreen());
+        };
       }
     }
 
@@ -107,13 +115,15 @@ class SplashController extends GetxController {
       DPrint.warn(
         "SplashController: Legacy auth data found without resolved role. Opening role selection.",
       );
-      _resetRoleNavigationState();
-      Get.offAll(() => const RoleSelectionScreen());
+      return () {
+        _resetRoleNavigationState();
+        Get.offAll(() => const RoleSelectionScreen());
+      };
     } else if (savedEmail != null && savedPassword != null) {
-      Get.offAll(() => LoginScreen());
-    } else {
-      Get.off(() => const OnboardingScreen());
+      return () => Get.offAll(() => LoginScreen());
     }
+
+    return () => Get.off(() => const OnboardingScreen());
   }
 
   Future<String?> _resolveStartupRole() async {

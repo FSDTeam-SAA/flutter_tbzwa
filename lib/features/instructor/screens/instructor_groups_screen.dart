@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 
+import '../../../core/common/widgets/app_logo.dart';
 import '../controllers/instructor_groups_controller.dart';
 import '../models/instructor_group_model.dart';
 import 'manage_group_screen.dart';
@@ -28,13 +29,10 @@ class InstructorGroupsScreen extends StatelessWidget {
                 onPressed: Get.back,
               )
             : null,
-        title: const Text(
-          "TALK/'BZ/",
-          style: TextStyle(
-            color: Color(0xFF1F2937),
-            fontWeight: FontWeight.bold,
-            letterSpacing: 1.2,
-          ),
+        title: const AppLogo(
+          images: 'assets/images/appIcon.png',
+          height: 150,
+          width: 150,
         ),
         centerTitle: true,
       ),

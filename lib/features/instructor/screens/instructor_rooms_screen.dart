@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 
+import '../../../core/common/widgets/app_logo.dart';
 import '../controllers/instructor_rooms_controller.dart';
 import '../widgets/create_room_dialog.dart';
 
@@ -19,13 +20,10 @@ class InstructorRoomsScreen extends StatelessWidget {
         backgroundColor: const Color(0xFFF9FAFC),
         elevation: 0,
         automaticallyImplyLeading: false,
-        title: const Text(
-          "TALK/'BZ/",
-          style: TextStyle(
-            color: Color(0xFF1F2937),
-            fontWeight: FontWeight.bold,
-            letterSpacing: 1.2,
-          ),
+        title: const AppLogo(
+          images: 'assets/images/appIcon.png',
+          height: 150,
+          width: 150,
         ),
         centerTitle: true,
       ),
