@@ -1,5 +1,14 @@
+import 'dart:async';
+
 import 'package:flutter/material.dart';
+import 'package:get/get.dart';
+
+import '../../subcribers_flow/subscriber_choose_program_screen.dart';
 import '../../subcribers_flow/subscriber_menu_drawer.dart';
+import '../controllers/voice_room_controller.dart';
+import '../models/voice_room_model.dart';
+import '../widgets/create_voice_room_dialog.dart';
+import 'voice_room_details_screen.dart';
 
 class VoiceRoom extends StatefulWidget {
   const VoiceRoom({super.key});
@@ -9,46 +18,72 @@ class VoiceRoom extends StatefulWidget {
 }
 
 class _VoiceRoomState extends State<VoiceRoom> {
-  final TextEditingController _searchController = TextEditingController();
-  final List<String> _teacherNames = [
-    "Thomas",
-    "Philip",
-    "Mitchell",
-    "Dwight",
-    "Lee",
-    "Eduardo",
-    "Calvin",
-    "Sarah"
-  ];
-
-  late List<Map<String, dynamic>> _allRooms;
-  List<Map<String, dynamic>> _filteredRooms = [];
+  late final LearnerVoiceRoomController controller;
+  late final TextEditingController _searchController;
+  bool _isOpeningCreate = false;
 
   @override
   void initState() {
     super.initState();
-    _allRooms = List.generate(8, (index) {
-      return {
-        "index": index + 1,
-        "teacher": _teacherNames[index % _teacherNames.length],
-        "title": "Advanced English - Class ${(index + 1).toString().padLeft(2, '0')}"
-      };
+    controller = Get.isRegistered<LearnerVoiceRoomController>()
+        ? Get.find<LearnerVoiceRoomController>()
+        : Get.put(LearnerVoiceRoomController());
+    _searchController = TextEditingController(
+      text: controller.searchQuery.value,
+    );
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      unawaited(controller.ensureRoomsLoaded());
     });
-    _filteredRooms = _allRooms;
   }
 
-  void _filterRooms(String query) {
-    setState(() {
-      if (query.isEmpty) {
-        _filteredRooms = _allRooms;
-      } else {
-        _filteredRooms = _allRooms
-            .where((room) =>
-                room['title'].toLowerCase().contains(query.toLowerCase()) ||
-                room['teacher'].toLowerCase().contains(query.toLowerCase()))
-            .toList();
+  @override
+  void dispose() {
+    _searchController.dispose();
+    super.dispose();
+  }
+
+  Future<void> _openCreateRoom() async {
+    if (_isOpeningCreate) return;
+    _isOpeningCreate = true;
+    try {
+      final eligibility = await controller.checkCreateEligibility();
+      if (!mounted || eligibility == null) return;
+      if (!eligibility.allowed) {
+        _showSubscriptionRequired(eligibility);
+        return;
       }
-    });
+
+      final created = await Get.dialog<bool>(
+        CreateVoiceRoomDialog(controller: controller),
+        barrierDismissible: false,
+      );
+      if (created == true && mounted) {
+        _searchController.clear();
+      }
+    } finally {
+      _isOpeningCreate = false;
+    }
+  }
+
+  void _showSubscriptionRequired(VoiceRoomCreateEligibility eligibility) {
+    Get.defaultDialog(
+      title: 'Subscription required',
+      middleText: eligibility.displayReason,
+      textCancel: 'Not now',
+      textConfirm: 'View plans',
+      confirmTextColor: Colors.white,
+      buttonColor: const Color(0xFF26A69A),
+      onConfirm: () {
+        Get.back();
+        Get.to(() => const SubscriberChooseProgramScreen());
+      },
+    );
+  }
+
+  Future<void> _joinRoom(LearnerVoiceRoom room) async {
+    final joined = await controller.joinRoom(room);
+    if (!mounted || joined == null) return;
+    Get.to(() => VoiceRoomDetailsScreen(room: joined));
   }
 
   @override
@@ -59,82 +94,184 @@ class _VoiceRoomState extends State<VoiceRoom> {
       body: SafeArea(
         child: Column(
           children: [
-            const SizedBox(height: 16),
             SizedBox(
-                height: 50,
-                child: Stack(
-                  alignment: Alignment.center,
-                  children: [
-                    Align(
-                      alignment: Alignment.centerLeft,
-                      child: Builder(
-                        builder: (context) => GestureDetector(
-                          onTap: () => Scaffold.of(context).openDrawer(),
-                          child: Padding(
-                            padding: const EdgeInsets.only(left: 18.0),
-                            child: const Icon(
-                              Icons.menu,
-                              color: Color(0xFF1E293B),
-                              size: 28,
-                            ),
+              height: 50,
+              child: Stack(
+                alignment: Alignment.center,
+                children: [
+                  Align(
+                    alignment: Alignment.centerLeft,
+                    child: Builder(
+                      builder: (context) => GestureDetector(
+                        onTap: () => Scaffold.of(context).openDrawer(),
+                        child: const Padding(
+                          padding: EdgeInsets.only(left: 18.0),
+                          child: Icon(
+                            Icons.menu,
+                            color: Color(0xFF1E293B),
+                            size: 28,
                           ),
                         ),
                       ),
                     ),
-                    _buildHeader(),
-                  ],
-                ),
+                  ),
+                  _buildHeader(),
+                ],
               ),
-
-            Divider(
-              color: Color(0xFFD1D1D1),
             ),
-            
+            const Divider(color: Color(0xFFD1D1D1)),
             const SizedBox(height: 16),
             Padding(
               padding: const EdgeInsets.symmetric(horizontal: 20),
-              child: _buildSearchBar(),
+              child: Row(
+                children: [
+                  Expanded(child: _buildSearchBar()),
+                  const SizedBox(width: 12),
+                  Obx(() {
+                    final busy = controller.isCheckingEligibility.value;
+                    return GestureDetector(
+                      onTap: busy ? null : _openCreateRoom,
+                      child: Container(
+                        height: 50,
+                        width: 50,
+                        decoration: BoxDecoration(
+                          color: const Color(0xFF26A69A),
+                          borderRadius: BorderRadius.circular(16),
+                          boxShadow: [
+                            BoxShadow(
+                              color: const Color(
+                                0xFF26A69A,
+                              ).withValues(alpha: 0.18),
+                              blurRadius: 12,
+                              offset: const Offset(0, 5),
+                            ),
+                          ],
+                        ),
+                        child: busy
+                            ? const Padding(
+                                padding: EdgeInsets.all(15),
+                                child: CircularProgressIndicator(
+                                  strokeWidth: 2,
+                                  color: Colors.white,
+                                ),
+                              )
+                            : const Icon(Icons.add, color: Colors.white),
+                      ),
+                    );
+                  }),
+                ],
+              ),
             ),
             const SizedBox(height: 20),
-            Expanded(
-              child: _filteredRooms.isEmpty
-                  ? _buildEmptyState()
-                  : ListView.builder(
-                      padding: const EdgeInsets.symmetric(horizontal: 20),
-                      itemCount: _filteredRooms.length,
-                      itemBuilder: (context, index) {
-                        final room = _filteredRooms[index];
-                        return _buildVoiceRoomCard(
-                          index: room['index'],
-                          teacherName: room['teacher'],
-                        );
-                      },
-                    ),
-            ),
+            Expanded(child: _buildRoomList()),
           ],
         ),
       ),
     );
   }
 
-  Widget _buildEmptyState() {
-    return Center(
-      child: Column(
-        mainAxisAlignment: MainAxisAlignment.center,
-        children: [
-          Icon(Icons.search_off_rounded, size: 64, color: Colors.grey[300]),
-          const SizedBox(height: 16),
-          Text(
-            "No rooms found",
-            style: TextStyle(color: Colors.grey[500], fontSize: 16),
+  Widget _buildRoomList() {
+    return Obx(() {
+      if (controller.isInitialLoading.value) {
+        return const Center(child: CircularProgressIndicator());
+      }
+
+      if (controller.errorMessage.value != null) {
+        return Center(
+          child: Padding(
+            padding: const EdgeInsets.symmetric(horizontal: 28),
+            child: Column(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                const Icon(
+                  Icons.cloud_off_rounded,
+                  color: Color(0xFFCBD5E1),
+                  size: 44,
+                ),
+                const SizedBox(height: 12),
+                Text(
+                  controller.errorMessage.value!,
+                  textAlign: TextAlign.center,
+                  style: const TextStyle(
+                    color: Color(0xFF64748B),
+                    fontSize: 13,
+                  ),
+                ),
+                const SizedBox(height: 8),
+                TextButton(
+                  onPressed: () => controller.loadRooms(reset: true),
+                  child: const Text('Retry'),
+                ),
+              ],
+            ),
           ),
-        ],
-      ),
-    );
+        );
+      }
+
+      if (controller.rooms.isEmpty) {
+        return RefreshIndicator(
+          onRefresh: controller.refreshRooms,
+          child: ListView(
+            physics: const AlwaysScrollableScrollPhysics(),
+            padding: const EdgeInsets.symmetric(horizontal: 20),
+            children: [
+              const SizedBox(height: 130),
+              Icon(Icons.mic_none_rounded, size: 58, color: Colors.grey[300]),
+              const SizedBox(height: 14),
+              const Center(
+                child: Text(
+                  'No voice rooms found.',
+                  style: TextStyle(color: Color(0xFF94A3B8), fontSize: 14),
+                ),
+              ),
+            ],
+          ),
+        );
+      }
+
+      final busyRoomIds = controller.joiningRoomIds.toSet();
+      return RefreshIndicator(
+        onRefresh: controller.refreshRooms,
+        child: ListView.builder(
+          controller: controller.scrollController,
+          physics: const AlwaysScrollableScrollPhysics(),
+          padding: const EdgeInsets.symmetric(horizontal: 20),
+          itemCount:
+              controller.rooms.length +
+              (controller.isLoadingMore.value ? 1 : 0) +
+              1,
+          itemBuilder: (context, index) {
+            if (index == controller.rooms.length) {
+              if (!controller.isLoadingMore.value) {
+                return const SizedBox(height: 18);
+              }
+              return const Padding(
+                padding: EdgeInsets.symmetric(vertical: 18),
+                child: Center(child: CircularProgressIndicator()),
+              );
+            }
+            if (index > controller.rooms.length) {
+              return const SizedBox(height: 18);
+            }
+
+            final room = controller.rooms[index];
+            return KeyedSubtree(
+              key: ValueKey('learner-voice-room-${room.id}'),
+              child: _buildVoiceRoomCard(
+                room: room,
+                hasBorder: index == 0,
+                isJoining: busyRoomIds.contains(room.id),
+              ),
+            );
+          },
+        ),
+      );
+    });
   }
 
   Widget _buildSearchBar() {
     return Container(
+      height: 50,
       decoration: BoxDecoration(
         color: Colors.white,
         borderRadius: BorderRadius.circular(20),
@@ -142,67 +279,149 @@ class _VoiceRoomState extends State<VoiceRoom> {
       ),
       child: TextField(
         controller: _searchController,
-        onChanged: _filterRooms,
-        style: const TextStyle(color: Color(0xFF536F7A)),
+        onChanged: controller.setSearchQuery,
+        style: const TextStyle(color: Color(0xFF536F7A), fontSize: 14),
         decoration: const InputDecoration(
-          hintText: "Search notes...",
+          hintText: 'Search voice rooms...',
           hintStyle: TextStyle(color: Color(0xFF90A4AE), fontSize: 14),
           prefixIcon: Icon(Icons.search, color: Color(0xFF90A4AE)),
           border: InputBorder.none,
-          contentPadding: EdgeInsets.symmetric(vertical: 15),
+          contentPadding: EdgeInsets.symmetric(vertical: 14),
         ),
       ),
     );
   }
 
-  Widget _buildVoiceRoomCard({required int index, required String teacherName, bool hasBorder = false}) {
-    return Container(
-      margin: const EdgeInsets.only(bottom: 12),
-      padding: const EdgeInsets.all(16),
-      decoration: BoxDecoration(
-        color: Colors.white,
-        borderRadius: BorderRadius.circular(20),
-        border: Border.all(
-          color: hasBorder ? const Color(0xFF26A69A) : const Color(0xFFEAEDF1),
-          width: hasBorder ? 1.5 : 1,
-        ),
-      ),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          Text(
-            "Advanced English - Class ${index.toString().padLeft(2, '0')}",
-            style: const TextStyle(
-              color: Color(0xFF374151),
-              fontSize: 16,
-              fontWeight: FontWeight.bold,
+  Widget _buildVoiceRoomCard({
+    required LearnerVoiceRoom room,
+    required bool hasBorder,
+    required bool isJoining,
+  }) {
+    return GestureDetector(
+      onTap: isJoining ? null : () => _joinRoom(room),
+      child: Opacity(
+        opacity: isJoining ? 0.72 : 1,
+        child: Container(
+          margin: const EdgeInsets.only(bottom: 12),
+          padding: const EdgeInsets.all(16),
+          decoration: BoxDecoration(
+            color: Colors.white,
+            borderRadius: BorderRadius.circular(20),
+            border: Border.all(
+              color: hasBorder
+                  ? const Color(0xFF26A69A)
+                  : const Color(0xFFEAEDF1),
+              width: hasBorder ? 1.5 : 1,
             ),
           ),
-          const SizedBox(height: 12),
-          Row(
-            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
             children: [
               Row(
+                crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  CircleAvatar(
-                    radius: 20,
-                    backgroundImage: NetworkImage("https://i.pravatar.cc/150?u=$teacherName"),
-                  ),
-                  const SizedBox(width: 12),
-                  Text(
-                    teacherName,
-                    style: const TextStyle(
-                      color: Color(0xFF374151),
-                      fontSize: 14,
-                      fontWeight: FontWeight.w500,
+                  Expanded(
+                    child: Text(
+                      room.name,
+                      maxLines: 2,
+                      overflow: TextOverflow.ellipsis,
+                      style: const TextStyle(
+                        color: Color(0xFF374151),
+                        fontSize: 16,
+                        fontWeight: FontWeight.bold,
+                      ),
                     ),
+                  ),
+                  const SizedBox(width: 10),
+                  _buildStatusChip(room),
+                ],
+              ),
+              if (room.groupName.trim().isNotEmpty) ...[
+                const SizedBox(height: 4),
+                Text(
+                  room.groupName,
+                  maxLines: 1,
+                  overflow: TextOverflow.ellipsis,
+                  style: const TextStyle(
+                    color: Color(0xFF94A3B8),
+                    fontSize: 12,
+                    fontWeight: FontWeight.w500,
+                  ),
+                ),
+              ],
+              const SizedBox(height: 14),
+              Row(
+                children: [
+                  _buildHostAvatar(room),
+                  const SizedBox(width: 12),
+                  Expanded(
+                    child: Text(
+                      room.hostName,
+                      maxLines: 1,
+                      overflow: TextOverflow.ellipsis,
+                      style: const TextStyle(
+                        color: Color(0xFF374151),
+                        fontSize: 14,
+                        fontWeight: FontWeight.w600,
+                      ),
+                    ),
+                  ),
+                  const SizedBox(width: 8),
+                  _buildParticipantAvatars(room),
+                  if (isJoining) ...[
+                    const SizedBox(width: 8),
+                    const SizedBox(
+                      width: 18,
+                      height: 18,
+                      child: CircularProgressIndicator(strokeWidth: 2),
+                    ),
+                  ],
+                ],
+              ),
+              const SizedBox(height: 12),
+              Row(
+                children: [
+                  const Icon(
+                    Icons.people_outline,
+                    color: Color(0xFF94A3B8),
+                    size: 16,
+                  ),
+                  const SizedBox(width: 4),
+                  Text(
+                    room.countLabel,
+                    style: const TextStyle(
+                      color: Color(0xFF64748B),
+                      fontSize: 12,
+                      fontWeight: FontWeight.w600,
+                    ),
+                  ),
+                  const SizedBox(width: 10),
+                  Icon(
+                    room.isPublic
+                        ? Icons.public_rounded
+                        : Icons.lock_outline_rounded,
+                    color: const Color(0xFF94A3B8),
+                    size: 15,
+                  ),
+                  const SizedBox(width: 4),
+                  Text(
+                    room.privacyLabel,
+                    style: const TextStyle(
+                      color: Color(0xFF64748B),
+                      fontSize: 12,
+                      fontWeight: FontWeight.w600,
+                    ),
+                  ),
+                  const Spacer(),
+                  const Icon(
+                    Icons.keyboard_arrow_right_rounded,
+                    color: Color(0xFF94A3B8),
                   ),
                 ],
               ),
-              _buildParticipantAvatars(),
             ],
           ),
-        ],
+        ),
       ),
     );
   }
@@ -213,12 +432,6 @@ class _VoiceRoomState extends State<VoiceRoom> {
       child: Row(
         mainAxisAlignment: MainAxisAlignment.center,
         children: [
-          // Builder(
-          //   builder: (context) => GestureDetector(
-          //     onTap: () => Scaffold.of(context).openDrawer(),
-          //     child: const Icon(Icons.menu, color: Color(0xFF1E293B), size: 24),
-          //   ),
-          // ),
           RichText(
             text: const TextSpan(
               style: TextStyle(
@@ -234,32 +447,192 @@ class _VoiceRoomState extends State<VoiceRoom> {
             ),
           ),
           const SizedBox(width: 24),
-          // balance spacer
         ],
       ),
     );
   }
 
-  Widget _buildParticipantAvatars() {
-    return SizedBox(
-      height: 32,
-      width: 100, // Adjusted based on overlap
-      child: Stack(
-        children: List.generate(4, (index) {
-          return Positioned(
-            right: index * 20.0,
+  Widget _buildStatusChip(LearnerVoiceRoom room) {
+    return Container(
+      padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 5),
+      decoration: BoxDecoration(
+        color: room.isActive
+            ? const Color(0xFFE6F7F4)
+            : const Color(0xFFF1F5F9),
+        borderRadius: BorderRadius.circular(999),
+      ),
+      child: Text(
+        room.statusLabel,
+        style: TextStyle(
+          color: room.isActive
+              ? const Color(0xFF168A7E)
+              : const Color(0xFF64748B),
+          fontSize: 11,
+          fontWeight: FontWeight.w800,
+        ),
+      ),
+    );
+  }
+
+  Widget _buildHostAvatar(LearnerVoiceRoom room) {
+    return Stack(
+      clipBehavior: Clip.none,
+      children: [
+        _buildAvatar(
+          room.hostAvatarUrl,
+          radius: 22,
+          fallbackText: room.hostInitial,
+        ),
+        if (room.hostCountryBadge.isNotEmpty)
+          Positioned(
+            left: -3,
+            bottom: -4,
             child: Container(
+              height: 18,
+              constraints: const BoxConstraints(minWidth: 18),
+              padding: const EdgeInsets.symmetric(horizontal: 3),
+              alignment: Alignment.center,
               decoration: BoxDecoration(
-                shape: BoxShape.circle,
-                border: Border.all(color: Colors.white, width: 2),
+                color: Colors.white,
+                borderRadius: BorderRadius.circular(9),
+                border: Border.all(color: const Color(0xFF26A69A), width: 1),
               ),
-              child: CircleAvatar(
-                radius: 14,
-                backgroundImage: NetworkImage("https://i.pravatar.cc/150?u=p$index${DateTime.now().millisecond}"),
+              child: Text(
+                room.hostCountryBadge,
+                style: const TextStyle(
+                  color: Color(0xFF1E293B),
+                  fontSize: 10,
+                  fontWeight: FontWeight.w800,
+                ),
               ),
             ),
-          );
-        }),
+          ),
+      ],
+    );
+  }
+
+  Widget _buildParticipantAvatars(LearnerVoiceRoom room) {
+    final participants = room.participants.take(4).toList();
+    if (participants.isEmpty) {
+      return Container(
+        height: 30,
+        padding: const EdgeInsets.symmetric(horizontal: 10),
+        alignment: Alignment.center,
+        decoration: BoxDecoration(
+          color: const Color(0xFFF8FAFC),
+          borderRadius: BorderRadius.circular(15),
+          border: Border.all(color: const Color(0xFFE2E8F0)),
+        ),
+        child: const Text(
+          '0',
+          style: TextStyle(
+            color: Color(0xFF94A3B8),
+            fontSize: 12,
+            fontWeight: FontWeight.w700,
+          ),
+        ),
+      );
+    }
+
+    final width = 30.0 + ((participants.length - 1) * 22.0);
+    final overflow = room.participantCount - participants.length;
+    return SizedBox(
+      height: 32,
+      width: width + (overflow > 0 ? 24 : 0),
+      child: Stack(
+        clipBehavior: Clip.none,
+        children: [
+          ...List.generate(participants.length, (index) {
+            final participant = participants[index];
+            return Positioned(
+              left: index * 22.0,
+              child: Container(
+                decoration: BoxDecoration(
+                  shape: BoxShape.circle,
+                  border: Border.all(color: Colors.white, width: 2),
+                ),
+                child: _buildAvatar(
+                  participant.avatarUrl,
+                  radius: 15,
+                  fallbackText: participant.name.trim().isEmpty
+                      ? 'L'
+                      : participant.name.trim()[0].toUpperCase(),
+                ),
+              ),
+            );
+          }),
+          if (overflow > 0)
+            Positioned(
+              left: width - 2,
+              top: 2,
+              child: Container(
+                height: 28,
+                width: 28,
+                alignment: Alignment.center,
+                decoration: BoxDecoration(
+                  color: const Color(0xFF26A69A),
+                  shape: BoxShape.circle,
+                  border: Border.all(color: Colors.white, width: 2),
+                ),
+                child: Text(
+                  '+$overflow',
+                  style: const TextStyle(
+                    color: Colors.white,
+                    fontSize: 10,
+                    fontWeight: FontWeight.w800,
+                  ),
+                ),
+              ),
+            ),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildAvatar(
+    String? url, {
+    required double radius,
+    required String fallbackText,
+  }) {
+    final size = radius * 2;
+    final fallback = Container(
+      width: size,
+      height: size,
+      alignment: Alignment.center,
+      decoration: const BoxDecoration(
+        color: Color(0xFFE8EAF0),
+        shape: BoxShape.circle,
+      ),
+      child: Text(
+        fallbackText,
+        style: TextStyle(
+          color: const Color(0xFF64748B),
+          fontSize: radius * 0.72,
+          fontWeight: FontWeight.w800,
+        ),
+      ),
+    );
+
+    if (url == null || url.trim().isEmpty) {
+      return CircleAvatar(
+        radius: radius,
+        backgroundImage: const AssetImage(
+          'assets/images/default_user_avatar.png',
+        ),
+      );
+    }
+
+    return ClipOval(
+      child: Image.network(
+        url,
+        width: size,
+        height: size,
+        fit: BoxFit.cover,
+        errorBuilder: (_, _, _) => fallback,
+        loadingBuilder: (context, child, progress) {
+          if (progress == null) return child;
+          return fallback;
+        },
       ),
     );
   }

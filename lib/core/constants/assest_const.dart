@@ -11,7 +11,7 @@ class Images {
   final String onboardThree = '$_base/onboard_three.png';
 
   // Profile image update
-  final String profileImage = '$_base/image-avater.png';
+  final String profileImage = '$_base/default_user_avatar.png';
 
   // Event image
   final String eventImage = '$_base/events_bg.jpg';
@@ -22,7 +22,7 @@ class Images {
   final String chat = '$_base/message.png';
   final String room = '$_base/room.png';
   final String profile = '$_base/profile.png';
-  final String roomIcon = '$_base/roomIcon.png'; 
+  final String roomIcon = '$_base/roomIcon.png';
   final String clock = '$_base/clock.png';
 }
 

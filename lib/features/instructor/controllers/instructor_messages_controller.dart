@@ -10,6 +10,9 @@ import '../services/instructor_messages_service.dart';
 import '../services/instructor_messages_socket_service.dart';
 
 class InstructorMessagesController extends GetxController {
+  InstructorMessagesController({this.includeGroups = true});
+
+  final bool includeGroups;
   final InstructorMessagesService _service = InstructorMessagesService();
   final InstructorMessagesSocketService _socketService =
       InstructorMessagesSocketService();
@@ -66,6 +69,7 @@ class InstructorMessagesController extends GetxController {
 
   bool get hasMoreConversations => _conversationPage < _conversationTotalPages;
   bool get hasOlderMessages => _messagePage < _messageTotalPages;
+  String get currentUserId => _currentUserId;
 
   Future<void> _bootstrap() async {
     _currentUserId = await _authStorage.getUserId() ?? '';
@@ -100,6 +104,7 @@ class InstructorMessagesController extends GetxController {
         page: _conversationPage,
         limit: _conversationLimit,
         search: searchController.text,
+        includeGroups: includeGroups,
       );
       _conversationTotalPages = page.totalPages < 1 ? 1 : page.totalPages;
       if (_conversationPage == 1) {
@@ -146,6 +151,57 @@ class InstructorMessagesController extends GetxController {
     _replaceConversation(selected, moveToTop: false);
     _joinConversationRoom(selected);
     await loadMessages(refresh: true);
+  }
+
+  Future<void> openConversationById(String conversationId) async {
+    if (conversationId.trim().isEmpty) return;
+
+    for (final conversation in conversations) {
+      if (conversation.id == conversationId.trim()) {
+        await openConversation(conversation);
+        return;
+      }
+    }
+
+    final conversation = await _service.getConversation(conversationId.trim());
+    if (!includeGroups && conversation.isGroup) {
+      throw Exception('Conversation is unavailable.');
+    }
+    if (!conversations.any((item) => item.id == conversation.id)) {
+      conversations.insert(0, conversation);
+    }
+    await openConversation(conversation);
+  }
+
+  Future<InstructorConversation> startDirectConversation(String userId) async {
+    if (userId.trim().isEmpty) {
+      throw Exception('User is unavailable.');
+    }
+    if (_currentUserId.isEmpty) {
+      _currentUserId = await _authStorage.getUserId() ?? '';
+    }
+
+    InstructorConversation? existing;
+    for (final conversation in conversations) {
+      if (!conversation.isGroup &&
+          conversation.otherParticipant?.id == userId.trim()) {
+        existing = conversation;
+        break;
+      }
+    }
+    if (existing != null) {
+      await openConversation(existing);
+      return existing;
+    }
+
+    final conversation = await _service.getOrCreateDirectConversation(
+      userId.trim(),
+    );
+    if (!conversations.any((item) => item.id == conversation.id)) {
+      conversations.insert(0, conversation);
+    }
+    await openConversation(conversation);
+    return conversation;
   }
 
   Future<void> loadMessages({bool refresh = false}) async {

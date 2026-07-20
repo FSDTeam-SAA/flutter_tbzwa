@@ -39,13 +39,13 @@ class VideoCallScreen extends StatelessWidget {
                         height: 140,
                         decoration: BoxDecoration(
                           shape: BoxShape.circle,
-                          border: Border.all(color: Colors.white.withOpacity(0.1), width: 1),
+                          border: Border.all(
+                            color: Colors.white.withValues(alpha: 0.1),
+                            width: 1,
+                          ),
                         ),
                         padding: const EdgeInsets.all(4),
-                        child: CircleAvatar(
-                          radius: 66,
-                          backgroundImage: NetworkImage(imageUrl),
-                        ),
+                        child: _CallAvatar(imageUrl: imageUrl),
                       ),
                     ],
                   ),
@@ -71,11 +71,16 @@ class VideoCallScreen extends StatelessWidget {
                   const SizedBox(height: 48),
                   // Badge
                   Container(
-                    padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 12),
+                    padding: const EdgeInsets.symmetric(
+                      horizontal: 24,
+                      vertical: 12,
+                    ),
                     decoration: BoxDecoration(
-                      color: Colors.white.withOpacity(0.1),
+                      color: Colors.white.withValues(alpha: 0.1),
                       borderRadius: BorderRadius.circular(16),
-                      border: Border.all(color: Colors.white.withOpacity(0.1)),
+                      border: Border.all(
+                        color: Colors.white.withValues(alpha: 0.1),
+                      ),
                     ),
                     child: const Text(
                       "IMMERSION++ Unlimited Access",
@@ -98,10 +103,14 @@ class VideoCallScreen extends StatelessWidget {
                           height: 72,
                           width: 72,
                           decoration: BoxDecoration(
-                            color: Colors.white.withOpacity(0.1),
+                            color: Colors.white.withValues(alpha: 0.1),
                             shape: BoxShape.circle,
                           ),
-                          child: const Icon(Icons.close, color: Colors.white, size: 32),
+                          child: const Icon(
+                            Icons.close,
+                            color: Colors.white,
+                            size: 32,
+                          ),
                         ),
                       ),
                       const SizedBox(width: 48),
@@ -117,7 +126,11 @@ class VideoCallScreen extends StatelessWidget {
                             color: Color(0xFF22C55E),
                             shape: BoxShape.circle,
                           ),
-                          child: const Icon(Icons.videocam, color: Colors.white, size: 32),
+                          child: const Icon(
+                            Icons.videocam,
+                            color: Colors.white,
+                            size: 32,
+                          ),
                         ),
                       ),
                     ],
@@ -131,7 +144,11 @@ class VideoCallScreen extends StatelessWidget {
                 top: 0,
                 left: 8,
                 child: IconButton(
-                  icon: const Icon(Icons.arrow_back_ios_new, color: Colors.white, size: 24),
+                  icon: const Icon(
+                    Icons.arrow_back_ios_new,
+                    color: Colors.white,
+                    size: 24,
+                  ),
                   onPressed: () => Get.back(),
                 ),
               ),
@@ -139,6 +156,25 @@ class VideoCallScreen extends StatelessWidget {
           ),
         ),
       ),
+    );
+  }
+}
+
+class _CallAvatar extends StatelessWidget {
+  final String imageUrl;
+
+  const _CallAvatar({required this.imageUrl});
+
+  @override
+  Widget build(BuildContext context) {
+    final hasImage = imageUrl.isNotEmpty;
+    return CircleAvatar(
+      radius: 66,
+      backgroundColor: Colors.white.withValues(alpha: 0.12),
+      backgroundImage: hasImage ? NetworkImage(imageUrl) : null,
+      child: hasImage
+          ? null
+          : const Icon(Icons.person_rounded, color: Colors.white, size: 64),
     );
   }
 }

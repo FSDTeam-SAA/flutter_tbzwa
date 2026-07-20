@@ -28,12 +28,22 @@ class MediaCacheService {
     ),
   );
 
+  /// Specifically configured CacheManager for short audio clips.
+  static final CacheManager audioCacheManager = CacheManager(
+    Config(
+      'app_audio_cache',
+      stalePeriod: const Duration(days: 3),
+      maxNrOfCacheObjects: 50,
+    ),
+  );
+
   /// Helper to completely clear all media caches
   Future<void> clearAllMediaCache() async {
     try {
       await imageCacheManager.emptyCache();
       await videoCacheManager.emptyCache();
-      DPrint.info("Cleared all media caches (Images & Videos)");
+      await audioCacheManager.emptyCache();
+      DPrint.info("Cleared all media caches (Images, Videos & Audio)");
     } catch (e) {
       DPrint.error("Failed to clear media cache: $e");
     }

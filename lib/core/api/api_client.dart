@@ -129,7 +129,7 @@ class ApiClient {
       );
 
       DPrint.log(
-        "🔄 Refresh Token Response -> ${ApiConstants.auth.refreshToken} ${response.statusCode} ${response.data}",
+        "🔄 Refresh Token Response -> ${ApiConstants.auth.refreshToken} ${response.statusCode}",
       );
 
       if (baseResponse.success && baseResponse.data != null) {
@@ -152,13 +152,15 @@ class ApiClient {
       await _logout();
       return false;
     } on DioException catch (e) {
-      DPrint.log("Refresh token error: $e");
+      DPrint.log(
+        "Refresh token error: status=${e.response?.statusCode ?? 'none'} type=${e.type}",
+      );
       if (e.response?.statusCode == 401 || e.response?.statusCode == 403) {
         await _logout();
       }
       return false;
     } catch (e) {
-      DPrint.log("Refresh token error: $e");
+      DPrint.log("Refresh token error: ${e.runtimeType}");
       return false;
     }
   }
@@ -229,10 +231,12 @@ class ApiClient {
       options = await _addAuthHeader(options);
 
       if (data != null) {
-        DPrint.log("🛜 Api Endpoint -> $method ||=> $endpoint \n Data: $data");
+        DPrint.log(
+          "🛜 Api Endpoint -> $method ||=> $endpoint \n Data: <redacted>",
+        );
       } else if (fromData != null) {
         DPrint.log(
-          "🛜 Api Endpoint -> $method ||=> $endpoint \n FormData: $fromData",
+          "🛜 Api Endpoint -> $method ||=> $endpoint \n FormData: <redacted>",
         );
       } else {
         DPrint.warn("No Data");
@@ -251,7 +255,7 @@ class ApiClient {
       );
 
       DPrint.log(
-        "☁️  BASE Response -> $method ||=> ${response.statusCode} ||=> Api: $endpoint \n Api: ${response.data}",
+        "☁️  BASE Response -> $method ||=> ${response.statusCode} ||=> Api: $endpoint",
       );
 
       final baseResponse = BaseResponse<T>.fromJson(response.data, fromJsonT);
@@ -660,13 +664,15 @@ class ApiClient {
 
     final accessToken = await _authStorageService.getAccessToken();
 
-    if (kDebugMode) DPrint.log("Current Access Token: $accessToken");
-
     if (accessToken != null) {
       options.headers ??= {};
       options.headers!['Authorization'] = 'Bearer $accessToken';
     }
-    if (kDebugMode) DPrint.log("Authorization header : ${options.headers}");
+    if (kDebugMode) {
+      DPrint.log(
+        "Authorization header attached: ${accessToken?.isNotEmpty == true ? 'Bearer [REDACTED]' : 'none'}",
+      );
+    }
     return options;
   }
 
@@ -675,7 +681,9 @@ class ApiClient {
     // Check if we have a response with error details
     if (error.response != null) {
       if (kDebugMode) {
-        DPrint.log("** Dio Error: $endpoint\n${error.response!.data}");
+        DPrint.log(
+          "** Dio Error: $endpoint status=${error.response?.statusCode ?? 'none'}",
+        );
       }
       try {
         final responseData = error.response?.data;

@@ -9,11 +9,12 @@ class InstructorMessagesService {
     required int page,
     required int limit,
     required String search,
+    bool includeGroups = true,
   }) async {
     final query = <String, dynamic>{
       'page': page,
       'limit': limit,
-      'includeGroups': true,
+      'includeGroups': includeGroups,
       if (search.trim().isNotEmpty) 'search': search.trim(),
     };
 
@@ -27,6 +28,39 @@ class InstructorMessagesService {
       (failure) => throw Exception(failure.message),
       (success) =>
           InstructorConversationPage.fromJson(success.data, success.meta),
+    );
+  }
+
+  Future<InstructorConversation> getOrCreateDirectConversation(
+    String userId,
+  ) async {
+    final result = await _api.post<InstructorConversation>(
+      endpoint: ApiConstants.chat.createDirectConversation,
+      data: {'userId': userId},
+      fromJsonT: (json) {
+        final data = Map<String, dynamic>.from(json as Map);
+        final conversation = Map<String, dynamic>.from(
+          data['conversation'] as Map? ?? const {},
+        );
+        final otherParticipant = Map<String, dynamic>.from(
+          data['otherParticipant'] as Map? ?? const {},
+        );
+
+        return InstructorConversation.fromJson({
+          ...conversation,
+          'type': 'direct',
+          'title': otherParticipant['fullName'] ?? conversation['title'],
+          'avatarUrl':
+              otherParticipant['profileImageUrl'] ??
+              _imageUrl(otherParticipant['profileImage']),
+          'otherParticipant': otherParticipant,
+        });
+      },
+    );
+
+    return result.fold(
+      (failure) => throw Exception(failure.message),
+      (success) => success.data,
     );
   }
 
@@ -105,4 +139,64 @@ class InstructorMessagesService {
     );
     result.fold((failure) => throw Exception(failure.message), (_) {});
   }
+
+  Future<ConversationDeleteResult> deleteConversationsForMe(
+    List<String> conversationIds,
+  ) async {
+    final result = await _api.delete<ConversationDeleteResult>(
+      endpoint: ApiConstants.chat.deleteConversations,
+      data: {'conversationIds': conversationIds},
+      fromJsonT: (json) => ConversationDeleteResult.fromJson(
+        Map<String, dynamic>.from(json as Map? ?? const {}),
+      ),
+    );
+
+    return result.fold(
+      (failure) => throw Exception(failure.message),
+      (success) => success.data,
+    );
+  }
+}
+
+class ConversationDeleteResult {
+  final int requestedCount;
+  final int hiddenCount;
+  final int notFoundOrUnauthorizedCount;
+  final List<String> hiddenConversationIds;
+
+  const ConversationDeleteResult({
+    required this.requestedCount,
+    required this.hiddenCount,
+    required this.notFoundOrUnauthorizedCount,
+    required this.hiddenConversationIds,
+  });
+
+  factory ConversationDeleteResult.fromJson(Map<String, dynamic> json) {
+    return ConversationDeleteResult(
+      requestedCount: _asInt(json['requestedCount']),
+      hiddenCount: _asInt(json['hiddenCount']),
+      notFoundOrUnauthorizedCount: _asInt(json['notFoundOrUnauthorizedCount']),
+      hiddenConversationIds:
+          (json['hiddenConversationIds'] as List? ?? const [])
+              .map((id) => id.toString())
+              .where((id) => id.isNotEmpty)
+              .toList(),
+    );
+  }
+}
+
+int _asInt(dynamic value) {
+  if (value is int) return value;
+  if (value is num) return value.toInt();
+  return int.tryParse(value?.toString() ?? '') ?? 0;
+}
+
+String? _imageUrl(dynamic image) {
+  if (image == null) return null;
+  if (image is String) return image.isEmpty ? null : image;
+  if (image is Map) {
+    final map = Map<String, dynamic>.from(image);
+    return map['url']?.toString() ?? map['secure_url']?.toString();
+  }
+  return null;
 }

@@ -7,6 +7,8 @@ import 'package:get/get.dart';
 import 'package:image_picker/image_picker.dart';
 import 'package:permission_handler/permission_handler.dart';
 
+import '../utils/app_snackbar.dart';
+
 class LocationResult {
   final String displayName;
   final double lat;
@@ -206,12 +208,6 @@ class SmartMediaService extends GetxService {
   }
 
   void _showErrorSnackbar(String message) {
-    Get.snackbar(
-      "Error",
-      message,
-      snackPosition: SnackPosition.BOTTOM,
-      backgroundColor: Colors.red.withValues(alpha: 0.8),
-      colorText: Colors.white,
-    );
+    AppSnackbar.error("Error", message);
   }
 }
